@@ -2,6 +2,36 @@
 
 // script.js
 
+const darkModeToggle = document.getElementById('theme-toggle');
+
+darkModeToggle.addEventListener('click', () => {
+  if (darkModeToggle.classList.contains('light')) {
+    document.documentElement.classList.remove('light');
+    document.documentElement.classList.add('dark');
+    darkModeToggle.classList.remove('light');
+    darkModeToggle.classList.add('dark');
+    console.log('Switched to dark mode');
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+    darkModeToggle.classList.remove('dark');
+    darkModeToggle.classList.add('light');
+    console.log('Switched to light mode');
+  }
+});
+
+// Check if the system's preferred color scheme is dark and set the initial palette
+if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  document.documentElement.classList.add('dark');
+  darkModeToggle.classList.add('dark');
+  console.log('Initial: Dark mode');
+} else {
+  document.documentElement.classList.add('light');
+  darkModeToggle.classList.add('light');
+  console.log('Initial: Light mode');
+}
+
+
 window.addEventListener('load', () => {
   const preloader = document.querySelector('.preloader');
   const content = document.querySelector('.content');

@@ -1,80 +1,9 @@
 
 :root {
 
-  /**
-   * colors
-   */
 
-  /* gradient */
-
-  --bg-gradient-onyx: linear-gradient(
-    to bottom right, 
-    hsl(240, 1%, 25%) 3%, 
-    hsl(0, 0%, 19%) 97%
-  );
-  --bg-gradient-jet: linear-gradient(
-    to bottom right, 
-    hsla(240, 1%, 18%, 0.251) 0%, 
-    hsla(240, 2%, 11%, 0) 100%
-  ), hsl(240, 2%, 13%);
-  --bg-gradient-yellow-1: linear-gradient(
-    to bottom right, 
-    hsl(45, 100%, 71%) 0%, 
-    hsla(36, 100%, 69%, 0) 50%
-  );
-  --bg-gradient-yellow-2: linear-gradient(
-    135deg, 
-    hsla(45, 100%, 71%, 0.251) 0%, 
-    hsla(35, 100%, 68%, 0) 59.86%
-  ), hsl(240, 2%, 13%);
-  --border-gradient-onyx: linear-gradient(
-    to bottom right, 
-    hsl(0, 0%, 25%) 0%, 
-    hsla(0, 0%, 25%, 0) 50%
-  );
-  --text-gradient-yellow: linear-gradient(
-    to right, 
-    hsl(45, 100%, 72%), 
-    hsl(35, 100%, 68%)
-  );
-  
-
-  .preloader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(43, 39, 39, 0);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    backdrop-filter: blur(20px);
-    transition: opacity 0.5s cubic-bezier(0.215, 0.61, 0.355, 1), backdrop-filter 1s cubic-bezier(0.215, 0.61, 0.355, 1);
-    opacity: 1;
-}
-
-
-  /* solid */
-
-  --jet: hsl(0, 0%, 22%);
-  --onyx: hsl(240, 1%, 17%);
-  --eerie-black-1: hsl(240, 2%, 13%);
-  --eerie-black-2: hsl(240, 2%, 12%);
-  --smoky-black: linear-gradient(
-    135deg, 
-    hsla(24, 97%, 23%, 0.123) 0%, 
-    hsla(35, 100%, 68%, 0) 59.86%
-  ), hsl(240, 2%, 13%);
-  --white-1: hsl(0, 0%, 100%);
-  --white-2: hsl(0, 0%, 98%);
-  --orange-yellow-crayola: hsl(45, 100%, 72%);
-  --vegas-gold: hsl(45, 54%, 58%);
-  --light-gray: hsl(0, 0%, 84%);
-  --light-gray-70: hsla(0, 0%, 84%, 0.7);
-  --bittersweet-shimmer: hsl(0, 43%, 51%);
-
+  --icon-fill: #f0c542; /* Default icon fill color */
+  --icon-fill-hover: #ffa500; /* Hovered icon fill color */
   /**
    * typography
    */
@@ -98,15 +27,6 @@
   --fw-500: 500;
   --fw-600: 600;
 
-  /**
-   * shadow
-   */
-  
-  --shadow-1: -4px 8px 24px hsla(0, 0%, 0%, 0.25);
-  --shadow-2: 0 16px 30px hsla(0, 0%, 0%, 0.25);
-  --shadow-3: 0 16px 40px hsla(0, 0%, 0%, 0.25);
-  --shadow-4: 0 25px 50px hsla(0, 0%, 0%, 0.15);
-  --shadow-5: 0 24px 80px hsla(0, 0%, 0%, 0.25);
 
   /**
    * transition
@@ -118,7 +38,194 @@
 }
 
 
+:root.light {
+  /* colors */
+  
+  --icon-fill: #f0c542;
+  --icon-fill-hover: #ffa500;
+  --eerie-black-3: hsl(161, 16%, 38%);
 
+  /* gradient */
+  --bg-gradient-onyx: linear-gradient(
+    to bottom right, 
+    hsl(0, 0%, 100%) 3%, 
+    hsl(0, 97%, 50%) 97%
+  );
+  --bg-gradient-jet: linear-gradient(
+    to bottom right,
+    hsla(100, 33%, 93%, 0.475) 0%, 
+    hsla(97, 25%, 77%, 0.61) 100%
+  ), hsl(71, 41%, 92%);
+  --bg-gradient-yellow-1: linear-gradient(
+    to bottom right, 
+    hsl(0, 74%, 64%) 0%, 
+    hsl(96, 38%, 97%) 50%
+  );
+  --bg-gradient-yellow-2: linear-gradient(
+    135deg, 
+    hsl(72, 68%, 93%) 0%, 
+    hsl(132, 23%, 87%) 59.86%
+  ), hsl(92, 22%, 88%);
+  --border-gradient-onyx: linear-gradient(
+    to bottom right, 
+    hsl(0, 0%, 100%) 0%, 
+    hsla(101, 31%, 66%, 0.452) 50%
+  );
+  --text-gradient-yellow: linear-gradient(
+    to right, 
+    hsl(36, 58%, 68%), 
+    hsl(0, 70%, 49%)
+  );
+
+  /* solid */
+  --jet: hsl(103, 45%, 88%);
+  --onyx: hsl(0, 26%, 74%);
+  --eerie-black-1: hsl(85, 60%, 89%);
+  --eerie-black-2: hsl(162, 62%, 96%);
+  --smoky-black: linear-gradient(
+    135deg, 
+    hsla(60, 48%, 95%, 0.589) 0%, 
+    hsl(0, 0%, 100%) 59.86%
+  ), hsl(0, 0%, 100%);
+  --white-1: hsl(60, 83%, 2%); /* Warm white */
+  --white-2: hsl(0, 0%, 0%);
+  --orange-yellow-crayola: hsla(43, 61%, 16%, 0.527); /* Very light yellow */
+  --vegas-gold: hsl(45, 35%, 37%);
+  --light-gray: hsl(323, 100%, 15%); /* Light gray */
+  --light-gray-70: hsla(330, 100%, 17%, 0.813);
+  --bittersweet-shimmer: hsl(45, 63%, 26%); /* Light orange */
+
+  /* shadow */
+  --shadow-1: -4px 8px 24px hsla(106, 58%, 84%, 0.249);
+  --shadow-2: 0 16px 30px hsla(0, 0%, 100%, 0.25);
+  --shadow-3: 0 16px 40px hsla(66, 56%, 78%, 0.123);
+  --shadow-4: 0 25px 50px hsla(0, 0%, 100%, 0.15);
+  --shadow-5: 0 24px 80px hsla(0, 0%, 100%, 0.25);
+}
+
+:root.dark {
+
+  --icon-fill: #ffa500; /* Adjust the color for dark mode */
+  --icon-fill-hover: #f0c542; /* Adjust the color for dark mode */
+  --eerie-black-3: hsl(97, 33%, 77%);
+
+--bg-gradient-onyx: linear-gradient(
+  to bottom right, 
+  hsl(240, 1%, 25%) 3%, 
+  hsl(0, 0%, 19%) 97%
+);
+--bg-gradient-jet: linear-gradient(
+  to bottom right, 
+  hsla(240, 1%, 18%, 0.251) 0%, 
+  hsla(240, 2%, 11%, 0) 100%
+), hsl(240, 2%, 13%);
+--bg-gradient-yellow-1: linear-gradient(
+  to bottom right, 
+  hsl(45, 100%, 71%) 0%, 
+  hsla(36, 100%, 69%, 0) 50%
+);
+--bg-gradient-yellow-2: linear-gradient(
+  135deg, 
+  hsla(45, 100%, 71%, 0.251) 0%, 
+  hsla(35, 100%, 68%, 0) 59.86%
+), hsl(240, 2%, 13%);
+--border-gradient-onyx: linear-gradient(
+  to bottom right, 
+  hsl(0, 0%, 25%) 0%, 
+  hsla(0, 0%, 25%, 0) 50%
+);
+--text-gradient-yellow: linear-gradient(
+  to right, 
+  hsl(45, 100%, 72%), 
+  hsl(35, 100%, 68%)
+);
+
+/* solid */
+--jet: hsl(0, 0%, 22%);
+--onyx: hsl(240, 1%, 17%);
+--eerie-black-1: hsl(240, 2%, 13%);
+--eerie-black-2: hsl(240, 2%, 12%);
+--smoky-black: linear-gradient(
+  135deg, 
+  hsla(24, 97%, 23%, 0.123) 0%, 
+  hsla(35, 100%, 68%, 0) 59.86%
+), hsl(240, 2%, 13%);
+--white-1: hsl(0, 0%, 100%);
+--white-2: hsl(0, 0%, 98%);
+--orange-yellow-crayola: hsl(45, 100%, 72%);
+--vegas-gold: hsl(45, 54%, 58%);
+--light-gray: hsl(0, 0%, 84%);
+--light-gray-70: hsla(0, 0%, 84%, 0.7);
+--bittersweet-shimmer: hsl(0, 43%, 51%);
+
+/**
+ * shadow
+ */
+
+ --shadow-1: -4px 8px 24px hsla(0, 0%, 0%, 0.25);
+ --shadow-2: 0 16px 30px hsla(0, 0%, 0%, 0.25);
+ --shadow-3: 0 16px 40px hsla(0, 0%, 0%, 0.25);
+ --shadow-4: 0 25px 50px hsla(0, 0%, 0%, 0.15);
+ --shadow-5: 0 24px 80px hsla(0, 0%, 0%, 0.25);
+
+}
+ 
+
+.preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(43, 39, 39, 0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(20px);
+  transition: opacity 0.5s cubic-bezier(0.215, 0.61, 0.355, 1), backdrop-filter 1s cubic-bezier(0.215, 0.61, 0.355, 1);
+  opacity: 1;
+}
+
+
+
+/* Toggle button style */
+.theme-toggle {
+  display: inline-flex;
+  background: none;
+  padding: 0;
+  cursor: grabbing;
+  transition: var(--transition-1);
+  position: fixed;
+  top: calc(46% - 10px); /* Centered between 10px and middle */
+  right: 20px; /* Keep the desired right position */
+  transform: translateX(10px);
+  width:auto;
+  z-index: 1000;
+}
+
+/* Sun and moon icon styles */
+.sun-and-moon > .sun,
+.sun-and-moon > .moon {
+  fill: var(--icon-fill);
+  transition: fill var(--transition-1);
+}
+
+.theme-toggle.dark .sun-and-moon > .sun,
+.theme-toggle.light .sun-and-moon > .moon {
+  fill: var(--eerie-black-3);
+}
+
+.sun-and-moon > .sun-beams {
+  stroke: var(--icon-fill);
+  stroke-width: 2px;
+}
+
+
+.theme-toggle.dark .sun-and-moon > .sun-beams,
+.theme-toggle.light .sun-and-moon > .sun-beams {
+  stroke: var(--eerie-black-3);
+}
 
 
 /*-----------------------------------*\
@@ -344,6 +451,61 @@ article.active {
   background: var(--bg-gradient-jet);
   border-radius: inherit;
   z-index: -1;
+}
+
+/* Add your existing styles here */
+
+.switch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--bg-gradient-yellow-2);
+  padding: 8px 12px; /* Adjust padding for better proportions */
+  border-radius: 8px;
+  color: var(--white-2);
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  float: right;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 15px;
+  width: 36px; /* Adjust width for better proportions */
+  height: 20px; /* Adjust height for better proportions */
+  background-color: var(--light-gray);
+  transition: 0.4s;
+  border-radius: 10px; /* Adjust border radius for better proportions */
+  border: 1px solid var(--light-gray);
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  height: 16px; /* Adjust height for better proportions */
+  width: 16px; /* Adjust width for better proportions */
+  top: 2px;
+  left: 2px;
+  background-color: var(--jet);
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--light-gray);
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px); /* Adjust position for better proportions */
 }
 
 
@@ -588,6 +750,8 @@ main {
   }
 }
 
+
+
 @media (min-width: 1025px) {
   .navbar {
     position: fixed;
@@ -610,7 +774,7 @@ main {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  padding: 0 10px;
+  padding: 0px 40px 0px 0px;
 }
 
 .navbar-link {
@@ -673,7 +837,7 @@ main {
   background: var(--border-gradient-onyx);
   padding: 20px;
   border-radius: 14px;
-  box-shadow: var(--shadow-5);
+  box-shadow: var(--shadow-4);
   z-index: 1;
 }
 
@@ -688,7 +852,7 @@ main {
 
 .service-icon-box { margin-bottom: 10px; }
 
-.service-icon-box img { margin: auto; }
+.service-icon-box img { margin: auto; filter:saturate(90); }
 
 .service-content-box { text-align: center; }
 
@@ -1197,10 +1361,10 @@ main {
 \*-----------------------------------*/
 /* Update the styles for the fetched blog posts */
 .blog-card {
-  background: var(--border-gradient-onyx);
-  border-radius: 16px;
-  box-shadow: 0px 2px 6px rgb(43, 42, 42);
-  margin-bottom: 20px;
+  background: var(--bg-gradient-yellow-2);
+  border-radius: 20px;
+  box-shadow: 3px 3px 2px 2px var(--vegas-gold);
+  margin-bottom: 25px;
 }
 
 .blog-card a {
@@ -1211,7 +1375,7 @@ main {
 .blog-banner-box {
   width: 100%;
   height: 200px;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
 }
 
@@ -1234,11 +1398,11 @@ main {
   margin-bottom: 10px;
   font-size: 24px;
   font-weight: bold;
-  color: #e4e3e8; /* Customize the title color */
+  color: var(--white-2); /* Customize the title color */
 }
 
 .blog-content time {
-  color: #bebdca;
+  color: var(--light-gray);
   font-size: 14px;
 }
 
