@@ -61,12 +61,30 @@ window.addEventListener('load', () => {
   }
 
   requestAnimationFrame(animate);
-
   // Easing function for smoother transition
   function easeInOutQuad(t) {
       return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
 });
+
+const userPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    function setThemeColors() {
+      const lightColor = 'hsla(60, 48%, 95%, 0.589)';
+      const darkColor = 'hsla(24, 97%, 23%, 0.123)';
+      const statusBar = document.querySelector('meta[name="theme-color"]');
+      const navigationBar = document.querySelector('.navigation-bar'); // Replace with actual navigation bar class or ID
+
+      if (userPrefersDark) {
+        statusBar.setAttribute('content', darkColor);
+        navigationBar.style.backgroundColor = darkColor;
+      } else {
+        statusBar.setAttribute('content', lightColor);
+        navigationBar.style.backgroundColor = lightColor;
+      }
+    }
+
+    setThemeColors();
 
 
 function loadContent(section) {

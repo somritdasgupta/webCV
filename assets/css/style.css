@@ -1,6 +1,12 @@
 
 :root {
-
+  
+  meta[name="theme-color"] {
+    content: hsla(60, 48%, 95%, 0.589);
+  }
+  .navigation-bar {
+    background-color: hsla(60, 48%, 95%, 0.589);
+  }
 
   --icon-fill: #f0c542; /* Default icon fill color */
   --icon-fill-hover: #ffa500; /* Hovered icon fill color */
