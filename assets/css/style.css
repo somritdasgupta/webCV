@@ -1,12 +1,6 @@
 
 :root {
-  
-  meta[name="theme-color"] {
-    content: hsla(60, 48%, 95%, 0.589);
-  }
-  .navigation-bar {
-    background-color: hsla(60, 48%, 95%, 0.589);
-  }
+
 
   --icon-fill: #f0c542; /* Default icon fill color */
   --icon-fill-hover: #ffa500; /* Hovered icon fill color */
@@ -224,7 +218,7 @@
 
 .sun-and-moon > .sun-beams {
   stroke: var(--icon-fill);
-  stroke-width: 2px;
+  stroke-width: 3px;
 }
 
 
@@ -1757,7 +1751,7 @@ textarea.form-input::-webkit-resizer { display: none; }
 
   .navbar { border-radius: 15px; }
 
-  .navbar-list { gap: 50px; }
+  .navbar-list { gap: 35px; }
 
   .navbar-link { --fs-8: 16px; }
 
@@ -1958,7 +1952,7 @@ textarea.form-input::-webkit-resizer { display: none; }
    * NAVBAR
    */
 
-  .navbar-link { --fs-8: 15px; }
+  .navbar-link { --fs-6: 25px; }
 
   .clients-item { min-width: 20%; gap: 0px; width: 25%; }
 
