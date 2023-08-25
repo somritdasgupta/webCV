@@ -748,7 +748,7 @@ main {
     backdrop-filter: blur(8px); /* Slightly reduced blur */
     -webkit-backdrop-filter: blur(8px);
     border: 2px solid var(--orange-yellow-crayola); /* Slimmer border */
-    border-radius: 14px; /* Slightly rounded corners */
+    border-radius: 25px; /* Slightly rounded corners */
     box-shadow: var(--shadow-4); /* Lighter shadow */
     z-index: 99;
   }
