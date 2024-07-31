@@ -1,5 +1,5 @@
 import Image from "next/image";
-import somritImage from "./blog/assets/images/somritdasgupta.jpg";
+import displayImage from "../contents/images/somritdasgupta.jpg";
 import { BlogPosts } from "./components/posts";
 import Button from "./components/Button";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/solid";
@@ -11,7 +11,7 @@ export default function Page() {
         {/* Text Section */}
         <div className="flex flex-col justify-center lg:pr-8 -ml-[16px]">
           <h1 className="text-3xl font-bold mb-4 tracking-tight">
-            Hey, I'm Somrit 👋
+            hey, I'm Somrit 👋
           </h1>
           <p className="mb-8 tracking-tight">
             I am a person who loves to use technology and build something based
@@ -28,7 +28,7 @@ export default function Page() {
           <div className="relative">
             <div className="w-[220px] h-[220px] border-3.5 border-yellow-600 dark:border-white-50 rounded-full flex items-center justify-center image-container">
               <Image
-                src={somritImage}
+                src={displayImage}
                 alt="Somrit Dasgupta"
                 width={205}
                 height={205}

@@ -1,56 +1,70 @@
-import Link from 'next/link'
-import Image from 'next/image'
-import { MDXRemote } from 'next-mdx-remote/rsc'
-import { highlight } from 'sugar-high'
-import React from 'react'
+import Link from "next/link";
+import Image from "next/image";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import { highlight } from "sugar-high";
+import React from "react";
+import { TweetComponent } from "./tweet";
+import { LiveCode } from "./sandpack";
+
+function Callout(props) {
+  return (
+    <div className="callout-container flex items-center p-4 mb-8 rounded-lg">
+      <div className="emoji-container text-sm mr-3">{props.emoji}</div>
+      <div className="text-container flex-1 text-sm">{props.children}</div>
+    </div>
+  );
+}
 
 function Table({ data }) {
   let headers = data.headers.map((header, index) => (
     <th key={index}>{header}</th>
-  ))
+  ));
   let rows = data.rows.map((row, index) => (
     <tr key={index}>
       {row.map((cell, cellIndex) => (
         <td key={cellIndex}>{cell}</td>
       ))}
     </tr>
-  ))
+  ));
 
   return (
-    <table>
-      <thead>
-        <tr>{headers}</tr>
-      </thead>
-      <tbody>{rows}</tbody>
-    </table>
-  )
+    <div className="table-container">
+      <table>
+        <thead>
+          <tr>{headers}</tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>
+  );
 }
 
-function CustomLink(props) {
-  let href = props.href
 
-  if (href.startsWith('/')) {
+function CustomLink(props) {
+  let href = props.href;
+
+  if (href.startsWith("/")) {
     return (
       <Link href={href} {...props}>
         {props.children}
       </Link>
-    )
+    );
   }
 
-  if (href.startsWith('#')) {
-    return <a {...props} />
+  if (href.startsWith("#")) {
+    return <a {...props} />;
   }
 
-  return <a target="_blank" rel="noopener noreferrer" {...props} />
+  return <a target="_blank" rel="noopener noreferrer" {...props} />;
 }
 
 function RoundedImage(props) {
-  return <Image alt={props.alt} className="rounded-lg" {...props} />
+  return <Image alt={props.alt} className="rounded-lg" {...props} />;
 }
 
 function Code({ children, ...props }) {
-  let codeHTML = highlight(children)
-  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
+  let codeHTML = highlight(children);
+  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />;
 }
 
 function slugify(str) {
@@ -58,36 +72,36 @@ function slugify(str) {
     .toString()
     .toLowerCase()
     .trim() // Remove whitespace from both ends of a string
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/&/g, '-and-') // Replace & with 'and'
-    .replace(/[^\w\-]+/g, '') // Remove all non-word characters except for -
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/&/g, "-and-") // Replace & with 'and'
+    .replace(/[^\w\-]+/g, "") // Remove all non-word characters except for -
+    .replace(/\-\-+/g, "-"); // Replace multiple - with single -
 }
 
 function createHeading(level) {
   const Heading = ({ children }) => {
-    let slug = slugify(children)
+    let slug = slugify(children);
     return React.createElement(
       `h${level}`,
       { id: slug },
       [
-        React.createElement('a', {
+        React.createElement("a", {
           href: `#${slug}`,
           key: `link-${slug}`,
-          className: 'anchor',
+          className: "anchor",
         }),
       ],
       children
-    )
-  }
+    );
+  };
 
-  Heading.displayName = `Heading${level}`
+  Heading.displayName = `Heading${level}`;
 
-  return Heading
+  return Heading;
 }
 
 function Paragraph({ children }) {
-  return <p className="mb-4">{children}</p>
+  return <p className="mb-4">{children}</p>;
 }
 
 function BlockQuote({ children }) {
@@ -95,9 +109,8 @@ function BlockQuote({ children }) {
     <blockquote className="p-2 border-l-4 border-gray-200 pl-4 italic mb-4">
       {children}
     </blockquote>
-  )
+  );
 }
-
 
 let components = {
   h1: createHeading(1),
@@ -106,13 +119,16 @@ let components = {
   h4: createHeading(4),
   h5: createHeading(5),
   h6: createHeading(6),
-  Image: RoundedImage,
-  a: CustomLink,
-  code: Code,
-  Table,
   blockquote: BlockQuote,
   p: Paragraph,
-}
+  Image: RoundedImage,
+  a: CustomLink,
+  Callout,
+  StaticTweet: TweetComponent,
+  code: Code,
+  LiveCode,
+  Table,
+};
 
 export function CustomMDX(props) {
   return (
@@ -120,5 +136,5 @@ export function CustomMDX(props) {
       {...props}
       components={{ ...components, ...(props.components || {}) }}
     />
-  )
+  );
 }

@@ -7,6 +7,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import Footer from './components/footer'
 import { baseUrl } from './sitemap'
+import { SandpackCSS } from './blog/[slug]/sandpack'
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -34,6 +35,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  verification:{
+    google:''
+  }
 }
 
 const cx = (...classes) => classes.filter(Boolean).join(' ')
@@ -54,6 +58,7 @@ export default function RootLayout({
     >
       <head>
         <link rel="icon" href="/favicon.png" type="image/x-icon" />
+        <SandpackCSS />
         <script
           dangerouslySetInnerHTML={{
             __html: `
