@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { getSandpackCssText } from '@codesandbox/sandpack-react';
-import { useServerInsertedHTML } from 'next/navigation';
+import { getSandpackCssText } from "@codesandbox/sandpack-react";
+import { useServerInsertedHTML } from "next/navigation";
 
+// Component to inject Sandpack CSS
 export function SandpackCSS() {
   useServerInsertedHTML(() => {
     return (
@@ -12,5 +13,6 @@ export function SandpackCSS() {
       />
     );
   });
-  return null;
+
+  return null; // This component does not render anything on its own
 }

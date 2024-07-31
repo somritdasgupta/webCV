@@ -1,6 +1,6 @@
 // sandpack-files.ts
 
-export const terminalExample = `
+export const javaCode = `
 import java.util.Scanner;
 
 public class Main {
@@ -14,7 +14,7 @@ public class Main {
 }
 `;
 
-export const basicHtml = `
+export const htmlCode = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,8 +26,26 @@ export const basicHtml = `
 </html>
 `;
 
-export const basicJs = `
+export const jsCode = `
 console.log('Hello, world!');
 const add = (a, b) => a + b;
 console.log('2 + 2 =', add(2, 2));
+`;
+
+export const pythonCode = `
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("World"))
+`;
+
+export const cssCode = `
+body {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+h1 {
+    color: #0070f3;
+}
 `;

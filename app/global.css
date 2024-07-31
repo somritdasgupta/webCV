@@ -32,6 +32,7 @@ body {
   color: #fefefe;
 }
 
+
 /********************/
 /*****GLOBAL CSS*****/
 /********************/
@@ -566,6 +567,8 @@ table tbody tr:nth-child(even) {
 /**********************/
 /****TWEET CARD CSS****/
 /**********************/
+
+
 
 
 /* Hide scrollbars for all Sandpack components */

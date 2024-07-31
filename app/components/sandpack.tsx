@@ -1,59 +1,65 @@
 "use client";
 
-import { Sandpack } from "@codesandbox/sandpack-react";
-import { dracula } from "@codesandbox/sandpack-themes";
-import React, { Suspense } from "react";
+import React, { Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import { terminalExample, basicHtml, basicJs } from "./sandpack-files";
+import { dracula } from "@codesandbox/sandpack-themes";
+import { javaCode, htmlCode, jsCode, pythonCode, cssCode } from "./sandpack-files";
 
-// ErrorBoundary using dynamic import for client-side rendering
-const ErrorBoundaryComponent = dynamic(() => import('../components/ErrorBoundary'), {
-  ssr: false, // Disable server-side rendering for this component
-});
+// Dynamic import of Sandpack for client-side rendering
+const Sandpack = dynamic(() => import('@codesandbox/sandpack-react').then(mod => mod.Sandpack), { ssr: false });
 
-export function LiveCode({ mode }: { mode: 'console' | 'html' | 'js' }) {
-  let files;
-  let layoutMode: 'preview' | 'tests' | 'console' = 'preview';
+interface LiveCodeProps {
+  mode: 'preview' | 'tests' | 'console';
+  fileType: 'java' | 'html' | 'js' | 'python' | 'css';
+}
 
-  if (mode === 'html') {
-    files = {
-      "/index.html": basicHtml,
-    };
-  } else if (mode === 'js') {
-    files = {
-      "/index.js": basicJs,
-    };
-  } else if (mode === 'console') {
-    files = {
-      "/Main.java": terminalExample,
-    };
-    layoutMode = 'console';
+export function LiveCode({ mode, fileType }: LiveCodeProps) {
+  let files: { [key: string]: { code: string; active?: boolean } } = {};
+
+  switch (fileType) {
+    case 'html':
+      files = {
+        "/index.html": { code: htmlCode, active: true },
+      };
+      break;
+    case 'js':
+      files = {
+        "/index.js": { code: jsCode, active: true },
+      };
+      break;
+    case 'java':
+      files = {
+        "/Main.java": { code: javaCode, active: true },
+      };
+      break;
+    case 'python':
+      files = {
+        "/script.py": { code: pythonCode, active: true },
+      };
+      break;
+    case 'css':
+      files = {
+        "/styles.css": { code: cssCode, active: true },
+      };
+      break;
   }
 
   return (
-    <Suspense fallback={null}>
-      <ErrorBoundaryComponent
-        fallback={"Oops, there was an error loading the CodeSandbox."}
-      >
-        <Sandpack
-          theme={dracula}
-          files={files}
-          options={{
-            layout: layoutMode,
-            showNavigator: false,
-            showLineNumbers: true,
-            showTabs: true,
-            closableTabs: true,
-            editorHeight: 350,
-            editorWidthPercentage: 50,
-            classes: {
-              "sp-wrapper": "custom-wrapper",
-              "sp-editor": "custom-editor",
-              "sp-preview": "custom-preview",
-            },
-          }}
-        />
-      </ErrorBoundaryComponent>
+    <Suspense fallback={<div>Loading...</div>}>
+      <Sandpack
+        theme={dracula}
+        files={files}
+        options={{
+          autorun:true,
+          layout: mode,
+          showNavigator: true,
+          showLineNumbers: true,
+          showTabs: true,
+          closableTabs: true,
+          editorHeight: 300,
+          editorWidthPercentage: 50,
+        }}
+      />
     </Suspense>
   );
 }
