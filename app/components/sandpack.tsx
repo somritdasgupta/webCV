@@ -9,53 +9,52 @@ const Sandpack = dynamic(
   { ssr: false }
 );
 
-async function fetchCode(fileName: string) {
+async function fetchFiles(fileNames: string[]): Promise<{ [key: string]: string }> {
   try {
-    const response = await fetch(`/api/code-snippets?file=${fileName}`);
-    if (!response.ok) throw new Error("Failed to fetch file");
-    return await response.text(); // This fetches the exact file... correctly
+    const response = await fetch(`/api/code-snippets?files=${fileNames.join(',')}`);
+    if (!response.ok) throw new Error("Failed to fetch files");
+    return await response.json();
   } catch (error) {
-    console.error(`Error loading file: ${fileName}`, error);
-    return "// Error loading file";
+    console.error("Error loading files", error);
+    return {};
   }
 }
 
 interface LiveCodeProps {
   mode: "preview" | "tests" | "console";
-  fileName: string;
+  fileNames: string[];
   template: SandpackTemplate;
 }
 
-export function LiveCode({ mode, fileName, template }: LiveCodeProps) {
-  const [code, setCode] = useState<string | null>(null);
+export function LiveCode({ mode, fileNames, template }: LiveCodeProps) {
+  const [files, setFiles] = useState<{ [key: string]: { code: string; active?: boolean; readOnly?: boolean; hidden?: boolean } }>({});
 
   useEffect(() => {
-    fetchCode(fileName).then(setCode);
-  }, [fileName]);
-
-  if (code === null) {
-    return <div>Loading...</div>;
-  }
+    fetchFiles(fileNames).then((fileContents) => {
+      const filesConfig = Object.keys(fileContents).reduce((acc, fileName) => {
+        acc[fileName] = { code: fileContents[fileName], active: fileName === fileNames[0] };
+        return acc;
+      }, {} as { [key: string]: { code: string; active?: boolean } });
+      setFiles(filesConfig);
+    });
+  }, [fileNames]);
 
   return (
     <Sandpack
       theme={dracula}
       template={template}
       options={{
+        autoReload: true,
+        autorun: true,
         showNavigator: false,
         layout: mode,
-        showTabs: false,
+        showTabs: true,
         showLineNumbers: true,
         showInlineErrors: true,
         wrapContent: true,
         editorHeight: 320,
       }}
-      files={{
-        [fileName]: {
-          code: code,
-          active: true,
-        },
-      }}
+      files={files}
     />
   );
 }
