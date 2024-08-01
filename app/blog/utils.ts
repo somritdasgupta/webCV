@@ -11,63 +11,72 @@ type Metadata = {
   image?: string;
 };
 
-function parseFrontmatter(fileContent: string) {
-  let frontmatterRegex = /---\s*([\s\S]*?)\s*---/;
-  let match = frontmatterRegex.exec(fileContent);
-  let frontMatterBlock = match![1];
-  let content = fileContent.replace(frontmatterRegex, "").trim();
-  let frontMatterLines = frontMatterBlock.trim().split("\n");
-  let metadata: Partial<Metadata> = {};
+function parseFrontmatter(fileContent: string): { metadata: Metadata; content: string } {
+  const frontmatterRegex = /---\s*([\s\S]*?)\s*---/;
+  const match = frontmatterRegex.exec(fileContent);
+  
+  if (!match) {
+    throw new Error("Front matter not found");
+  }
+
+  const frontMatterBlock = match[1];
+  const content = fileContent.replace(frontmatterRegex, "").trim();
+  const frontMatterLines = frontMatterBlock.trim().split("\n");
+  const metadata: Partial<Metadata> = {};
 
   frontMatterLines.forEach((line) => {
-    let [key, ...valueArr] = line.split(": ");
-    let value = valueArr.join(": ").trim();
-    value = value.replace(/^['"](.*)['"]$/, "$1"); // Remove quotes
+    const [key, ...valueArr] = line.split(": ");
+    const value = valueArr.join(": ").trim().replace(/^['"](.*)['"]$/, "$1");
     metadata[key.trim() as keyof Metadata] = value;
   });
 
   return { metadata: metadata as Metadata, content };
 }
 
-function getMDXFiles(dir) {
-  return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
+function getMDXFiles(dir: string): string[] {
+  try {
+    return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
+  } catch (error) {
+    console.error(`Error reading directory ${dir}:`, error);
+    return [];
+  }
 }
 
-function readMDXFile(filePath) {
-  let rawContent = fs.readFileSync(filePath, "utf-8");
-  return parseFrontmatter(rawContent);
+function readMDXFile(filePath: string): { metadata: Metadata; content: string } {
+  try {
+    const rawContent = fs.readFileSync(filePath, "utf-8");
+    return parseFrontmatter(rawContent);
+  } catch (error) {
+    console.error(`Error reading file ${filePath}:`, error);
+    return { metadata: {} as Metadata, content: "" };
+  }
 }
 
-function getMDXData(dir) {
-  let mdxFiles = getMDXFiles(dir);
+function getMDXData(dir: string): { metadata: Metadata; slug: string; content: string }[] {
+  const mdxFiles = getMDXFiles(dir);
   return mdxFiles.map((file) => {
-    let { metadata, content } = readMDXFile(path.join(dir, file));
-    let slug = path.basename(file, path.extname(file));
-
-    return {
-      metadata,
-      slug,
-      content,
-    };
+    const { metadata, content } = readMDXFile(path.join(dir, file));
+    const slug = path.basename(file, path.extname(file));
+    return { metadata, slug, content };
   });
 }
 
-export function getBlogPosts() {
+export function getBlogPosts(): { metadata: Metadata; slug: string; content: string }[] {
   return getMDXData(path.join(process.cwd(), "contents"));
 }
 
-export function formatDate(date: string, includeRelative = false) {
-  let currentDate = new Date();
+export function formatDate(date: string, includeRelative = false): string {
+  const currentDate = new Date();
+  let formattedDate = "";
+
   if (!date.includes("T")) {
     date = `${date}T00:00:00`;
   }
-  let targetDate = new Date(date);
 
-  let yearsAgo = currentDate.getFullYear() - targetDate.getFullYear();
-  let monthsAgo = currentDate.getMonth() - targetDate.getMonth();
-  let daysAgo = currentDate.getDate() - targetDate.getDate();
-
-  let formattedDate = "";
+  const targetDate = new Date(date);
+  const yearsAgo = currentDate.getFullYear() - targetDate.getFullYear();
+  const monthsAgo = currentDate.getMonth() - targetDate.getMonth();
+  const daysAgo = currentDate.getDate() - targetDate.getDate();
 
   if (yearsAgo > 0) {
     formattedDate = `${yearsAgo}y ago`;
@@ -79,15 +88,11 @@ export function formatDate(date: string, includeRelative = false) {
     formattedDate = "Today";
   }
 
-  let fullDate = targetDate.toLocaleString("en-us", {
+  const fullDate = targetDate.toLocaleString("en-us", {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
 
-  if (!includeRelative) {
-    return fullDate;
-  }
-
-  return `${fullDate} (${formattedDate})`;
+  return includeRelative ? `${fullDate} (${formattedDate})` : fullDate;
 }
