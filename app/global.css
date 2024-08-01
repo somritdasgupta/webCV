@@ -32,7 +32,6 @@ body {
   color: #fefefe;
 }
 
-
 /********************/
 /*****GLOBAL CSS*****/
 /********************/
@@ -297,7 +296,7 @@ nav a {
 
 /* Title Text Wrap */
 .title {
-  text-wrap:stable;
+  text-wrap: stable;
 }
 
 /* Light Text Styling */
@@ -323,7 +322,6 @@ nav a {
 /*****CUSTOM CSS*****/
 /********************/
 
-
 /*******************/
 /*****TABLE CSS*****/
 /*******************/
@@ -337,19 +335,21 @@ table {
 }
 
 /* Header and cell styles */
-table th, table td {
+table th,
+table td {
   padding: 0.6rem;
   padding-top: 0.3rem;
   padding-bottom: 0.3rem;
   text-align: left;
-  border: 0.55px solid var(--light-text-color);
-  border-radius: 0.5rem;
+  border-bottom: 0.5px solid var(--light-text-color);
+  border-top: 0.5px solid var(--light-text-color);
+  border-radius: 0rem;
   font-size: 0.875rem; /* Base font size for larger screens */
 }
 
 /* Header styles */
 table th {
-  font-size: 1rem; /* Slightly larger text for headers */
+  font-size: 0.9rem; /* Slightly larger text for headers */
   background-color: var(--header-bg-color); /* Background color for header */
   color: var(--header-text-color); /* Text color for header */
 }
@@ -360,18 +360,22 @@ table tbody tr:nth-child(odd) {
 }
 
 table tbody tr:nth-child(even) {
-  background-color: var(--row-even-bg-color); /* Background color for even rows */
+  background-color: var(
+    --row-even-bg-color
+  ); /* Background color for even rows */
 }
 
 /* Responsive text size adjustment */
 @media (max-width: 768px) {
-  table th, table td {
+  table th,
+  table td {
     font-size: 0.875rem; /* Smaller text on smaller screens */
   }
 }
 
 @media (max-width: 480px) {
-  table th, table td {
+  table th,
+  table td {
     font-size: 0.7rem; /* Further smaller text for very small screens */
   }
 }
@@ -416,14 +420,18 @@ table tbody tr:nth-child(even) {
 /*****TABLE CSS*****/
 /*******************/
 
-
 /*********************/
 /*****CALLOUT CSS*****/
 /*********************/
 
 /* Light Mode Styles */
 [data-theme="light"] .callout-container {
-  background: rgba(252, 242, 229, 0.8); /* Radiant gradient from top-left to bottom-right */
+  background: rgba(
+    252,
+    242,
+    229,
+    0.8
+  ); /* Radiant gradient from top-left to bottom-right */
   border: 1px solid rgba(223, 205, 180, 0.8); /* Soft border for a warm touch */
   color: var(--text-color); /* Adjust text color to fit the light theme */
   backdrop-filter: blur(6px); /* Slight blur effect for translucency */
@@ -436,7 +444,12 @@ table tbody tr:nth-child(even) {
 
 /* Dark Mode Styles */
 [data-theme="dark"] .callout-container {
-  background: rgba(29, 29, 29, 0.8); /* Dark radiant gradient from top-left to bottom-right */
+  background: rgba(
+    29,
+    29,
+    29,
+    0.8
+  ); /* Dark radiant gradient from top-left to bottom-right */
   border: 1px solid rgba(58, 58, 58, 0.8); /* Darker border for contrast */
   color: var(--text-color); /* Ensure text color is appropriate for dark mode */
   backdrop-filter: blur(8px); /* Slight blur effect for translucency */
@@ -479,28 +492,34 @@ table tbody tr:nth-child(even) {
 /*****CALLOUT CSS*****/
 /*********************/
 
-
 /**********************/
 /****TWEET CARD CSS****/
 /**********************/
 
 /* Light theme (default) */
-.tweet .react-tweet-theme {
+[data-theme="light"] .tweet .react-tweet-theme {
   /* margin is handled by our wrappers */
   --tweet-container-margin: 0;
   --tweet-font-family: inherit;
   --tweet-font-color: inherit;
 
   /* Light colors */
-  --tweet-bg-color: #fff;
+  --tweet-bg-color: rgb(224, 224, 224); /* Use the callout background color */
   --tweet-bg-color-hover: var(--tweet-bg-color);
-  --tweet-color-blue-secondary: theme("colors.gray.600");
-  --tweet-color-blue-secondary-hover: theme("colors.gray.100");
-  --tweet-font-color-secondary: theme("colors.gray.500");
+  --tweet-color-blue-secondary: theme(
+    "colors.gray.600"
+  ); /* Adjusted to match callout */
+  --tweet-color-blue-secondary-hover: theme(
+    "colors.gray.100"
+  ); /* Adjusted to match callout */
+  --tweet-font-color-secondary: theme(
+    "colors.gray.500"
+  ); /* Adjusted to match callout */
+  --tweet-font-color: var(--text-color); /* Match callout text color */
 
   /* Common properties for both themes */
   --tweet-quoted-bg-color-hover: rgba(0, 0, 0, 0.03);
-  --tweet-border: 1px solid rgb(207, 217, 222);
+  --tweet-border: 3px solid rgba(225, 216, 203, 0.8); /* Use the callout border color */
   --tweet-skeleton-gradient: linear-gradient(
     270deg,
     #fafafa,
@@ -524,13 +543,18 @@ table tbody tr:nth-child(even) {
 @media (prefers-color-scheme: dark) {
   .tweet .react-tweet-theme {
     /* Dark theme colors */
-    --tweet-bg-color: #222;
+    --tweet-bg-color: rgb(39, 36, 36); /* Use the callout background color */
     --tweet-bg-color-hover: var(--tweet-bg-color);
     --tweet-quoted-bg-color-hover: rgba(255, 255, 255, 0.03);
-    --tweet-border: 1px solid #333;
-    --tweet-color-blue-secondary: theme("colors.white");
+    --tweet-border: 3px solid rgb(43, 40, 40); /* Use the callout border color */
+    --tweet-color-blue-secondary: theme(
+      "colors.white"
+    ); /* Adjusted to match callout */
     --tweet-color-blue-secondary-hover: #333;
-    --tweet-font-color-secondary: theme("colors.gray.400");
+    --tweet-font-color-secondary: theme(
+      "colors.gray.400"
+    ); /* Adjusted to match callout */
+    --tweet-font-color: var(--text-color); /* Match callout text color */
   }
 }
 
@@ -538,6 +562,7 @@ table tbody tr:nth-child(even) {
 .tweet .react-tweet-theme p {
   font-size: inherit;
   line-height: 1.3rem;
+  color: var(--tweet-font-color); /* Ensure text color matches the callout */
 }
 
 .tweet .react-tweet-theme p a {
@@ -568,8 +593,9 @@ table tbody tr:nth-child(even) {
 /****TWEET CARD CSS****/
 /**********************/
 
-
-
+/********************/
+/****SANDPACK CSS****/
+/********************/
 
 /* Hide scrollbars for all Sandpack components */
 .custom-wrapper {
@@ -589,9 +615,114 @@ table tbody tr:nth-child(even) {
 /* Additional rule to ensure scrollbars are hidden */
 * {
   scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* Internet Explorer and Edge */
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
 }
 
 *::-webkit-scrollbar {
   display: none; /* Chrome, Safari, and Opera */
 }
+
+/********************/
+/****SANDPACK CSS****/
+/********************/
+
+/*************************/
+/****PRO-CON CARDS CSS****/
+/*************************/
+
+/* Parent container for the cards */
+.pro-cons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem; /* Space between cards */
+}
+
+/* Card styling */
+.pros-card,
+.cons-card {
+  flex: 1 1 calc(50% - 0.5rem); /* Each card takes up half of the available width minus gap */
+  border-radius: 0.5rem; /* Slightly rounded corners */
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  border: 2px solid rgba(0, 0, 0, 0.1); /* Subtle border */
+  backdrop-filter: blur(6px); /* Frosted glass effect */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+}
+
+/* Light theme styles */
+[data-theme="light"] .pros-card {
+  border-color: rgba(
+    156,
+    204,
+    101,
+    0.6
+  ); /* Adjusted border color for light mode */
+  background-color: rgba(241, 241, 241, 0.9); /* Lightened background color for light mode */
+}
+
+[data-theme="light"] .cons-card {
+  border-color: rgba(
+    249,
+    124,
+    124,
+    0.6
+  ); /* Adjusted border color for light mode */
+    background-color: rgba(
+    241,
+    241,
+    241,
+    0.9
+  ); /* Lightened background color for light mode */
+}
+
+/* Dark theme styles */
+[data-theme="dark"] .pros-card {
+  border-color: rgba(
+    40,
+    167,
+    69,
+    0.6
+  ); /* Adjusted border color for dark mode */
+  background-color: rgba(
+    33,
+    33,
+    33,
+    0.8
+  ); /* Darkened background color for dark mode */
+}
+
+[data-theme="dark"] .cons-card {
+  border-color: rgba(
+    194,
+    54,
+    54,
+    0.6
+  ); /* Adjusted border color for dark mode */
+  background-color: rgba(
+    33,
+    33,
+    33,
+    0.8
+  ); /* Darkened background color for dark mode */
+}
+
+/* Emoji and text container styling */
+.emoji-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 0.75rem;
+}
+
+.text-container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+/*************************/
+/****PRO-CON CARDS CSS****/
+/*************************/

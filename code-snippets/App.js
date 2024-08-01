@@ -5,9 +5,9 @@ export default function Home({ data }) {
     </div>
   );
 }
-
+  
 export function getServerSideProps() {
   return {
     props: { data: "world" },
-  };
+  }
 }
