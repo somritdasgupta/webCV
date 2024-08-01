@@ -14,7 +14,7 @@ const navItems = {
   },
   '/projects': {
     name: 'projects',
-  },
+  }
 }
 
 export function Navbar() {

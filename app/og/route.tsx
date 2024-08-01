@@ -1,3 +1,4 @@
+import { baseUrl } from 'app/sitemap';
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 
@@ -7,7 +8,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const postTitle = searchParams.get('title');
   const font = fetch(
-    new URL('../../public/fonts/kaisei-tokumin-bold.ttf', import.meta.url)
+    new URL('../../public/kaisei-tokumin-bold.ttf', import.meta.url)
   ).then((res) => res.arrayBuffer());
   const fontData = await font;
 
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
           flexDirection: 'column',
           alignItems: 'flex-start',
           justifyContent: 'center',
-          backgroundImage: 'url(https://leerob.io/og-bg.png)',
+          backgroundImage: `url(${baseUrl}/favicon.png)`,
         }}
       >
         <div

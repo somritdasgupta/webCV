@@ -296,7 +296,7 @@ nav a {
 
 /* Title Text Wrap */
 .title {
-  text-wrap: stable;
+  text-wrap: pretty;
 }
 
 /* Light Text Styling */
@@ -382,7 +382,7 @@ table tbody tr:nth-child(even) {
 
 /* Light Mode Specific Colors */
 [data-theme="light"] {
-  --header-bg-color: #ece3e3; /* Light background color for headers */
+  --header-bg-color: #f1e8e8aa; /* Light background color for headers */
   --header-text-color: var(--text-color); /* Dark text color for headers */
   --row-even-bg-color: #ece3e3; /* Light background color for even rows */
   --row-odd-bg-color: #fffbfb; /* Very light gray background color for odd rows */
@@ -390,9 +390,9 @@ table tbody tr:nth-child(even) {
 
 /* Dark Mode Specific Colors */
 [data-theme="dark"] {
-  --header-bg-color: #202020; /* Dark background color for headers */
+  --header-bg-color: #202020aa; /* Dark background color for headers */
   --header-text-color: var(--text-color); /* Light text color for headers */
-  --row-even-bg-color: #202020; /* Dark background color for even rows */
+  --row-even-bg-color: #2d1c1c; /* Dark background color for even rows */
   --row-odd-bg-color: #181818; /* Slightly lighter dark background color for odd rows */
 }
 
@@ -589,9 +589,20 @@ table tbody tr:nth-child(even) {
   max-height: 250px;
 }
 
+/* Ensure tweet cards take full width on desktop */
+@media (min-width: 1024px) {
+  .tweet .react-tweet-theme {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px; /* Add padding inside the tweet card */
+    box-sizing: border-box; /* Ensure padding is included in the total width */
+  }
+}
+
 /**********************/
 /****TWEET CARD CSS****/
 /**********************/
+
 
 /********************/
 /****SANDPACK CSS****/

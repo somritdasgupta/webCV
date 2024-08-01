@@ -12,17 +12,21 @@ import { SandpackCSS } from './blog/[slug]/sandpack'
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Somrit Dasgupta',
+    default: 'Somrit Dasgupta / Developer x Extraordinaire',
     template: '%s | Somrit Dasgupta',
   },
-  description: "Hey, I'm Somrit. I'm a tech enthusiast who enjoys building applications, exploring new technologies, watching Real Madrid win, and appreciating good jokes.",
+  description: "hey, I'm Somrit | Developer x Extraordinaire",
   openGraph: {
     title: 'Somrit Dasgupta',
-    description: "Hey, I'm Somrit. I'm a tech enthusiast who enjoys building applications, exploring new technologies, watching Real Madrid win, and appreciating good jokes",
+    description: "hey, I'm Somrit | Developer x Extraordinaire",
     url: baseUrl,
     siteName: 'Somrit Dasgupta',
     locale: 'en_US',
     type: 'website',
+  },
+  twitter: {
+    title: 'Somrit Dasgupta',
+    card: 'summary_large_image',
   },
   robots: {
     index: true,
