@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import { promises as fs } from 'fs';  // Use promises API for async operations
+import path from 'path';
 
 type Metadata = {
   category: string;
@@ -11,10 +11,10 @@ type Metadata = {
   image?: string;
 };
 
-function parseFrontmatter(fileContent: string): { metadata: Metadata; content: string } {
+async function parseFrontmatter(fileContent: string): Promise<{ metadata: Metadata; content: string }> {
   const frontmatterRegex = /---\s*([\s\S]*?)\s*---/;
   const match = frontmatterRegex.exec(fileContent);
-  
+
   if (!match) {
     throw new Error("Front matter not found");
   }
@@ -33,18 +33,18 @@ function parseFrontmatter(fileContent: string): { metadata: Metadata; content: s
   return { metadata: metadata as Metadata, content };
 }
 
-function getMDXFiles(dir: string): string[] {
+async function getMDXFiles(dir: string): Promise<string[]> {
   try {
-    return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
+    return (await fs.readdir(dir)).filter((file) => path.extname(file) === ".mdx");
   } catch (error) {
     console.error(`Error reading directory ${dir}:`, error);
     return [];
   }
 }
 
-function readMDXFile(filePath: string): { metadata: Metadata; content: string } {
+async function readMDXFile(filePath: string): Promise<{ metadata: Metadata; content: string }> {
   try {
-    const rawContent = fs.readFileSync(filePath, "utf-8");
+    const rawContent = await fs.readFile(filePath, "utf-8");
     return parseFrontmatter(rawContent);
   } catch (error) {
     console.error(`Error reading file ${filePath}:`, error);
@@ -52,16 +52,16 @@ function readMDXFile(filePath: string): { metadata: Metadata; content: string } 
   }
 }
 
-function getMDXData(dir: string): { metadata: Metadata; slug: string; content: string }[] {
-  const mdxFiles = getMDXFiles(dir);
-  return mdxFiles.map((file) => {
-    const { metadata, content } = readMDXFile(path.join(dir, file));
+async function getMDXData(dir: string): Promise<{ metadata: Metadata; slug: string; content: string }[]> {
+  const mdxFiles = await getMDXFiles(dir);
+  return Promise.all(mdxFiles.map(async (file) => {
+    const { metadata, content } = await readMDXFile(path.join(dir, file));
     const slug = path.basename(file, path.extname(file));
     return { metadata, slug, content };
-  });
+  }));
 }
 
-export function getBlogPosts(): { metadata: Metadata; slug: string; content: string }[] {
+export async function getBlogPosts(): Promise<{ metadata: Metadata; slug: string; content: string }[]> {
   return getMDXData(path.join(process.cwd(), "contents"));
 }
 

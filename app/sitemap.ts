@@ -1,17 +1,28 @@
-import { getBlogPosts } from 'app/blog/utils'
-
-export const baseUrl = 'https://somrit.vercel.app'
-
 export default async function sitemap() {
-  let blogs = getBlogPosts().map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: post.metadata.publishedAt,
-  }))
+  try {
+    const response = await fetch(`${baseUrl}/api/blog-posts`);
 
-  let routes = ['', '/blog', '/projects'].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date().toISOString().split('T')[0],
-  }))
+    if (!response.ok) {
+      throw new Error(`Failed to fetch blog posts: ${response.statusText}`);
+    }
 
-  return [...routes, ...blogs]
+    const blogPosts = await response.json();
+
+    const blogs = blogPosts.map((post: { slug: string; metadata: { publishedAt: string } }) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.metadata.publishedAt,
+    }));
+
+    const routes = ['', '/blog', '/projects'].map((route) => ({
+      url: `${baseUrl}${route}`,
+      lastModified: new Date().toISOString().split('T')[0],
+    }));
+
+    return [...routes, ...blogs];
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    return [];
+  }
 }
+
+export const baseUrl = 'https://somrit.vercel.app';

@@ -5,8 +5,8 @@ interface BlogPostsProps {
   limit?: number;
 }
 
-export function BlogPosts({ limit = Infinity }: BlogPostsProps) {
-  const allBlogs = getBlogPosts();
+export async function BlogPosts({ limit = Infinity }: BlogPostsProps) {
+  const allBlogs = await getBlogPosts();
 
   if (allBlogs.length === 0) {
     return <p>Waiting for the first blog post to hit.</p>;
