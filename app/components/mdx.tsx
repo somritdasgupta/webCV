@@ -5,10 +5,22 @@ import { highlight } from "sugar-high";
 import React from "react";
 import { TweetComponent } from "./tweet";
 import { LiveCode } from "./sandpack";
+import dynamic from "next/dynamic";
+import { FootnoteProvider } from "./FootnoteContext";
+
+// Dynamically import components
+const Footnote = dynamic(
+  () => import("../components/Footnote").then((mod) => mod.Footnote),
+  { ssr: false }
+);
+const FootnoteList = dynamic(
+  () => import("../components/FootnoteList").then((mod) => mod.FootnoteList),
+  { ssr: false }
+);
 
 function Callout(props) {
   return (
-    <div className="callout-container flex items-center p-4 mb-8 rounded-lg">
+    <div className="callout-container flex items-center p-8 mt-2 mb-2 rounded-lg">
       <div className="emoji-container text-sm mr-3">{props.emoji}</div>
       <div className="text-container flex-1 text-sm">{props.children}</div>
     </div>
@@ -40,19 +52,18 @@ function Table({ data }) {
 }
 
 // ProsCard Component
-function ProsCard({ title, pros }) {
+function ProsCard({ pros }) {
   return (
     <div className="pros-card">
-      <span className="font-bold">{`You might use ${title} if...`}</span>
-      <div className="mt-4">
+      <div className="mt-4 ml-4">
         {pros.map((pro) => (
-          <div key={pro} className="flex font-medium items-baseline mb-2">
+          <div key={pro} className="flex font-medium items-baseline mb-4">
             <div className="h-4 w-4 mr-2">
-              <svg className="h-4 w-4 text-emerald-500" viewBox="0 0 24 24">
+              <svg className="h-5 w-4 text-emerald-500" viewBox="0 0 24 24">
                 <g
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
@@ -70,21 +81,23 @@ function ProsCard({ title, pros }) {
 }
 
 // ConsCard Component
-function ConsCard({ title, cons }) {
+function ConsCard({ cons }) {
   return (
     <div className="cons-card">
-      <span className="font-bold">{`You might not use ${title} if...`}</span>
-      <div className="mt-4">
+      <div className="mt-4 ml-4">
         {cons.map((con) => (
-          <div key={con} className="flex font-medium items-baseline mb-2">
+          <div key={con} className="flex font-medium items-baseline mb-4">
             <div className="h-4 w-4 mr-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="h-4 w-4 text-red-500"
-              >
-                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+              <svg className="h-5 w-4 text-red-400" viewBox="0 0 20 20">
+                <g
+                  xmlns="http://www.w3.org/2000/svg"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                </g>
               </svg>
             </div>
             <span>{con}</span>
@@ -96,11 +109,11 @@ function ConsCard({ title, cons }) {
 }
 
 // Container Component
-function ProConsComparison({ prosTitle, pros, consTitle, cons }) {
+function ProConsComparison({ pros, cons }) {
   return (
     <div className="pro-cons-container">
-      <ProsCard title={prosTitle} pros={pros} />
-      <ConsCard title={consTitle} cons={cons} />
+      <ProsCard pros={pros} />
+      <ConsCard cons={cons} />
     </div>
   );
 }
@@ -171,7 +184,7 @@ function Paragraph({ children }) {
 
 function BlockQuote({ children }) {
   return (
-    <blockquote className="p-2 border-l-4 border-gray-200 pl-4 italic mb-4">
+    <blockquote className="p-2 border-l-4 border-gray-400 pl-4 italic mb-4">
       {children}
     </blockquote>
   );
@@ -192,6 +205,8 @@ let components = {
   ProConsComparison,
   a: CustomLink,
   Callout,
+  Footnote,
+  FootnoteList,
   StaticTweet: TweetComponent,
   code: Code,
   LiveCode,
@@ -200,9 +215,11 @@ let components = {
 
 export function CustomMDX(props) {
   return (
-    <MDXRemote
-      {...props}
-      components={{ ...components, ...(props.components || {}) }}
-    />
+    <FootnoteProvider>
+      <MDXRemote
+        {...props}
+        components={{ ...components, ...(props.components || {}) }}
+      />
+    </FootnoteProvider>
   );
 }

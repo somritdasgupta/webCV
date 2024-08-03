@@ -5,7 +5,7 @@ import ProjectsPage from "./projectsPage";
 
 // Server-side metadata wrapper
 export const metadata = {
-  title: "Projects",
+  title: 'Projects',
   description: "Projects | by Somrit Dasgupta",
 };
 

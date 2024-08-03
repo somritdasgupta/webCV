@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CommandLineIcon } from "@heroicons/react/24/outline";
+import { CommandLineIcon } from '@heroicons/react/24/outline';
 
 // Client-side component to fetch and display projects
 export default function ProjectsPage() {
@@ -54,12 +54,7 @@ export default function ProjectsPage() {
       </section>
 
       <button className="px-4 py-2 shadow-lg rounded-full mb-8 flex items-center text-black">
-        <a
-          href="/Resume.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center"
-        >
+        <a href="/Resume.pdf" download className="flex items-center">
           Get Resume
         </a>
       </button>

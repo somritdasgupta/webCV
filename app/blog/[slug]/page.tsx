@@ -2,8 +2,16 @@ import { notFound } from 'next/navigation';
 import { CustomMDX } from 'app/components/mdx';
 import { formatDate, getBlogPosts } from 'app/blog/utils';
 import Button from 'app/components/Button';
+import dynamic from 'next/dynamic';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://somrit.vercel.app'; // Ensure this is defined in your .env.local
+// Ensure the base URL is correctly defined in your .env.local
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://somrit.vercel.app';
+
+// Dynamically import components with client-side rendering
+const FootnoteProvider = dynamic(() => import('../../components/FootnoteContext').then(mod => mod.FootnoteProvider), { ssr: false });
+const Footnote = dynamic(() => import('../../components/Footnote').then(mod => mod.Footnote), { ssr: false });
+const FootnoteList = dynamic(() => import('../../components/FootnoteList').then(mod => mod.FootnoteList), { ssr: false });
+
 
 export async function generateStaticParams() {
   const posts = await getBlogPosts();
@@ -87,9 +95,12 @@ export default async function Blog({ params }: { params: { slug: string } }) {
           {formatDate(post.metadata.publishedAt)}
         </p>
       </div>
-      <article className="prose">
-        <CustomMDX source={post.content} />
-      </article>
+      <FootnoteProvider>
+        <article className="prose">
+          <CustomMDX source={post.content} />
+          {/* Ensure footnotes are properly added in the content */}
+        </article>
+      </FootnoteProvider>
       <Button href="/blog" text="Back to posts" icon="left" />
     </section>
   );
