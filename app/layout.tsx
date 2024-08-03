@@ -61,6 +61,7 @@ export default function RootLayout({
       )}
     >
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="icon" href="/og.png" type="image/png" />
         <SandpackCSS />
@@ -97,7 +98,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
-          <Analytics />
+          <Analytics debug={false} mode={'production'} />
           <SpeedInsights />
         </main>
       </body>
