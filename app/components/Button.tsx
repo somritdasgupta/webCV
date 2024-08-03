@@ -21,7 +21,7 @@ const Button: React.FC<ButtonProps> = ({ href, text, icon }) => {
   return (
     <Link
       href={href}
-      className="inline-flex items-center mb-4 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
+      className="inline-flex items-center mb-2 text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
     >
       {icon === 'left' && IconComponent}
       {text}

@@ -98,7 +98,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
-          <Analytics debug={false} mode={'production'} />
+          <Analytics />
           <SpeedInsights />
         </main>
       </body>

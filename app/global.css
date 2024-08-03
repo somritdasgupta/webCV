@@ -2,7 +2,14 @@
 
 /* Tailwind Import */
 @import "tailwindcss";
+/* signature.css */
+@import url('https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap');
 
+.font-cursive {
+    font-family: "La Belle Aurore", cursive;
+    font-weight: 600;
+    font-style: normal;
+}
 /********************/
 /*****GLOBAL CSS*****/
 /********************/

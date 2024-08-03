@@ -3,6 +3,7 @@ import { CustomMDX } from 'app/components/mdx';
 import { formatDate, getBlogPosts } from 'app/blog/utils';
 import Button from 'app/components/Button';
 import dynamic from 'next/dynamic';
+import Signature from 'app/components/signature';
 
 // Ensure the base URL is correctly defined in your .env.local
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://somrit.vercel.app';
@@ -101,6 +102,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
           {/* Ensure footnotes are properly added in the content */}
         </article>
       </FootnoteProvider>
+      <Signature/>
       <Button href="/blog" text="Back to posts" icon="left" />
     </section>
   );
