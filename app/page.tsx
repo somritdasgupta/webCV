@@ -46,7 +46,7 @@ export default function Page() {
           <ArrowTrendingUpIcon className="w-5 h-5 mb-1 mx-2 my-2 dark:text-color transition-colors" />
         </h2>
         <BlogPosts limit={4} /> {/* Shows only my 4 recent blog posts */}
-        <Button href="/blog" text="All posts" icon="right" />
+        <Button href="/blog" text="Read more" icon="right" />
       </div>
     </section>
   );

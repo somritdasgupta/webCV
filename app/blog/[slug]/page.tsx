@@ -103,7 +103,6 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         </article>
       </FootnoteProvider>
       <Signature/>
-      <Button href="/blog" text="Back to posts" icon="left" />
     </section>
   );
 }
