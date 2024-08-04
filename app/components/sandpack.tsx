@@ -2,16 +2,20 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { SandpackTemplate } from "./types/sandpack";
-import { dracula } from "@codesandbox/sandpack-themes";
+import { cobalt2, dracula } from "@codesandbox/sandpack-themes";
 
 const Sandpack = dynamic(
   () => import("@codesandbox/sandpack-react").then((mod) => mod.Sandpack),
   { ssr: false }
 );
 
-async function fetchFiles(fileNames: string[]): Promise<{ [key: string]: string }> {
+async function fetchFiles(
+  fileNames: string[]
+): Promise<{ [key: string]: string }> {
   try {
-    const response = await fetch(`/api/code-snippets?files=${fileNames.join(',')}`);
+    const response = await fetch(
+      `/api/code-snippets?files=${fileNames.join(",")}`
+    );
     if (!response.ok) throw new Error("Failed to fetch files");
     return await response.json();
   } catch (error) {
@@ -27,12 +31,22 @@ interface LiveCodeProps {
 }
 
 export function LiveCode({ mode, fileNames, template }: LiveCodeProps) {
-  const [files, setFiles] = useState<{ [key: string]: { code: string; active?: boolean; readOnly?: boolean; hidden?: boolean } }>({});
+  const [files, setFiles] = useState<{
+    [key: string]: {
+      code: string;
+      active?: boolean;
+      readOnly?: boolean;
+      hidden?: boolean;
+    };
+  }>({});
 
   useEffect(() => {
     fetchFiles(fileNames).then((fileContents) => {
       const filesConfig = Object.keys(fileContents).reduce((acc, fileName) => {
-        acc[fileName] = { code: fileContents[fileName], active: fileName === fileNames[0] };
+        acc[fileName] = {
+          code: fileContents[fileName],
+          active: fileName === fileNames[0],
+        };
         return acc;
       }, {} as { [key: string]: { code: string; active?: boolean } });
       setFiles(filesConfig);
@@ -40,11 +54,13 @@ export function LiveCode({ mode, fileNames, template }: LiveCodeProps) {
   }, [fileNames]);
 
   return (
+    <div className="rounded-lg overflow-hidden border-3 border-gray-700">
     <Sandpack
-      theme={dracula}
+      theme={cobalt2}
       template={template}
       options={{
-        autoReload: true,
+        recompileMode: "delayed",
+        recompileDelay: 300,
         autorun: true,
         showNavigator: false,
         layout: mode,
@@ -55,6 +71,6 @@ export function LiveCode({ mode, fileNames, template }: LiveCodeProps) {
         editorHeight: 320,
       }}
       files={files}
-    />
+    /></div>
   );
 }

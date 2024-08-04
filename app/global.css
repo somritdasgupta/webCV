@@ -90,29 +90,6 @@ body {
 /*****DARK MODE CSS*****/
 /***********************/
 
-/********************/
-/*****BUTTON CSS*****/
-/********************/
-
-/* Button Styles */
-button {
-  background-color: var(--button-crayola-light);
-  color: #ffffff;
-  border: #0056b3;
-  padding: 0.5rem 1rem;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: var(--sh-keyword);
-}
-
-/********************/
-/*****BUTTON CSS*****/
-/********************/
-
 /*******************/
 /*****PROSE CSS*****/
 /*******************/
@@ -314,11 +291,15 @@ nav a {
 /* Custom Classes */
 .custom-topic-pill,
 .custom-skill-pill {
-  @apply bg-blue-500 text-white text-xs px-3 py-1 rounded-full shadow-lg;
+  @apply text-xs px-3 py-1 rounded-lg;
 }
 
 .custom-skill-pill {
-  background-color: #e25e4a; /* Adjust color if needed */
+  background-color: #ec806f3f; 
+}
+
+.custom-topic-pill {
+  background-color: #6169793f;
 }
 
 .icon-white {

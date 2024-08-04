@@ -53,16 +53,14 @@ export default function ProjectsPage() {
         </div>
       </section>
 
-      <button className="px-4 py-2 shadow-lg rounded-full mb-8 flex items-center text-black">
-        <a
-          href="/Resume.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center"
-        >
-          Get Resume
-        </a>
-      </button>
+      <a
+        href="/Resume.pdf"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block px-2 py-2 text-sm font-medium text-white bg-[#ec66523f] rounded-lg mb-6 flex items-center justify-center max-w-[135px] w-full sm:w-auto"
+      >
+        GET RESUME
+      </a>
 
       <section className="mb-6">
         <h1 className="text-3xl font-bold mb-4 tracking-tight">Projects</h1>
