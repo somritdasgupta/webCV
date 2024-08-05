@@ -88,7 +88,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         }}
       />
       <Button href="/blog" text="Back to posts" icon="left" />
-      <h1 className="title font-bold text-3xl">
+      <h1 className="title font-bold text-2xl">
         {post.metadata.title}
       </h1>
       <div className="flex justify-between items-center mt-2 mb-8 text-sm">

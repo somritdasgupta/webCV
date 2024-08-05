@@ -183,11 +183,7 @@ function Paragraph({ children }) {
 }
 
 function BlockQuote({ children }) {
-  return (
-    <blockquote className="p-2 border-l-4 border-gray-400 pl-4 italic mb-4">
-      {children}
-    </blockquote>
-  );
+  return <blockquote className="p-0.5">{children}</blockquote>;
 }
 
 let components = {
@@ -195,8 +191,6 @@ let components = {
   h2: createHeading(2),
   h3: createHeading(3),
   h4: createHeading(4),
-  h5: createHeading(5),
-  h6: createHeading(6),
   blockquote: BlockQuote,
   p: Paragraph,
   Image: RoundedImage,

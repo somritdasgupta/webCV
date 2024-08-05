@@ -1,34 +1,37 @@
 ---
-title: 'Why Zomato Switched from Elasticsearch to ClickHouse'
-publishedAt: '2024-04-28'
-summary: 'How Zomato overcame the limitations of Elasticsearch and optimized their logging system to handle petabyte-scale data with ClickHouse.'
+title: "Why Zomato Switched from Elasticsearch to ClickHouse?"
+publishedAt: "2024-04-28"
+summary: "How Zomato overcame the limitations of Elasticsearch and optimized their logging system to handle petabyte-scale data with ClickHouse."
 ---
+
 ![Zomato Scaling](https://zomatoblog.com/wp-content/uploads/2023/04/blog_header_db.png)
 
-**Table of Contents**
+### **Table of Contents**
+
 1. [Introduction](#introduction)
 2. [Challenges with Elasticsearch](#challenges-with-elasticsearch)
 3. [Why ClickHouse?](#why-clickhouse)
 4. [Zomato’s Logging System Architecture](#zomatos-logging-system-architecture)
 5. [Design Decisions and Optimizations](#design-decisions-and-optimizations)
-    1. [Efficient Data Ingestion](#efficient-data-ingestion)
-    2. [Schema Design](#schema-design)
-    3. [Custom SDK for Structured Logging](#custom-sdk-for-structured-logging)
-    4. [Frontend Dashboard](#frontend-dashboard)
-    5. [Replication and Data Management](#replication-and-data-management)
-    6. [Secondary Indexes and Bloom Filters](#secondary-indexes-and-bloom-filters)
+   1. [Efficient Data Ingestion](#efficient-data-ingestion)
+   2. [Schema Design](#schema-design)
+   3. [Custom SDK for Structured Logging](#custom-sdk-for-structured-logging)
+   4. [Frontend Dashboard](#frontend-dashboard)
+   5. [Replication and Data Management](#replication-and-data-management)
+   6. [Secondary Indexes and Bloom Filters](#secondary-indexes-and-bloom-filters)
 6. [System Resilience and Monitoring](#system-resilience-and-monitoring)
-    1. [Ensuring Resiliency](#ensuring-resiliency)
-    2. [Monitoring and Performance Metrics](#monitoring-and-performance-metrics)
-    3. [Security Measures](#security-measures)
+   1. [Ensuring Resiliency](#ensuring-resiliency)
+   2. [Monitoring and Performance Metrics](#monitoring-and-performance-metrics)
+   3. [Security Measures](#security-measures)
 7. [Impact and Results](#impact-and-results)
 8. [Conclusion](#conclusion)
+---
 
 ## Introduction
 
 Zomato, is not only India's biggest palyer in food delivery market but it also south asia's biggest food delivery aggregator, serves millions of users daily, resulting in an enormous volume of log data. With a peak log rate of 150 million events per minute and over 50 terabytes of uncompressed logs generated each day, maintaining efficient and scalable logging infrastructure is paramount. This article explores Zomato's transition from Elasticsearch to ClickHouse for managing their massive logging needs, detailing the challenges faced, the reasons for adopting ClickHouse, and the architectural and design choices that enabled the system's success.
 
-## Challenges with Elasticsearch
+### Challenges with Elasticsearch
 
 Zomato initially relied on Elasticsearch (ELK Stack) for their logging needs. However, as their platform scaled and traffic increased, several issues emerged:
 
@@ -38,7 +41,7 @@ Zomato initially relied on Elasticsearch (ELK Stack) for their logging needs. Ho
 
 3. **Performance Issues:** The performance of Elasticsearch degraded as the data volume grew, resulting in slower query times and increased ingestion lag. Elasticsearch’s performance can be impacted by factors such as query complexity, data volume, and indexing strategy. As the dataset expanded, the system experienced increased latency in search and aggregation queries.
 
-## Why ClickHouse?
+### Why ClickHouse?
 
 To address these challenges, Zomato evaluated several alternatives before settling on ClickHouse. Here’s why ClickHouse emerged as the preferred solution:
 
@@ -50,7 +53,8 @@ To address these challenges, Zomato evaluated several alternatives before settli
 
 4. **Efficient Compression:** ClickHouse employs advanced compression techniques to minimize storage space and enhance I/O efficiency, which is crucial for managing petabyte-scale data. ClickHouse uses algorithms like LZ4 and ZSTD for compression, which significantly reduce the storage footprint while maintaining high performance.
 
-## Zomato’s Logging System Architecture
+### Zomato’s Logging System Architecture
+
 ![Zomato Loggin Sytsem Architecture](https://lh7-us.googleusercontent.com/NL6Y3340UT23f97lPmAV-dhyH6PHBML1hkq3ifyVIDFkIs1WOVxEuivMhS1LbUiVy7bIuWfwsKBilysAc3RSOPtSD6uHm58g49_qvUQTkl_8SlZIlluNcVyOGRlDFUdSImh0CoJ5hFLtImnC5KxkyQY)
 
 ### Log Collection
@@ -58,6 +62,7 @@ To address these challenges, Zomato evaluated several alternatives before settli
 Zomato's logging infrastructure involves several key components:
 
 1. **Filebeat:** Collects logs from Docker containers and EC2 instances. Filebeat is a lightweight shipper that forwards logs to Kafka, ensuring reliable and scalable log collection.
+
 ```
 # Example Filebeat configuration (filebeat.yml)
 filebeat.inputs:
@@ -69,9 +74,11 @@ output.kafka:
   hosts: ["kafka1:9092", "kafka2:9092"]
   topic: "logs"
 ```
+
 2. **Kafka:** Acts as a buffer for log data, ensuring reliable transmission to ClickHouse. Kafka’s distributed log storage and message queuing capabilities provide a fault-tolerant and high-throughput solution for log data streaming.
 
 3. **Custom Golang Workers:** These workers process logs from Kafka and batch them before insertion into ClickHouse. The workers are designed to handle high throughput and perform transformations on log data to prepare it for storage.
+
 ```
 // Example Go code for processing and batching logs
 package main
@@ -94,13 +101,12 @@ func main() {
     }
 }
 ```
+
 ### Data Storage
 
 The log data is stored in ClickHouse, which is scaled to handle Zomato's requirements. Initially, the system utilized 10 M6g.16xlarge AWS EC2 nodes, but this configuration may evolve based on changing needs. The use of EC2 instances with high memory and compute capabilities ensures that ClickHouse can handle large volumes of data efficiently.
 
-![ClickHouse Buckets](
-https://lh6.googleusercontent.com/-q42plmXWjIfx61IuQbqQKWMkfCgEzid0eZ-eAzMdhW167bYFdCnZdg7VC8F5-qOBz83udtg_NYtPOKXURxv1roj4CATYQuRgeUyNRqAxH4MXFdU4vrCXXLwcdxu7pAYo3QxC1U5NQQYhnxFZmALcMk
-)
+![ClickHouse Buckets](https://lh6.googleusercontent.com/-q42plmXWjIfx61IuQbqQKWMkfCgEzid0eZ-eAzMdhW167bYFdCnZdg7VC8F5-qOBz83udtg_NYtPOKXURxv1roj4CATYQuRgeUyNRqAxH4MXFdU4vrCXXLwcdxu7pAYo3QxC1U5NQQYhnxFZmALcMk)
 
 ### UI Application
 
@@ -111,13 +117,14 @@ A custom dashboard was developed for viewing and filtering logs. This dashboard 
 
 The dashboard utilizes modern web technologies and performance optimization techniques to ensure a responsive user experience. Features like lazy loading and efficient data fetching contribute to the dashboard’s fast load times.
 
-## Design Decisions and Optimizations
+### Design Decisions and Optimizations
 
 ### Efficient Data Ingestion
 
 1. **Batch Processing:** Instead of using ClickHouse Kafka plugins, Zomato opted for custom Golang workers to batch log entries. Each batch contains up to 20,000 entries, reducing the overhead on ClickHouse and maintaining a lag of less than 5 seconds. Batch processing minimizes the number of write operations and optimizes the use of system resources.
 
 2. **Native Format Insertion:** Data is inserted using ClickHouse’s native format, resulting in a performance boost and reduced I/O intensity compared to HTTP-based insertion. Native format insertion leverages ClickHouse’s optimized binary protocols for efficient data transfer.
+
 ```-- Create a table for logs
 CREATE TABLE IF NOT EXISTS logs (
     timestamp DateTime,
@@ -134,7 +141,9 @@ INSERT INTO logs (timestamp, message, level) VALUES
 ('2024-07-29 12:02:00', 'User logged out', 'INFO'),
 ('2024-07-29 12:03:00', 'System update completed', 'INFO');
 ```
+
 3. **Round-Robin Load Distribution:** Workers use a round-robin strategy to distribute load evenly across ClickHouse nodes, ensuring efficient data handling and redundancy. This approach helps balance the load and prevent bottlenecks in the system.
+
 ```
 // Pseudo-code for round-robin distribution
 nodes := []string{"node1", "node2", "node3"} // List of ClickHouse nodes
@@ -143,7 +152,7 @@ currentNode := 0
 for _, logEntry := range logEntries {
     node := nodes[currentNode]
     currentNode = (currentNode + 1) % len(nodes)
-    
+
     // Insert data into the selected node
     insertIntoNode(node, logEntry)
 }
@@ -152,11 +161,13 @@ func insertIntoNode(node string, logEntry LogEntry) {
     // Function to insert logEntry into the specified node
 }
 ```
+
 ### Schema Design
 
 1. **Semi-Structured Tables:** Logs are stored in tables with common columns at the top level and other fields in a `Map<String, String>`. This design allows for flexible querying and efficient storage. The semi-structured approach facilitates easy adaptation to varying log formats and structures.
 
 2. **Compression Optimization:** The schema uses special codecs and `LowCardinality` strings to enhance compression ratios and reduce storage requirements. Compression codecs such as Delta, Gorilla, and LZ4 are employed to achieve high compression rates.
+
 ```
 -- Example schema with semi-structured tables and compression optimization
 CREATE TABLE logs
@@ -168,6 +179,7 @@ CREATE TABLE logs
 PARTITION BY toYYYYMM(timestamp)
 ORDER BY (timestamp);
 ```
+
 3. **Custom SDK:** Zomato developed an SDK to enforce structured logging practices, standardizing top-level fields to simplify log management and improve query efficiency. The SDK provides tools for consistent log formatting and integration with ClickHouse.
 
 ### Frontend Dashboard
@@ -187,6 +199,7 @@ The custom dashboard for log management includes:
 2. **Data Tiering:** Implements TTL to move older data to cold storage and deletes data after 3 months. This approach helps manage storage costs and maintains system performance. Data tiering ensures that only recent and relevant data is kept in hot storage.
 
 ### Secondary Indexes and Bloom Filters
+
 ```
 -- Example of Bloom filter usage for optimizing query performance
 CREATE TABLE logs
@@ -205,7 +218,7 @@ INDEX idx_level (level) TYPE bloom_filter(0.1);
 
 2. **Bloom Filters:** Used to quickly determine if a query might match a set of records, reducing unnecessary data reads. Bloom filters are probabilistic data structures that help in reducing the number of I/O operations.
 
-## System Resilience and Monitoring
+### System Resilience and Monitoring
 
 ### Ensuring Resiliency
 
@@ -223,7 +236,7 @@ INDEX idx_level (level) TYPE bloom_filter(0.1);
 
 1. **Authentication and Access Control:** Implements Google Authentication, table-level access control, and query auditing to secure log data and prevent unauthorized access. Google Authentication provides secure and scalable user authentication, while table-level access control ensures that users can only access data they are authorized to view.
 
-## Impact and Results
+### Impact and Results
 
 The migration to ClickHouse brought significant improvements:
 

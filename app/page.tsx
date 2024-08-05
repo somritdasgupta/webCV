@@ -26,7 +26,7 @@ export default function Page() {
         {/* Display Picture */}
         <div className="mb-4 relative flex items-center justify-center lg:justify-end">
           <div className="relative">
-            <div className="w-[220px] h-[220px] border-3.5 border-yellow-600 dark:border-white-50 rounded-full flex items-center justify-center image-container">
+            <div className="w-[220px] h-[220px] border-3.5 border-yellow-600 rounded-full flex items-center justify-center image-container">
               <Image
                 src={displayImage}
                 alt="Somrit Dasgupta"

@@ -3,12 +3,12 @@
 /* Tailwind Import */
 @import "tailwindcss";
 /* signature.css */
-@import url('https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap");
 
 .font-cursive {
-    font-family: "La Belle Aurore", cursive;
-    font-weight: 600;
-    font-style: normal;
+  font-family: "La Belle Aurore", cursive;
+  font-weight: 600;
+  font-style: normal;
 }
 /********************/
 /*****GLOBAL CSS*****/
@@ -79,7 +79,7 @@ body {
   --sh-identifier: rgb(204, 198, 233);
   --sh-keyword: #a1a284;
   --sh-string: #0fa295;
-  --bg-color: #181818;
+  --bg-color: #111111;
   --text-color: #e0e0e0;
   --pill-color: #e0e0e0;
   --light-text-color: #b0b0b0;
@@ -143,11 +143,12 @@ body {
 }
 
 .prose blockquote {
-  @apply border-l-4 border-gray-200 pl-4 italic;
-  margin-top: 1em;
-  margin-bottom: 1em;
+  @apply border-l-2 border-neutral-400 pl-4 italic ml-0.5;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
+.prose p,
 .prose h1,
 .prose h2,
 .prose h3,
@@ -156,19 +157,19 @@ body {
 }
 
 .prose h1 {
-  @apply text-4xl font-medium mt-6 mb-2;
+  @apply text-3xl font-bold mt-6 mb-2;
 }
 
 .prose h2 {
-  @apply text-xl font-medium mt-6 mb-2;
+  @apply text-2xl font-bold mt-6 mb-2;
 }
 
 .prose h3 {
-  @apply text-xl font-medium mt-6 mb-2;
+  @apply text-xl font-bold mt-6 mb-2;
 }
 
 .prose h4 {
-  @apply text-lg font-medium mt-6 mb-2;
+  @apply text-sm font-bold mt-6 mb-2;
 }
 
 .prose ul,
@@ -178,11 +179,11 @@ body {
 }
 
 .prose ul {
-  @apply list-disc pl-6;
+  @apply list-disc pl-4;
 }
 
 .prose ol {
-  @apply list-decimal pl-6;
+  @apply list-decimal pl-4;
 }
 
 .prose > :first-child {
@@ -214,8 +215,6 @@ h1,
 h2,
 h3,
 h4,
-h5,
-h6,
 span,
 div {
   color: var(--text-color);
@@ -247,7 +246,7 @@ div {
 
 .glow-effect:hover {
   transform: scale(1);
-  box-shadow: 0 0 5px rgba(94, 63, 0, 0.2);
+  box-shadow: 0 0 15px rgba(94, 63, 0, 0.2);
 }
 
 /* Image Container */
@@ -295,7 +294,7 @@ nav a {
 }
 
 .custom-skill-pill {
-  background-color: #ec806f3f; 
+  background-color: #ec806f3f;
 }
 
 .custom-topic-pill {
@@ -332,7 +331,7 @@ table td {
   border-bottom: 0.5px solid var(--light-text-color);
   border-top: 0.5px solid var(--light-text-color);
   border-radius: 0rem;
-  font-size: 0.875rem; /* Base font size for larger screens */
+  font-size: 0.87rem; /* Base font size for larger screens */
 }
 
 /* Header styles */
@@ -378,10 +377,10 @@ table tbody tr:nth-child(even) {
 
 /* Dark Mode Specific Colors */
 [data-theme="dark"] {
-  --header-bg-color: #202020aa; /* Dark background color for headers */
+  --header-bg-color: #202020; /* Dark background color for headers */
   --header-text-color: var(--text-color); /* Light text color for headers */
-  --row-even-bg-color: #2d1c1c; /* Dark background color for even rows */
-  --row-odd-bg-color: #181818; /* Slightly lighter dark background color for odd rows */
+  --row-even-bg-color: #161616; /* Dark background color for even rows */
+  --row-odd-bg-color: #111111; /* Slightly lighter dark background color for odd rows */
 }
 
 /* Scroll container */
@@ -414,7 +413,12 @@ table tbody tr:nth-child(even) {
 
 /* Light Mode Styles */
 [data-theme="light"] .callout-container {
-  background: rgba(252, 242, 229, 0.952); /* Radiant gradient from top-left to bottom-right */
+  background: rgba(
+    252,
+    242,
+    229,
+    0.952
+  ); /* Radiant gradient from top-left to bottom-right */
   border: 1px solid rgba(223, 205, 180, 0.8); /* Soft border for a warm touch */
   color: var(--text-color); /* Adjust text color to fit the light theme */
   backdrop-filter: blur(8px); /* Slight blur effect for translucency */

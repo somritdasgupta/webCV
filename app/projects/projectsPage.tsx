@@ -57,7 +57,7 @@ export default function ProjectsPage() {
         href="/Resume.pdf"
         target="_blank"
         rel="noopener noreferrer"
-        className="block px-2 py-2 text-sm font-medium text-white bg-[#ec66523f] rounded-lg mb-6 flex items-center justify-center max-w-[135px] w-full sm:w-auto"
+        className="block px-2 py-2 text-sm font-medium text-white bg-[#ec66524f] rounded-lg mb-6 flex items-center justify-center max-w-[110px] w-full sm:w-auto tracking-tight"
       >
         GET RESUME
       </a>
@@ -69,7 +69,7 @@ export default function ProjectsPage() {
           {repos.map((repo: any) => (
             <div key={repo.id} className="flex items-start lg:items-center">
               <div className="flex-1">
-                <h3 className="text-xl font-medium">{repo.name}</h3>
+                <h3 className="text-xl font-bold">{repo.name}</h3>
                 <p className="text-gray-400 mb-2">{repo.description}</p>
                 <a
                   href={repo.html_url}
