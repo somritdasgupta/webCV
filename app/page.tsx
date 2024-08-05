@@ -15,10 +15,10 @@ export default function Page() {
           </h1>
           <p className="mb-8 tracking-tight">
             I am a person who loves to use technology and build something based
-            on technology. Currently, I am learning more about Docker and cloud
-            technologies using generative AI. Though I hold a Bachelor's in
-            Computer Science & Engineering, outside of coding, I'm a fan of
-            football, to be specific an avid Real Madrid fanboy. Also, who
+            on technology. Currently, I am learning more about docker and cloud
+            technologies using generative AI. Though I hold a bachelor's in
+            computer science & engineering, outside of coding, I'm a fan of
+            football, to be specific an avid real madrid fanboy. Also, who
             doesn't love good jokes and memes?
           </p>
         </div>
