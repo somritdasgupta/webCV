@@ -290,15 +290,20 @@ nav a {
 /* Custom Classes */
 .custom-topic-pill,
 .custom-skill-pill {
-  @apply text-xs px-3 py-1 rounded-lg;
+  @apply text-xs px-3 py-1 rounded-lg cursor-pointer;
 }
 
 .custom-skill-pill {
-  background-color: #ec806f3f;
+  @apply text-xs px-3 py-1 rounded-lg;
+  background-color: #ec806f3f !important;
 }
 
 .custom-topic-pill {
   background-color: #6169793f;
+  white-space: nowrap;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  display: inline-flex;
 }
 
 .icon-white {

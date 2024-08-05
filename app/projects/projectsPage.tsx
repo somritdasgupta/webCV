@@ -104,6 +104,7 @@ export default function ProjectsPage() {
           <span className="custom-skill-pill">rest-api</span>
           <span className="custom-skill-pill">sql</span>
           <span className="custom-skill-pill">cloud technologies</span>
+          <span className="custom-skill-pill">web technologies</span>
           <span className="custom-skill-pill">javaScript</span>
           <span className="custom-skill-pill">typeScript</span>
         </div>

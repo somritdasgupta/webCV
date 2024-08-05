@@ -1,7 +1,7 @@
 // app/json/routes.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import { baseUrl } from "app/sitemap";
-import { getBlogPosts } from "app/blog/utils";
+import { getBlogPosts } from "app/blog/getBlogPosts";
 
 interface Metadata {
   publishedAt: string;
@@ -15,6 +15,7 @@ interface Metadata {
     length: number;
     type: string;
   };
+  tags?: string[];
 }
 
 interface Post {
@@ -46,6 +47,7 @@ export async function GET() {
         title: post.metadata.title,
         url: `${baseUrl}/blog/${post.slug}`,
         date_published: new Date(post.metadata.publishedAt).toISOString(),
+        tags: post.metadata.tags || [], // Moved up
         content_text: post.content || "",
         content_html: post.content ? `<p>${post.content}</p>` : "",
         summary: post.metadata.summary || "",
@@ -62,7 +64,6 @@ export async function GET() {
         authors: post.metadata.author
           ? [{ name: post.metadata.author }]
           : undefined,
-        tags: post.metadata.category ? [post.metadata.category] : undefined,
       })),
   };
 

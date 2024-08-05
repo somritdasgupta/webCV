@@ -1,5 +1,5 @@
+import { getBlogPosts } from "app/blog/getBlogPosts";
 import { baseUrl } from "app/sitemap";
-import { getBlogPosts } from "app/blog/utils";
 
 interface Metadata {
   publishedAt: string;
@@ -13,6 +13,7 @@ interface Metadata {
     length: number;
     type: string;
   };
+  tags?: string[]; // Added tags
 }
 
 interface Post {
@@ -71,6 +72,9 @@ export async function GET() {
                 post.metadata.enclosure.type
               )}" />`
             : "";
+          const tags = post.metadata.tags
+            ? `<category>${post.metadata.tags.join(", ")}</category>` // Tags in RSS feed
+            : "";
 
           return `<item>
             <title>${title}</title>
@@ -80,6 +84,7 @@ export async function GET() {
             <guid>${guid}</guid>
             ${category}
             ${author}
+            ${tags}
             ${content}
             ${image}
             ${enclosure}
@@ -110,6 +115,11 @@ export async function GET() {
         const updated = new Date(post.metadata.publishedAt).toISOString();
         const summary = escapeXml(post.metadata.summary || "");
         const content = escapeXml(post.content || "");
+        const tags = post.metadata.tags
+          ? post.metadata.tags
+              .map((tag) => `<category>${escapeXml(tag)}</category>`)
+              .join("") // Tags in Atom feed
+          : "";
 
         return `<entry>
           <title>${title}</title>
@@ -118,6 +128,7 @@ export async function GET() {
           <updated>${updated}</updated>
           <summary>${summary}</summary>
           <content type="html">${content}</content>
+          ${tags}
         </entry>`;
       })
       .join("")}
