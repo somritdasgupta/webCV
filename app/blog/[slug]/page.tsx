@@ -5,6 +5,7 @@ import Button from "app/components/Button";
 import dynamic from "next/dynamic";
 import Signature from "app/components/signature";
 import { getBlogPosts } from "../getBlogPosts";
+import RelatedPosts from "app/components/RelatedPosts"; // Update this path if necessary
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://somrit.vercel.app";
 
@@ -120,9 +121,9 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       </div>
       {post.metadata.tags && (
         <div className="flex flex-wrap gap-2 mb-4">
-          {post.metadata.tags.map((tags) => (
-            <span key={tags} className="custom-topic-pill">
-              {tags}
+          {post.metadata.tags.map((tag) => (
+            <span key={tag} className="custom-topic-pill">
+              {tag}
             </span>
           ))}
         </div>
@@ -131,6 +132,11 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         <CustomMDX source={post.content} />
       </article>
       <Signature />
+      <RelatedPosts
+        currentPostTags={post.metadata.tags || []}
+        allPosts={posts}
+        currentPostSlug={post.slug}
+      />
     </section>
   );
 }
