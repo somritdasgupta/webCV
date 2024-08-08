@@ -131,12 +131,20 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       <article className="prose">
         <CustomMDX source={post.content} />
       </article>
+<<<<<<< HEAD
       <Signature />
+=======
+
+>>>>>>> dev
       <RelatedPosts
         currentPostTags={post.metadata.tags || []}
         allPosts={posts}
         currentPostSlug={post.slug}
       />
+<<<<<<< HEAD
+=======
+      <Signature />
+>>>>>>> dev
     </section>
   );
 }

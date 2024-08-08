@@ -793,7 +793,10 @@ table tbody tr:nth-child(even) {
 }
 
 .footnote-container {
+<<<<<<< HEAD
   padding-bottom: 0.5rem;
+=======
+>>>>>>> dev
   border-top: 1px solid #5f5f5fd3;
 }
 
