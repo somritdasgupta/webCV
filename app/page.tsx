@@ -40,13 +40,8 @@ export default function Page() {
       </div>
 
       {/* Blog Posts */}
-<<<<<<< HEAD
-      <div className="mb-2 my-6 -ml-[16px]">
-        <h2 className="text-2xl font-bold mb-4 tracking-tight flex items-center">
-=======
       <div className="mb-4 my-6 -ml-[16px]">
         <h2 className="text-2xl font-bold mb-6 tracking-tight flex items-center">
->>>>>>> dev
           Recent posts{" "}
           <ArrowTrendingUpIcon className="w-5 h-5 mb-1 mx-2 my-2 dark:text-color transition-colors" />
         </h2>
