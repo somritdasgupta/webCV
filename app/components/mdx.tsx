@@ -186,12 +186,24 @@ function BlockQuote({ children }) {
   return <blockquote className="p-0.5">{children}</blockquote>;
 }
 
+function Iframe(props) {
+  return (
+    <iframe
+      src={props.src}
+      loading="lazy"
+      style={props.style}
+      allow="web-share; clipboard-write"
+      frameBorder="0"
+    />
+  );
+}
+
 let components = {
   h1: createHeading(1),
   h2: createHeading(2),
   h3: createHeading(3),
   h4: createHeading(4),
-  blockquote: BlockQuote,
+  BlockQuote,
   p: Paragraph,
   Image: RoundedImage,
   ProsCard,
@@ -205,6 +217,7 @@ let components = {
   code: Code,
   LiveCode,
   Table,
+  Iframe
 };
 
 export function CustomMDX(props) {
