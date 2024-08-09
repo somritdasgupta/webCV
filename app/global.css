@@ -105,6 +105,8 @@ body {
   @apply bg-gray-800 rounded-lg overflow-auto py-2 px-2 text-sm;
   margin-top: 1em;
   margin-bottom: 1em;
+  border-radius: 0.5rem;
+  border: 3px solid rgba(51, 57, 77, 0.500);
 }
 
 /* Inline code styles */
@@ -790,10 +792,6 @@ table tbody tr:nth-child(even) {
   font-size: 0.75rem;
   text-decoration: underline;
   color: #ff8c52;
-}
-
-.footnote-container {
-  border-top: 1px solid #5f5f5fd3;
 }
 
 .footnote-container ol {

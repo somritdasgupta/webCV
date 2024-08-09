@@ -1,11 +1,8 @@
-// components/FootnoteList.tsx
 "use client";
 
 import React from "react";
 import { useFootnotes } from "./FootnoteContext";
-import {
-  ArrowTopRightOnSquareIcon,
-} from "@heroicons/react/24/solid";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 
 export function FootnoteList() {
   const { footnotes } = useFootnotes();
@@ -13,7 +10,7 @@ export function FootnoteList() {
   const sortedFootnotes = Array.from(footnotes.entries())
     .sort(([idA], [idB]) => idA - idB)
     .map(([id, { text, link }]) => (
-      <li key={id} className="footnote-item">
+      <li key={id} className="footnote-item italic">
         <a
           id={`footnote-${id}`}
           className="footnote-ref italic mr-2"
@@ -39,8 +36,11 @@ export function FootnoteList() {
     ));
 
   return (
-    <div id="footnote-list" className="footnote-container footnotes italic">
-      <ul className="list-none p-0">{sortedFootnotes}</ul>
+    <div id="footnote-list" className="footnote-container footnotes">
+      <h3 className="text-xl font-semibold mb-2 border-b-1 border-neutral-600 pb-2">
+        Footnotes
+      </h3>
+      <ul className="list-none p-0 italic">{sortedFootnotes}</ul>
     </div>
   );
 }

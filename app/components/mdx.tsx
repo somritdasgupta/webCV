@@ -8,15 +8,6 @@ import { LiveCode } from "./sandpack";
 import dynamic from "next/dynamic";
 import { FootnoteProvider } from "./FootnoteContext";
 
-// Dynamically import components
-const Footnote = dynamic(
-  () => import("../components/Footnote").then((mod) => mod.Footnote),
-  { ssr: false }
-);
-const FootnoteList = dynamic(
-  () => import("../components/FootnoteList").then((mod) => mod.FootnoteList),
-  { ssr: false }
-);
 
 function Callout(props) {
   return (
@@ -137,8 +128,15 @@ function CustomLink(props) {
 }
 
 function RoundedImage(props) {
-  return <Image alt={props.alt} className="rounded-lg" {...props} />;
+  return (
+    <Image
+      alt={props.alt}
+      className="rounded-lg border-2 border-gray-300 shadow-lg transition-transform transform hover:scale-105"
+      {...props}
+    />
+  );
 }
+
 
 function Code({ children, ...props }) {
   let codeHTML = highlight(children);
@@ -186,30 +184,50 @@ function BlockQuote({ children }) {
   return <blockquote className="p-0.5">{children}</blockquote>;
 }
 
-function Iframe(props) {
+function Iframe({ src }) {
+  const iframeStyle = {
+    width: "100%",
+    height: "600px",
+    borderRadius: "12px", // Slightly larger border radius for a more modern look
+    border: "2px solid #1E90FF", // Brighter blue color
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Adding a subtle shadow for depth
+    display: "block", // Ensures no inline spacing issues
+    margin: "0 auto", // Centers the iframe horizontally
+  };
+
   return (
     <iframe
-      src={props.src}
+      src={src}
       loading="lazy"
-      style={props.style}
+      style={iframeStyle}
       allow="web-share; clipboard-write"
-      frameBorder="0"
+      title="Embedded content" // Provides a title for accessibility
     />
   );
 }
 
+// Dynamically import components
+const Footnote = dynamic(
+  () => import("../components/Footnote").then((mod) => mod.Footnote),
+  { ssr: false }
+);
+const FootnoteList = dynamic(
+  () => import("../components/FootnoteList").then((mod) => mod.FootnoteList),
+  { ssr: false }
+);
+
 let components = {
+  Image: RoundedImage,
   h1: createHeading(1),
   h2: createHeading(2),
   h3: createHeading(3),
   h4: createHeading(4),
-  BlockQuote,
   p: Paragraph,
-  Image: RoundedImage,
   ProsCard,
   ConsCard,
   ProConsComparison,
   a: CustomLink,
+  BlockQuote,
   Callout,
   Footnote,
   FootnoteList,
