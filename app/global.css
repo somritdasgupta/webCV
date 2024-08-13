@@ -224,6 +224,7 @@ div {
   color: var(--text-color);
   text-wrap: pretty;
   text-rendering: geometricPrecision;
+  overflow-wrap: break-word;
 }
 
 /*******************/

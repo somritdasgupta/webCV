@@ -49,7 +49,7 @@ export default function Page() {
       <div className="flex flex-col lg:flex-row lg:gap-24 items-start">
         {/* Profile Section */}
         <div className="flex-none lg:w-1/4 flex flex-col items-center lg:items-start">
-          <div className="relative mb-14 bg-transparent">
+          <div className="relative mb-12 bg-transparent">
             <Image
               src={displayImage}
               alt="Somrit Dasgupta"
@@ -58,23 +58,23 @@ export default function Page() {
               className="rounded-full shadow-lg"
             />
           </div>
-
           <div className="w-full mb-8 lg:hidden">
-            <h1 className="text-3xl font-bold mb-4 tracking-tight text-center lg:text-left">
+            <h1 className="text-3xl font-bold mb-8 tracking-tight text-center lg:text-left">
               hey, I'm Somrit 👋
             </h1>
-            <p className="text-gray-300 mb-4">
-              I'm an engineer passionate about using technology to build
-              innovative solutions. With a background in computer science &
-              engineering, I specialize in frontend development and backend
-              integration. Currently, I'm expanding my skills in docker and
-              cloud technologies, leveraging generative AI to enhance my
-              learning process.
+            <p className="text-gray-300 mt-4 mb-4 tracking-tight">
+              I’m an engineer and likes to work and experiment with modern
+              technologies. I have experience with frontend development as well
+              as integrating the backend solutions. I’m also experimenting on
+              how generative AI can simplify development tasks, especially with
+              RAG (Retrieval-Augmented Generation) and till now it seems pretty
+              promising.
             </p>
-            <p className="text-gray-300">
-              Outside of coding, I'm an avid football enthusiast and a devoted
-              Real Madrid fan. I believe in the power of humor and enjoy a good
-              meme as much as a well-written piece of code.
+            <p className="text-gray-300 tracking-tight">
+              Though I hold a bachelor's in computer science & engineering,
+              outside of all technical stuffs, I'm a fan of football, to be
+              specific an avid real madrid fanboy. Also, who doesn't love good
+              jokes and memes?
             </p>
           </div>
 
@@ -142,7 +142,7 @@ export default function Page() {
             </p>
           </div>
           <div>
-            <h2 className="text-2xl font-bold mb-2 lg:mb-4 flex items-center">
+            <h2 className="text-2xl font-bold mb-2 lg:mb-2 flex items-center">
               Recent Posts
               <ArrowTrendingUpIcon className="w-6 h-6 ml-2 text-neutral-500" />
             </h2>
