@@ -1,0 +1,97 @@
+---
+title: "The crowdstrike "fiasco""
+publishedAt: "2024-08-08"
+summary: "CrowdStrike’s disastrous update that caused a global system meltdown"
+tags: [analysis, technology, events]
+---
+
+![BSOD](https://static1.howtogeekimages.com/wordpress/wp-content/uploads/2022/05/frowning-BSOD-Header.png?q=50&fit=crop&w=1100&h=618&dpr=1.5)
+
+### Table of contents
+
+- [The crowdstrike outage](#the-crowdstrike-outage-when-the-digital-world-crashed)
+- [Then experts jump in](#the-experts-jump-in)
+- [Who’s to blame?](#whos-to-blame)
+- [A day that was too blue](#a-day-that-was-too-blue)
+- [What the community is saying](#what=the-crowdsecurity-community-is-saying)
+
+---
+
+_"In the past decade, the internet has surged dramatically, driven notably by the COVID-19 pandemic, which accelerated the shift to remote work, online education, and digital services. Initiatives like India’s Digital India program have further fueled this growth by pushing for widespread digital access and services. Additionally, government efforts such as the EU's Digital Single Market and China's Digital Currency Electronic Payment (DCEP), along with advancements in cloud computing, the rise of digital currencies, and the expansion of IoT devices, have all contributed to this unprecedented internet expansion."_
+
+<Iframe src="https://ourworldindata.org/grapher/number-of-internet-users?tab=map" />
+
+<Callout>
+  **But what if it's down?** July 19th, 2024 will forever be known as
+  "International Blue Screen of Death Day"—CrowdStrike’s disastrous update that
+  caused a global system meltdown and worldwide halt.
+</Callout>
+
+### The crowdstrike outage, when the digital world crashed...
+
+On July 19, 2024, CrowdStrike, a major player in cybersecurity known for its Falcon cloud-based endpoint security, faced a monumental global outage.
+
+> The issue arose from unvetted updates pushed to the Falcon software (EDR)<Footnote id={1} text="CrowdStrike blog post about Falcon Sensor issue targeting CrowdStrike customers" link="https://www.crowdstrike.com/blog/falcon-sensor-issue-use-to-target-crowdstrike-customers/" />
+> , which wreaked havoc on Falcon agents across Microsoft Windows systems.
+
+The result? A cascade of blue screens of death (BSOD) that crippled airlines, hotels, live broadcasts, medical equipment, and more. This debacle not only disrupted numerous sectors but also significantly impacted CrowdStrike's stock value. The chaos unfolded rapidly. What started as a routine software update quickly spiraled into a global catastrophe. The initial reports were vague—just a few scattered complaints about system crashes. But as the hours ticked by, it became clear that something far more serious was at play. Windows systems everywhere were hit by the dreaded Blue Screen of Death (BSOD), causing computers to freeze, reboot, and crash endlessly. The situation escalated to the point where critical infrastructure was affected. Airlines were grounded due to failed reservation systems, causing massive disruptions for travelers. Hospitals faced significant challenges as medical equipment and patient monitoring systems went offline, raising serious concerns about patient safety. Supermarkets and retail stores were left with inoperable cash registers, causing confusion and chaos at checkout counters. In short, everyday life was thrown into disarray.
+
+### Then experts jump in
+
+As the scale of the disaster became apparent, cybersecurity experts and organizations like MITRE ATT&CK sprang into action. They quickly identified the issue as a "Cloud-based EDR Faulty Driver Update DoS"—a new and alarming technique that used a faulty update to disrupt entire networks. The revelation left the cybersecurity community in shock.
+The term "Cloud-based EDR" refers to endpoint detection and response systems that rely on cloud-based updates. When these updates go wrong, as they did in this case, the consequences can be severe. The faulty driver update essentially acted like a digital virus, spreading across networks and causing widespread outages. The situation was so severe that it made headlines around the world.
+
+<Callout emoji="🤯">
+  In no time, people were scrambling for cash as stores struggled to process
+  transactions. It was a full-blown technological disaster.
+</Callout>
+
+### Who’s to blame?
+
+The search for the culprit became a media frenzy. Speculation ran rampant: Was it a case of sabotage? Was a rogue intern trying to make a name for themselves? Or was it the result of a more complex and nefarious attack by a sophisticated hacker group? Theories abounded, but the true cause remained elusive.
+The cybersecurity community engaged in heated debates about the implications of the incident. Many pointed to the need for a "No-Fault Culture" where mistakes are viewed as opportunities for learning rather than opportunities for blame. Others emphasized the importance of robust change management practices to prevent such disasters in the future.
+
+**But whatever it was, that crushed crowstrike's(CRWD) stock price down the lane**<Footnote id={2} text="LinkedIn post by Alistair Ross about wise-cracks and personal reflections" link="https://www.linkedin.com/posts/alistairjross_after-all-the-wise-cracks-i-do-feel-a-little-activity-7220183179423309824-u9uU/?utm_source=share&utm_medium=member_desktop" />
+
+![CRWD Stock Crash](<https://www.investopedia.com/thmb/3HA86E6ybYM3Tmg3pd-Xtte4hP8=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/CRWD_2024-08-06_12-45-56-4a378936b55f4aa380d9943298759655.png>)
+
+<Callout emoji="🤔">
+  The incident highlighted the need for accountability and better practices in
+  cybersecurity. Even the best can face setbacks.
+</Callout>
+
+### A day that was too blue
+
+So here’s to "International Blue Screen of Death Day"—a day that will live on in infamy. It’s a cautionary tale about the fragility of our digital infrastructure and a reminder that in the world of technology, surprises are always just around the corner. Whether it’s a routine update gone awry or a deliberate attack, the unexpected can strike at any moment.
+
+> “In technology, the unexpected is always just a heartbeat away. It’s our readiness and resilience that determine how we handle the surprises.” - Anonymous
+
+### What the cybersecurity community is saying
+
+The crowdstrike outage quickly became a hot topic across cybersecurity forums on LinkedIn, X, Reddit, and Slack. Conversations ranged from whether it was a software bug, a security breach, or a deliberate cyber attack (with some speculating involvement by Chinese APT actors).
+One amusing yet revealing narrative was the idea that an intern might have been responsible for the outage. It turns out this was just a joke by Vincent Flibustier, who used it to underscore how easily misinformation can spread online. Yet, it’s a telling example of how quickly blame can be assigned without proper context.
+
+> "Mistakes are part of the landscape. No matter how robust a company’s systems are, errors will occur."
+
+<StaticTweet id="1820917357948158280" />
+
+On a more serious note, crowdstrike’s denial of the intern theory via TeamBlind was crucial. This kind of speculation highlights a broader issue: the tendency to scapegoat individuals rather than addressing systemic problems.
+Rick C<Footnote id={3} text="LinkedIn post by Rick C about no-fault situation" link="https://www.linkedin.com/posts/rickatx_nofault-activity-7220113420430323712-RXZ0/?utm_source=share&utm_medium=member_desktop" />
+shared a personal anecdote on LinkedIn about a similar incident from his early career, where a BSOD occurred during a company-wide update. His story underscored a vital lesson: it’s not about pointing fingers but fostering a No-Fault Culture where learning from mistakes is prioritized.
+Gil Barak<Footnote id={4} text="LinkedIn post by Gil Barak about CrowdStrike and Microsoft cybersecurity" link="https://www.linkedin.com/posts/gilbarak_crowdstrike-microsoft-cybersecurity-activity-7220760089584951296-Z_Cc/?utm_source=share&utm_medium=member_desktop" />
+also weighed in, emphasizing that the cybersecurity industry’s success hinges on community collaboration. Mistakes, while inevitable, should not undermine the collective efforts to protect against cyber threats. Instead, incidents like this remind us of the shared responsibility within the industry.
+
+<Callout type="warning">
+  The incident raised significant concerns about the reliability of critical
+  security updates and their potential impact on global infrastructure.
+</Callout>
+
+![CRWD Update](https://www.thegadgetman.org.uk/wp-content/uploads/2024/07/crowdstrike.jpg)
+
+### Reflecting on the crowdstrike outage, several key thoughts come to mind
+
+Reflecting on the CrowdStrike outage<Footnote id={5} text="CrowdStrike blog post on likely e-crime actor capitalizing on Falcon Sensor issues" link="https://www.crowdstrike.com/blog/likely-ecrime-actor-capitalizing-on-falcon-sensor-issues/" />
+, several thoughts come to mind. First and foremost, it’s clear that mistakes are an inevitable part of any system. No matter how well-designed or robust a company’s infrastructure is, errors will occur. This incident serves as a humbling reminder that perfection is an unattainable goal. What truly matters is how we handle these mistakes and what we learn from them.
+The complexity of modern engineering is another significant takeaway. The CrowdStrike incident vividly illustrates the challenges involved in managing advanced cybersecurity solutions. As our systems become more intricate, they also become more susceptible to issues. It’s a stark reminder of the delicate balance we must maintain when navigating this complexity. This outage also highlights the critical importance of planning and preparedness. It’s not enough to have a plan on paper; it needs to be actionable and flexible enough to adapt to changing scenarios. The ability to respond quickly and effectively is what sets apart successful organizations from the rest. Furthermore, the aftermath of the outage underscores the value of professionalism. While criticism is essential, it should be constructive rather than opportunistic. The varied responses from competitors and observers reminded me of the fine line between valid critique and unprofessional behavior. Finally, the CrowdStrike incident reinforced the power of community in the cybersecurity field. Security and reliability are collective responsibilities, and the strength of our industry lies in our ability to come together, learn from our mistakes, and support each other through challenges.
+
+<FootnoteList />

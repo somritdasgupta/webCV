@@ -1,0 +1,156 @@
+---
+title: "The markdownX guide"
+publishedAt: "2023-01-01"
+summary: "A detailed demonstration of various MDX features including callouts, tables, live code examples, and more supported in the blog"
+tags: [guides, open source]
+---
+
+![Demo Showcase](https://picsum.photos/900/400)
+
+### **Table of Contents**
+
+- [Introduction](#introduction)
+  - [Headings](#headings-level-1)
+  - [Ordered List](#ordered-list)
+  - [BlockQuote](#blockquote)
+  - [Table](#table)
+  - [InsightQuote](#insightquote)
+  - [Pro-Con Cards](#pro-con-cards)
+  - [Inline Code](#inline-code)
+  - [Code Block](#code-block)
+  - [Live Code](#live-code)
+  - [Tweet Card](#tweet-card)
+- [Footnotes](#footnotes)
+
+---
+
+## Introduction
+
+Welcome, in this post I will be shortly guiding you all to the MDX features and custom MDX components that I can use to compose those interesting blog posts that I do rarely write 😂
+
+#### _Alright Let's start with basics then~_
+
+Here is a simple example of a footnote<Footnote id={1} text="Reference to the resource that provides information about a topic" /> that you might use in your blog posts.
+You can add cited text pointing to a source.<Footnote id={2} text="Short summary about the source" />
+Also, you can add the link to the source you are reffering to and<Footnote id={3} text="This reference is accompained with a link pointing to the external source" link="https://example.com" /> you might have use in your blog posts.
+
+### Formatting
+
+#### Heading Level 4
+
+### Heading Level 3
+
+## Heading Level 2
+
+# Heading Level 1
+
+<u>This is how underlined text looks like</u>
+
+**This is how bold text looks like**
+
+_This is how italic text looks like_
+
+#### Ordered List
+
+---
+
+1. Item 1
+2. Item 2
+3. Item 3
+
+#### Unordered List
+
+---
+
+- Item 1
+- Item 2
+- Item 3
+
+### BlockQuote
+
+> “Lorem ipsum dolor sit amet, consectetur adipiscing elit.” – Author
+
+### Table
+
+Tables are useful for presenting structured data in a clear, organized manner. Here’s an example of a table I use to display various levels of experience, learning appetite, project sizes, and solutions:
+
+<Table
+  data={{
+    headers: [
+      "Experience Level",
+      "Learning Appetite",
+      "Project/Team Size",
+      "Recommended Solution",
+    ],
+    rows: [
+      ["Beginner", "Low", "Small", "useState"],
+      ["Beginner", "Medium", "Small to Medium", "useContext + useReducer"],
+      ["Intermediate", "High", "Large", "Redux Toolkit"],
+      ["Advanced", "High", "Medium to Large", "Jotai, Valtio"],
+      ["Advanced", "High", "Large", "Recoil (or Relay for GraphQL)"],
+    ],
+  }}
+/>
+
+### InsightQuote
+
+> > “Readers prefers to view tl;dr of an article in the form of pro's & con's more than paragraphs”
+
+### Pro-Con Cards
+
+<ProConsComparison
+  pros={[
+    "SSR boosts SEO and performance.",
+    "SSG enables faster page loads.",
+    "Built-in routing and API routes.",
+    "Automatic code splitting.",
+    "Strong TypeScript support.",
+  ]}
+  cons={[
+    "Complex setup for large apps.",
+    "Frequent updates need maintenance.",
+    "Steep learning curve for advanced features.",
+    "SSR increases server load.",
+    "Third-party tools dependency",
+  ]}
+/>
+
+### Inline Code
+
+`HashMap<Integer, String>`
+
+`SELECT Count(*) FROM users`
+
+`float x=9.99`
+
+`const func=() => {}`
+
+### Code Block
+
+```jsx
+import React from "react";
+const Greeting = () => {
+  React.useEffect(() => {
+    console.log("Hello, world!");
+  }, []);
+  return <div>Check the console for a greeting!</div>;
+};
+export default Greeting;
+```
+
+### Live Code
+
+Live code allows interactive code snippets and their outputs directly in my webpage. Here’s how I use a live code block with the Angular template:
+
+<LiveCode mode="preview" fileName={["App.js"]} template="angular" />
+
+### Tweet Card
+
+<Callout emoji="💡">
+  **Callout:** Alright this block is a callout block to highlight essential
+  information that readers shouldn’t overlook. Below is how the tweet card looks
+  like.
+</Callout>
+<StaticTweet id="1505668279678824448" />
+
+<FootnoteList />

@@ -1,0 +1,832 @@
+/* global.css */
+
+/* Tailwind Import */
+@import "tailwindcss";
+/* signature.css */
+@import url("https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap");
+
+.font-cursive {
+  font-family: "La Belle Aurore", cursive;
+  font-weight: 600;
+  font-style: normal;
+}
+/********************/
+/*****GLOBAL CSS*****/
+/********************/
+
+/* Global styles */
+html {
+  color-scheme: light dark;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-width: 360px;
+}
+
+html[data-theme="dark"] {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Selection Styles */
+::selection {
+  background-color: #723030;
+  color: #fefefe;
+}
+
+/********************/
+/*****GLOBAL CSS*****/
+/********************/
+
+/************************/
+/*****LIGHT MODE CSS*****/
+/************************/
+
+/* Root colors */
+:root {
+  --sh-class: #4e75a8;
+  --sh-identifier: #a9a27c;
+  --sh-sign: #8996a3;
+  --sh-string: #476565;
+  --sh-keyword: #4b8bb5;
+  --sh-comment: #a19595;
+  --sh-jsxliterals: #6266d1;
+  --sh-property: #e25a1c;
+  --sh-entity: #e25a1c;
+  --bg-color: #fffbfb;
+  --text-color: #723030;
+  --pill-color: #e0e0e0;
+  --nav-pill: #f5e6e6;
+  --light-text-color: #000000;
+  --button-crayola-light: #007bff; /* Light mode color */
+}
+
+/************************/
+/*****LIGHT MODE CSS*****/
+/************************/
+
+/***********************/
+/*****DARK MODE CSS*****/
+/***********************/
+
+/* Dark mode colors */
+[data-theme="dark"] {
+  --sh-class: #4c97f8;
+  --sh-identifier: rgb(204, 198, 233);
+  --sh-keyword: #a1a284;
+  --sh-string: #0fa295;
+  --bg-color: #191525;
+  --text-color: #e0e0e0;
+  --pill-color: #e0e0e0;
+  --nav-pill: #1f2934;
+  --light-text-color: #b0b0b0;
+  --button-crayola-dark: #0056b3; /* Dark mode color */
+}
+
+/***********************/
+/*****DARK MODE CSS*****/
+/***********************/
+
+/*******************/
+/*****PROSE CSS*****/
+/*******************/
+
+/* Prose Styling */
+.prose {
+  @apply my-4;
+  color: var(--text-color);
+}
+
+/* Code block styles */
+.prose pre {
+  @apply bg-gray-800 rounded-lg overflow-auto py-2 px-2 text-sm;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  border-radius: 0.5rem;
+  border: 3px solid var(--button-crayola-dark);
+}
+
+/* Inline code styles */
+.prose code {
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.4rem;
+  background-color: rgba(229, 231, 235, 0.2); /* Light gray with 20% opacity */
+  color: var(--text-color);
+  font-size: 0.875em;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .prose code {
+  background-color: rgba(55, 65, 81, 0.045); /* Dark gray with 20% opacity */
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.prose pre code {
+  padding: 0;
+  background: transparent;
+  border: none;
+  line-height: 1.5;
+}
+
+.prose code span {
+  @apply font-medium;
+}
+
+.prose img {
+  @apply m-0 rounded-lg;
+}
+
+.prose p {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.prose blockquote {
+  @apply border-l-2 border-neutral-300 pl-4 p-1 italic ml-0.5;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.prose p,
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: var(--text-color);
+}
+
+.prose h1 {
+  @apply text-3xl font-bold mt-6 mb-2;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold mt-6 mb-2;
+}
+
+.prose h3 {
+  @apply text-xl font-bold mt-6 mb-2 tracking-tight;
+}
+
+.prose h4 {
+  @apply text-sm font-bold mt-6 mb-2;
+}
+
+.prose ul,
+.prose ol {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.prose ul {
+  @apply list-disc pl-4;
+}
+
+.prose ol {
+  @apply list-decimal pl-4;
+}
+
+.prose > :first-child {
+  margin-top: 1.25em !important;
+  margin-bottom: 1.25em !important;
+}
+
+/* Scrollbar Styles */
+pre::-webkit-scrollbar {
+  display: none;
+}
+
+pre {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Remove Safari Input Shadow on Mobile */
+input[type="text"],
+input[type="email"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Ensure Sufficient Contrast */
+p,
+h1,
+h2,
+h3,
+h4,
+span,
+div {
+  color: var(--text-color);
+  text-wrap: pretty;
+  text-rendering: geometricPrecision;
+}
+
+/*******************/
+/*****PROSE CSS*****/
+/*******************/
+
+/********************/
+/*****CUSTOM CSS*****/
+/********************/
+
+/* Custom Shadow */
+.custom-shadow {
+  box-shadow: 2px 30px 30px rgba(0, 0, 0, 0.1),
+    0 10px 30px rgba(42, 41, 41, 0.995);
+}
+
+/* Glow Effect */
+.glow-effect {
+  position: relative;
+  border-radius: 100%;
+  box-shadow: 0 0 5px rgba(157, 65, 65, 0.2);
+  transition: transform 0.3s ease, 0.3s ease-in-out;
+}
+
+.glow-effect:hover {
+  transform: scale(1);
+  box-shadow: 0 0 15px rgba(94, 63, 0, 0.2);
+}
+
+/* Image Container */
+.image-container {
+  transition: transform 0.3s ease, 0.3s ease-in-out;
+}
+
+.image-container:hover {
+  transform: scale(1.15);
+}
+
+/* Preserve Link Styles */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Navbar Link Styles */
+nav a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Navbar styles */
+.navbar {
+  position: sticky; /* Sticky to stay at top while scrolling */
+  top: 0;
+  left: 0;
+  z-index: 50;
+  border-radius: 12px; /* Full rounded corners to create a pill shape */
+  display: inline-flex; /* Fit width to content */
+}
+
+/* Navbar when scrolled */
+.navbar.scrolled {
+  transition: transform 1.5s ease-out;
+  width: fit-content;
+  height: 46px;
+  align-items: start;
+  display: inline-flex; /* Fit width to content */
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+  border-color: var(--button-crayola-dark);
+  border-width: 3px;
+  transform: translateY(10px);
+  background: var(
+    --nav-pill
+  ); /* Solid background color when scrolled */ /* Floating shadow effect */
+}
+
+.navbar.static {
+  position: static; /* Change to static position */
+  background-color: transparent;
+}
+
+/* Custom Container Class */
+.container-custom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Title Text Wrap */
+.title {
+  text-wrap: pretty;
+}
+
+/* Light Text Styling */
+.light-text {
+  color: var(--light-text-color);
+}
+
+/* Custom Classes */
+.custom-topic-pill,
+.custom-skill-pill {
+  @apply text-xs px-3 py-1 rounded-lg cursor-pointer;
+}
+
+.custom-skill-pill {
+  @apply text-xs px-3 py-1 rounded-lg;
+  background-color: #ec806f3f !important;
+}
+
+.custom-topic-pill {
+  background-color: #6169793f;
+  white-space: nowrap;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  display: inline-flex;
+}
+
+.icon-white {
+  color: white;
+}
+
+/* Container for each post title */
+.post-title-container {
+  background: rgba(
+    245,
+    245,
+    245,
+    0.9
+  ); /* Light gray background with slight transparency */
+  border: 1px solid rgba(200, 200, 200, 0.7); /* Light gray border */
+  color: #333; /* Dark text color for contrast */
+  backdrop-filter: blur(6px); /* Slight blur effect */
+  border-radius: 0.5rem; /* Rounded corners */
+  padding: 0.75rem; /* Padding inside the container */
+  font-size: 0.875rem; /* Slightly larger font size */
+  box-sizing: border-box; /* Include padding and border in total width */
+}
+
+/* Text styling for the title */
+.post-title-text {
+  display: flex;
+  align-items: center;
+  line-height: 1.5;
+  font-size: 1rem;
+}
+
+/* Dark mode specific styles */
+[data-theme="dark"] .post-title-container {
+  background: #1f293493; /* Darker background for dark mode */
+  border: 1px solid rgba(60, 60, 60, 0.7); /* Darker border for contrast */
+  color: #f5f5f5; /* Light text color for dark mode */
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+  .post-title-container {
+    padding: 0.5rem; /* Adjust padding for smaller screens */
+  }
+
+  .post-title-text {
+    font-size: 0.875rem; /* Adjust font size for smaller screens */
+  }
+}
+
+/********************/
+/*****CUSTOM CSS*****/
+/********************/
+
+/*******************/
+/*****TABLE CSS*****/
+/*******************/
+
+/* Table styles */
+table {
+  width: 100%; /* Ensure the table takes up the available width */
+  max-width: 100%; /* Ensure the table does not exceed the container width */
+  border-collapse: collapse;
+  overflow-x: auto; /* Allow horizontal scrolling if needed */
+}
+
+/* Header and cell styles */
+table th,
+table td {
+  padding: 0.5rem;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+  text-align: left;
+  border-bottom: 0.5px solid var(--light-text-color);
+  border-top: 0.5px solid var(--light-text-color);
+  border-radius: 0rem;
+  font-size: 0.875rem; /* Base font size for larger screens */
+}
+
+/* Header styles */
+table th {
+  font-size: 0.9rem; /* Slightly larger text for headers */
+  background-color: var(--header-bg-color); /* Background color for header */
+  color: var(--header-text-color); /* Text color for header */
+}
+
+/* Odd/even row colors */
+table tbody tr:nth-child(odd) {
+  background-color: var(--row-odd-bg-color); /* Background color for odd rows */
+}
+
+table tbody tr:nth-child(even) {
+  background-color: var(
+    --row-even-bg-color
+  ); /* Background color for even rows */
+}
+
+/* Responsive text size adjustment */
+@media (max-width: 768px) {
+  table th,
+  table td {
+    font-size: 0.875rem; /* Smaller text on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  table th,
+  table td {
+    font-size: 0.7rem; /* Further smaller text for very small screens */
+  }
+}
+
+/* Light Mode Specific Colors */
+[data-theme="light"] {
+  --header-bg-color: #f1e8e8aa; /* Light background color for headers */
+  --header-text-color: var(--text-color); /* Dark text color for headers */
+  --row-even-bg-color: #ece3e3; /* Light background color for even rows */
+  --row-odd-bg-color: #fffbfb; /* Very light gray background color for odd rows */
+}
+
+/* Dark Mode Specific Colors */
+[data-theme="dark"] {
+  --header-bg-color: #201a32; /* Dark background color for headers */
+  --header-text-color: var(--text-color); /* Light text color for headers */
+  --row-even-bg-color: #201a32; /* Dark background color for even rows */
+  --row-odd-bg-color: #191525; /* Slightly lighter dark background color for odd rows */
+}
+
+/* Scroll container */
+.table-container {
+  max-width: 100%; /* Ensure the container does not exceed the screen width */
+  overflow-x: auto; /* Enable horizontal scrolling if needed */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Responsive table container */
+@media (max-width: 768px) {
+  .table-container {
+    max-width: 100vw; /* Ensure container width adjusts to viewport width */
+  }
+}
+
+@media (min-width: 769px) {
+  .table-container {
+    max-width: 100%; /* Allow table to be as wide as its container */
+  }
+}
+
+/*******************/
+/*****TABLE CSS*****/
+/*******************/
+
+/*********************/
+/*****CALLOUT CSS*****/
+/*********************/
+
+/* Light Mode Styles */
+[data-theme="light"] .callout-container {
+  background: rgba(
+    252,
+    242,
+    229,
+    0.952
+  ); /* Radiant gradient from top-left to bottom-right */
+  border: 1.5px solid rgba(223, 205, 180, 0.8); /* Soft border for a warm touch */
+  color: var(--text-color); /* Adjust text color to fit the light theme */
+  backdrop-filter: blur(8px); /* Slight blur effect for translucency */
+  border-radius: 0.5rem; /* Rounded corners */
+  padding: 1rem; /* Padding inside the callout */
+  font-size: 0.875rem; /* Smaller text size */
+  box-sizing: border-box; /* Ensure padding and border are included in the total width */
+}
+
+/* Dark Mode Styles */
+[data-theme="dark"] .callout-container {
+  background: #1f293493; /* Dark radiant gradient from top-left to bottom-right */
+  border: 1.5px solid #322d47; /* Darker border for contrast */
+  color: var(--text-color); /* Ensure text color is appropriate for dark mode */
+  backdrop-filter: blur(8px); /* Slight blur effect for translucency */
+  border-radius: 0.5rem; /* Rounded corners */
+  padding: 1rem; /* Padding inside the callout */
+  font-size: 0.875rem; /* Smaller text size */
+  box-sizing: border-box; /* Ensure padding and border are included in the total width */
+}
+
+/* Emoji Container Styles */
+.emoji-container {
+  display: flex;
+  align-items: center; /* Center emoji vertically */
+  justify-content: center; /* Center emoji horizontally */
+  flex-shrink: 0; /* Prevent emoji from shrinking */
+  text-align: center;
+  margin-right: 0.75rem; /* Space between emoji and text */
+}
+
+/* Text Container Styles */
+.text-container {
+  display: flex;
+  align-items: center; /* Center text vertically */
+  line-height: 1.5; /* Improve readability */
+  flex-direction: column; /* Stack text vertically if needed */
+}
+
+/* Mobile-Specific Adjustments */
+@media (max-width: 640px) {
+  .callout-container {
+    padding: 0.75rem; /* Adjust padding for smaller screens */
+  }
+
+  .text-container {
+    font-size: 0.75rem; /* Smaller text size for mobile */
+  }
+}
+
+/*********************/
+/*****CALLOUT CSS*****/
+/*********************/
+
+/**********************/
+/****TWEET CARD CSS****/
+/**********************/
+
+/* Light theme (default) */
+[data-theme="light"] .tweet .react-tweet-theme {
+  /* margin is handled by our wrappers */
+  --tweet-container-margin: 0;
+  --tweet-font-family: inherit;
+  --tweet-font-color: inherit;
+
+  /* Light colors */
+  --tweet-bg-color: rgb(232, 236, 228); /* Use the callout background color */
+  --tweet-bg-color-hover: var(--tweet-bg-color);
+  --tweet-color-blue-secondary: theme(
+    "colors.gray.600"
+  ); /* Adjusted to match callout */
+  --tweet-color-blue-secondary-hover: theme(
+    "colors.gray.100"
+  ); /* Adjusted to match callout */
+  --tweet-font-color-secondary: theme(
+    "colors.gray.500"
+  ); /* Adjusted to match callout */
+  --tweet-font-color: var(--text-color); /* Match callout text color */
+
+  /* Common properties for both themes */
+  --tweet-quoted-bg-color-hover: rgba(0, 0, 0, 0.03);
+  --tweet-border: 3px solid rgba(225, 216, 203, 0.8); /* Use the callout border color */
+  --tweet-skeleton-gradient: linear-gradient(
+    270deg,
+    #fafafa,
+    #eaeaea,
+    #eaeaea,
+    #fafafa
+  );
+  --tweet-color-red-primary: rgb(249, 24, 128);
+  --tweet-color-red-primary-hover: rgba(249, 24, 128, 0.1);
+  --tweet-color-green-primary: rgb(0, 186, 124);
+  --tweet-color-green-primary-hover: rgba(0, 186, 124, 0.1);
+  --tweet-twitter-icon-color: var(--tweet-font-color);
+  --tweet-verified-old-color: rgb(130, 154, 171);
+  --tweet-verified-blue-color: var(--tweet-color-blue-primary);
+
+  --tweet-actions-font-weight: 500;
+  --tweet-replies-font-weight: 500;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+  .tweet .react-tweet-theme {
+    /* margin is handled by our wrappers */
+    --tweet-container-margin: 0;
+    --tweet-font-family: inherit;
+    --tweet-font-color: inherit;
+
+    /* Dark theme colors */
+    --tweet-bg-color: #1f293493; /* Use the callout background color */
+    --tweet-bg-color-hover: var(--tweet-bg-color);
+    --tweet-quoted-bg-color-hover: rgba(255, 255, 255, 0.03);
+    --tweet-border: 3px solid #322d47; /* Use the callout border color */
+    --tweet-color-blue-secondary: theme(
+      "colors.white"
+    ); /* Adjusted to match callout */
+    --tweet-color-blue-secondary-hover: #333;
+    --tweet-font-color-secondary: theme(
+      "colors.gray.400"
+    ); /* Adjusted to match callout */
+    --tweet-font-color: var(--text-color); /* Match callout text color */
+  }
+}
+
+/* Common styles for both themes */
+.tweet .react-tweet-theme p {
+  font-size: inherit;
+  line-height: 1.3rem;
+  color: var(--tweet-font-color); /* Ensure text color matches the callout */
+}
+
+.tweet .react-tweet-theme p a {
+  @apply border-b border-gray-300 transition-[border-color] hover:border-gray-600;
+}
+
+/* Dark theme link styles */
+@media (prefers-color-scheme: dark) {
+  .tweet .react-tweet-theme p a {
+    @apply border-gray-500 text-white hover:border-white;
+  }
+}
+
+/* Remove link underline on hover for both themes */
+.tweet .react-tweet-theme p a:hover {
+  text-decoration: none;
+}
+
+.tweet a div {
+  @apply font-medium tracking-tight;
+}
+
+.tweet div[class*="mediaWrapper"] {
+  max-height: 250px;
+}
+
+/* Ensure tweet cards take full width on desktop */
+@media (min-width: 1024px) {
+  .tweet .react-tweet-theme {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px; /* Add padding inside the tweet card */
+    box-sizing: border-box; /* Ensure padding is included in the total width */
+  }
+}
+
+/**********************/
+/****TWEET CARD CSS****/
+/**********************/
+
+/********************/
+/****SANDPACK CSS****/
+/********************/
+
+/* Hide scrollbars for all Sandpack components */
+.custom-wrapper {
+  overflow: hidden !important; /* Hide scrollbars for the entire Sandpack wrapper */
+}
+
+.custom-editor,
+.custom-preview {
+  overflow: hidden !important; /* Hide scrollbars in the editor and preview areas */
+}
+
+.custom-editor .sp-code-editor,
+.custom-preview .sp-preview-iframe {
+  overflow: hidden !important; /* Ensure scrollbars are hidden within these components */
+}
+
+/* Additional rule to ensure scrollbars are hidden */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
+}
+
+/********************/
+/****SANDPACK CSS****/
+/********************/
+
+/*************************/
+/****PRO-CON CARDS CSS****/
+/*************************/
+
+/* Parent container for the cards */
+.pro-cons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem; /* Space between cards */
+}
+
+/* Card styling */
+.pros-card,
+.cons-card {
+  flex: 1 1 calc(50% - 0.5rem); /* Each card takes up half of the available width minus gap */
+  border-radius: 0.6rem; /* Slightly rounded corners */
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+  border: 3px solid rgba(0, 0, 0, 0.1); /* Subtle border */
+  backdrop-filter: blur(10px); /* Frosted glass effect */
+  box-shadow: 0 10px 10px rgba(42, 42, 42, 0.05); /* Subtle shadow */
+  box-sizing: border-box;
+  margin-bottom: 0.2rem;
+}
+
+/* Light theme styles */
+[data-theme="light"] .pros-card {
+  border-color: rgba(
+    156,
+    204,
+    101,
+    0.8
+  ); /* Adjusted border color for light mode */
+  background-color: rgba(
+    241,
+    241,
+    241,
+    0.9
+  ); /* Lightened background color for light mode */
+}
+
+[data-theme="light"] .cons-card {
+  border-color: rgba(
+    249,
+    124,
+    124,
+    0.6
+  ); /* Adjusted border color for light mode */
+  background-color: rgba(
+    241,
+    241,
+    241,
+    0.9
+  ); /* Lightened background color for light mode */
+}
+
+/* Dark theme styles */
+[data-theme="dark"] .pros-card {
+  border-color: rgba(0, 255, 60, 0.5); /* Adjusted border color for dark mode */
+  background-color: #1f293493; /* Darkened background color for dark mode */
+}
+
+[data-theme="dark"] .cons-card {
+  border-color: rgba(
+    255,
+    132,
+    0,
+    0.5
+  ); /* Adjusted border color for dark mode */
+  background-color: #1f293493; /* Darkened background color for dark mode */
+}
+
+/* Emoji and text container styling */
+.emoji-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 0.75rem;
+}
+
+.text-container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+/*************************/
+/****PRO-CON CARDS CSS****/
+/*************************/
+
+/*********************/
+/****FOOTNOTES CSS****/
+/*********************/
+
+.footnote-ref {
+  font-size: 0.75rem; /* Adjust size if needed */
+  cursor: pointer;
+  color: var(--button-crayola-light);
+}
+
+.footnote-ref:hover {
+  font-size: 0.75rem;
+  text-decoration: underline;
+  color: #ff8c52;
+}
+
+.footnote-container ol {
+  list-style: decimal;
+  font-size: 0.8rem;
+}
+
+.footnote-container ul {
+  list-style-type: none; /* Removes the bullets */
+  padding-left: 0; /* Removes default padding */
+}
+
+.footnote-container li {
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+/*********************/
+/****FOOTNOTES CSS****/
+/*********************/
