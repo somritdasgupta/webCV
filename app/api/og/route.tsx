@@ -44,8 +44,8 @@ export async function GET(req: NextRequest) {
       </div>
     ),
     {
-      width: 1200,
-      height: 630,
+      width: 2400,
+      height: 1260,
       fonts: [
         {
           name: "Kaisei Tokumin",

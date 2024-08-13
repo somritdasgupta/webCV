@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "",
+    google: "gv-aymi4k24u76uxs.dv.googlehosted.com",
   },
 };
 
