@@ -64,7 +64,7 @@ export function BlogPosts({
   }, [allTags, allPosts]);
 
   if (allPosts.length === 0) {
-    return <p className="mt-2 mb-2">Loading blog posts...</p>;
+    return <p className="mt-2 mb-2">Granting wishes 🚀</p>;
   }
 
   return (
