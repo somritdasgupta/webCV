@@ -81,9 +81,10 @@ export default function RootLayout({
           rel="icon"
           href="/favicon.ico"
           type="image/x-icon"
-          sizes="16x16"
+          sizes="48x48"
         />
-        <link rel="icon" href="/favicon.png" type="image/png" sizes="16x16" />
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
         <SandpackCSS />
         <script
           dangerouslySetInnerHTML={{
