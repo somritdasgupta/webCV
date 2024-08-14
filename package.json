@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "predev": "figlet Somrit-WebCV",
     "dev": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start"
@@ -15,6 +16,7 @@
     "@types/react-dom": "18.2.19",
     "@vercel/analytics": "^1.3.1",
     "@vercel/speed-insights": "^1.0.12",
+    "cli-banner": "^1.0.3",
     "geist": "1.2.2",
     "next": "14.2.5",
     "next-mdx-remote": "^4.4.1",

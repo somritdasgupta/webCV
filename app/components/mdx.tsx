@@ -187,7 +187,7 @@ function Iframe({ src }) {
     width: "100%",
     height: "600px",
     borderRadius: "12px", // Slightly larger border radius for a more modern look
-    border: "2px solid #1E90FF", // Brighter blue color
+    border: "3px solid purple", // Brighter blue color
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Adding a subtle shadow for depth
     display: "block", // Ensures no inline spacing issues
     margin: "0 auto", // Centers the iframe horizontally

@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   ArrowTrendingUpIcon,
-  ArrowTopRightOnSquareIcon,
-} from "@heroicons/react/24/solid";
+  CommandLineIcon,
+} from "@heroicons/react/24/outline";
 import { BlogPosts } from "./components/posts";
 import Button from "./components/Button";
 import displayImage from "../public/somritdasgupta.jpg";
@@ -95,10 +95,10 @@ export default function Page() {
                 )}
                 <a
                   href={featuredProject.html_url}
-                  className="text-blue-400 hover:text-blue-300 inline-flex items-center"
+                  className="font-semibold text-blue-400 hover:text-blue-300 inline-flex items-center"
                 >
-                  GitHub Source
-                  <ArrowTopRightOnSquareIcon className="w-4 h-4 ml-1" />
+                  Github
+                  <CommandLineIcon className="w-4 h-4 ml-1" />
                 </a>
                 {featuredProject.topics && (
                   <div className="mt-2 flex flex-wrap gap-2">

@@ -1,53 +1,8 @@
-/* global.css */
+/*app/global.css*/
 
-/* Tailwind Import */
 @import "tailwindcss";
-/* signature.css */
 @import url("https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap");
 
-.font-cursive {
-  font-family: "La Belle Aurore", cursive;
-  font-weight: 600;
-  font-style: normal;
-}
-/********************/
-/*****GLOBAL CSS*****/
-/********************/
-
-/* Global styles */
-html {
-  color-scheme: light dark;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  min-width: 360px;
-}
-
-html[data-theme="dark"] {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-body {
-  background-color: var(--background-color);
-  color: var(--text-color);
-  transition: background-color 0.3s, color 0.3s;
-}
-
-/* Selection Styles */
-::selection {
-  background-color: #723030;
-  color: #fefefe;
-}
-
-/********************/
-/*****GLOBAL CSS*****/
-/********************/
-
-/************************/
-/*****LIGHT MODE CSS*****/
-/************************/
-
-/* Root colors */
 :root {
   --sh-class: #4e75a8;
   --sh-identifier: #a9a27c;
@@ -63,67 +18,71 @@ body {
   --pill-color: #e0e0e0;
   --nav-pill: #f5e6e6;
   --light-text-color: #000000;
-  --button-crayola-light: #007bff; /* Light mode color */
+  --button-crayola-light: #007bff;
 }
 
-/************************/
-/*****LIGHT MODE CSS*****/
-/************************/
-
-/***********************/
-/*****DARK MODE CSS*****/
-/***********************/
-
-/* Dark mode colors */
 [data-theme="dark"] {
   --sh-class: #4c97f8;
   --sh-identifier: rgb(204, 198, 233);
   --sh-keyword: #a1a284;
   --sh-string: #0fa295;
-  --bg-color: #191522;
+  --bg-color: #0d0415;
   --text-color: #e0e0e0;
   --pill-color: #e0e0e0;
   --nav-pill: #1f2934;
   --light-text-color: #b0b0b0;
-  --button-crayola-dark: #0056b3; /* Dark mode color */
+  --button-crayola-dark: #0056b3;
 }
 
-/***********************/
-/*****DARK MODE CSS*****/
-/***********************/
+html {
+  color-scheme: light dark;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-width: 360px;
+}
 
-/*******************/
-/*****PROSE CSS*****/
-/*******************/
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
 
-/* Prose Styling */
+::selection {
+  background-color: #723030;
+  color: #fefefe;
+}
+
+.font-cursive {
+  font-family: "La Belle Aurore", cursive;
+  font-weight: 600;
+  font-style: normal;
+}
+
 .prose {
   @apply my-4;
   color: var(--text-color);
 }
 
-/* Code block styles */
 .prose pre {
-  @apply bg-gray-800 rounded-lg overflow-auto py-2 px-2 text-sm;
+  @apply bg-gray-900 rounded-lg py-2 px-2 text-sm;
   margin-top: 1em;
   margin-bottom: 1em;
   border-radius: 0.5rem;
-  border: 3px solid var(--button-crayola-dark);
+  border: 3px solid purple;
 }
 
-/* Inline code styles */
 .prose code {
   padding: 0.125rem 0.25rem;
   border-radius: 0.4rem;
-  background-color: rgba(229, 231, 235, 0.2); /* Light gray with 20% opacity */
+  background-color: rgba(229, 231, 235, 0.2);
   color: var(--text-color);
   font-size: 0.875em;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="dark"] .prose code {
-  background-color: rgba(55, 65, 81, 0.045); /* Dark gray with 20% opacity */
-  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(55, 65, 81, 0.045);
+  border-color: rgba(25, 26, 51, 0.9);
 }
 
 .prose pre code {
@@ -195,7 +154,6 @@ body {
   margin-bottom: 1.25em !important;
 }
 
-/* Scrollbar Styles */
 pre::-webkit-scrollbar {
   display: none;
 }
@@ -205,7 +163,6 @@ pre {
   scrollbar-width: none;
 }
 
-/* Remove Safari Input Shadow on Mobile */
 input[type="text"],
 input[type="email"] {
   -webkit-appearance: none;
@@ -213,7 +170,6 @@ input[type="email"] {
   appearance: none;
 }
 
-/* Ensure Sufficient Contrast */
 p,
 h1,
 h2,
@@ -227,21 +183,11 @@ div {
   overflow-wrap: break-word;
 }
 
-/*******************/
-/*****PROSE CSS*****/
-/*******************/
-
-/********************/
-/*****CUSTOM CSS*****/
-/********************/
-
-/* Custom Shadow */
 .custom-shadow {
   box-shadow: 2px 30px 30px rgba(0, 0, 0, 0.1),
     0 10px 30px rgba(42, 41, 41, 0.995);
 }
 
-/* Glow Effect */
 .glow-effect {
   position: relative;
   border-radius: 100%;
@@ -254,7 +200,6 @@ div {
   box-shadow: 0 0 15px rgba(94, 63, 0, 0.2);
 }
 
-/* Image Container */
 .image-container {
   transition: transform 0.3s ease, 0.3s ease-in-out;
 }
@@ -263,68 +208,58 @@ div {
   transform: scale(1.15);
 }
 
-/* Preserve Link Styles */
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* Navbar Link Styles */
 nav a {
   color: inherit;
   text-decoration: none;
 }
 
-/* Navbar styles */
 .navbar {
-  position: sticky; /* Sticky to stay at top while scrolling */
+  position: sticky;
   top: 0;
   left: 0;
   z-index: 50;
-  border-radius: 12px; /* Full rounded corners to create a pill shape */
-  display: inline-flex; /* Fit width to content */
+  border-radius: 12px;
+  display: inline-flex;
 }
 
-/* Navbar when scrolled */
 .navbar.scrolled {
   transition: transform 1.5s ease-out;
   width: fit-content;
   height: 46px;
   align-items: start;
-  display: inline-flex; /* Fit width to content */
+  display: inline-flex;
   padding-left: 0.6rem;
   padding-right: 0.6rem;
   border-color: var(--button-crayola-dark);
   border-width: 3px;
   transform: translateY(10px);
-  background: var(
-    --nav-pill
-  ); /* Solid background color when scrolled */ /* Floating shadow effect */
+  background: var(--nav-pill);
 }
 
 .navbar.static {
-  position: static; /* Change to static position */
+  position: static;
   background-color: transparent;
 }
 
-/* Custom Container Class */
 .container-custom {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1rem;
 }
 
-/* Title Text Wrap */
 .title {
   text-wrap: pretty;
 }
 
-/* Light Text Styling */
 .light-text {
   color: var(--light-text-color);
 }
 
-/* Custom Classes */
 .custom-topic-pill,
 .custom-skill-pill {
   @apply text-xs px-3 py-1 rounded-lg cursor-pointer;
@@ -347,24 +282,17 @@ nav a {
   color: white;
 }
 
-/* Container for each post title */
 .post-title-container {
-  background: rgba(
-    245,
-    245,
-    245,
-    0.9
-  ); /* Light gray background with slight transparency */
-  border: 1px solid rgba(200, 200, 200, 0.7); /* Light gray border */
-  color: #333; /* Dark text color for contrast */
-  backdrop-filter: blur(6px); /* Slight blur effect */
-  border-radius: 0.5rem; /* Rounded corners */
-  padding: 0.75rem; /* Padding inside the container */
-  font-size: 0.875rem; /* Slightly larger font size */
-  box-sizing: border-box; /* Include padding and border in total width */
+  background: rgba(245, 245, 245, 0.9);
+  border: 1px solid rgba(200, 200, 200, 0.7);
+  color: #333;
+  backdrop-filter: blur(6px);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  box-sizing: border-box;
 }
 
-/* Text styling for the title */
 .post-title-text {
   display: flex;
   align-items: center;
@@ -372,41 +300,29 @@ nav a {
   font-size: 1rem;
 }
 
-/* Dark mode specific styles */
 [data-theme="dark"] .post-title-container {
-  background: #1f293493; /* Darker background for dark mode */
-  border: 1px solid rgba(60, 60, 60, 0.7); /* Darker border for contrast */
-  color: #f5f5f5; /* Light text color for dark mode */
+  background: #1f293493;
+  border: 1px solid rgba(60, 60, 60, 0.7);
+  color: #f5f5f5;
 }
 
-/* Mobile-specific adjustments */
 @media (max-width: 640px) {
   .post-title-container {
-    padding: 0.5rem; /* Adjust padding for smaller screens */
+    padding: 0.5rem;
   }
 
   .post-title-text {
-    font-size: 0.875rem; /* Adjust font size for smaller screens */
+    font-size: 0.875rem;
   }
 }
 
-/********************/
-/*****CUSTOM CSS*****/
-/********************/
-
-/*******************/
-/*****TABLE CSS*****/
-/*******************/
-
-/* Table styles */
 table {
-  width: 100%; /* Ensure the table takes up the available width */
-  max-width: 100%; /* Ensure the table does not exceed the container width */
+  width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
-  overflow-x: auto; /* Allow horizontal scrolling if needed */
+  overflow-x: auto;
 }
 
-/* Header and cell styles */
 table th,
 table td {
   padding: 0.5rem;
@@ -416,176 +332,129 @@ table td {
   border-bottom: 0.5px solid var(--light-text-color);
   border-top: 0.5px solid var(--light-text-color);
   border-radius: 0rem;
-  font-size: 0.875rem; /* Base font size for larger screens */
+  font-size: 0.875rem;
 }
 
-/* Header styles */
 table th {
-  font-size: 0.9rem; /* Slightly larger text for headers */
-  background-color: var(--header-bg-color); /* Background color for header */
-  color: var(--header-text-color); /* Text color for header */
+  font-size: 0.9rem;
+  background-color: var(--header-bg-color);
+  color: var(--header-text-color);
 }
 
-/* Odd/even row colors */
 table tbody tr:nth-child(odd) {
-  background-color: var(--row-odd-bg-color); /* Background color for odd rows */
+  background-color: var(--row-odd-bg-color);
 }
 
 table tbody tr:nth-child(even) {
-  background-color: var(
-    --row-even-bg-color
-  ); /* Background color for even rows */
+  background-color: var(--row-even-bg-color);
 }
 
-/* Responsive text size adjustment */
 @media (max-width: 768px) {
   table th,
   table td {
-    font-size: 0.875rem; /* Smaller text on smaller screens */
+    font-size: 0.875rem;
   }
 }
 
 @media (max-width: 480px) {
   table th,
   table td {
-    font-size: 0.7rem; /* Further smaller text for very small screens */
+    font-size: 0.7rem;
   }
 }
 
-/* Light Mode Specific Colors */
 [data-theme="light"] {
-  --header-bg-color: #f1e8e8aa; /* Light background color for headers */
-  --header-text-color: var(--text-color); /* Dark text color for headers */
-  --row-even-bg-color: #ece3e3; /* Light background color for even rows */
-  --row-odd-bg-color: #fffbfb; /* Very light gray background color for odd rows */
+  --header-bg-color: #f1e8e8aa;
+  --header-text-color: var(--text-color);
+  --row-even-bg-color: #ece3e3;
+  --row-odd-bg-color: #fffbfb;
 }
 
-/* Dark Mode Specific Colors */
 [data-theme="dark"] {
-  --header-bg-color: #201a32; /* Dark background color for headers */
-  --header-text-color: var(--text-color); /* Light text color for headers */
-  --row-even-bg-color: #201a32; /* Dark background color for even rows */
-  --row-odd-bg-color: #191525; /* Slightly lighter dark background color for odd rows */
+  --header-bg-color: #171324;
+  --header-text-color: var(--text-color);
+  --row-even-bg-color: #0f0a1d;
+  --row-odd-bg-color: #0d0415;
 }
 
-/* Scroll container */
 .table-container {
-  max-width: 100%; /* Ensure the container does not exceed the screen width */
-  overflow-x: auto; /* Enable horizontal scrolling if needed */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Responsive table container */
 @media (max-width: 768px) {
   .table-container {
-    max-width: 100vw; /* Ensure container width adjusts to viewport width */
+    max-width: 100vw;
   }
 }
 
 @media (min-width: 769px) {
   .table-container {
-    max-width: 100%; /* Allow table to be as wide as its container */
+    max-width: 100%;
   }
 }
 
-/*******************/
-/*****TABLE CSS*****/
-/*******************/
-
-/*********************/
-/*****CALLOUT CSS*****/
-/*********************/
-
-/* Light Mode Styles */
 [data-theme="light"] .callout-container {
-  background: rgba(
-    252,
-    242,
-    229,
-    0.952
-  ); /* Radiant gradient from top-left to bottom-right */
-  border: 1.5px solid rgba(223, 205, 180, 0.8); /* Soft border for a warm touch */
-  color: var(--text-color); /* Adjust text color to fit the light theme */
-  backdrop-filter: blur(8px); /* Slight blur effect for translucency */
-  border-radius: 0.5rem; /* Rounded corners */
-  padding: 1rem; /* Padding inside the callout */
-  font-size: 0.875rem; /* Smaller text size */
-  box-sizing: border-box; /* Ensure padding and border are included in the total width */
+  background: rgba(252, 242, 229, 0.952);
+  border: 1.5px solid rgba(223, 205, 180, 0.8);
+  color: var(--text-color);
+  backdrop-filter: blur(8px);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+  box-sizing: border-box;
 }
 
-/* Dark Mode Styles */
 [data-theme="dark"] .callout-container {
-  background: #1f293493; /* Dark radiant gradient from top-left to bottom-right */
-  border: 1.5px solid #322d47; /* Darker border for contrast */
-  color: var(--text-color); /* Ensure text color is appropriate for dark mode */
-  backdrop-filter: blur(8px); /* Slight blur effect for translucency */
-  border-radius: 0.5rem; /* Rounded corners */
-  padding: 1rem; /* Padding inside the callout */
-  font-size: 0.875rem; /* Smaller text size */
-  box-sizing: border-box; /* Ensure padding and border are included in the total width */
+  background: #1f293493;
+  border: 1.5px solid #322d47;
+  color: var(--text-color);
+  backdrop-filter: blur(8px);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+  box-sizing: border-box;
 }
 
-/* Emoji Container Styles */
 .emoji-container {
   display: flex;
-  align-items: center; /* Center emoji vertically */
-  justify-content: center; /* Center emoji horizontally */
-  flex-shrink: 0; /* Prevent emoji from shrinking */
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   text-align: center;
-  margin-right: 0.75rem; /* Space between emoji and text */
+  margin-right: 0.75rem;
 }
 
-/* Text Container Styles */
 .text-container {
   display: flex;
-  align-items: center; /* Center text vertically */
-  line-height: 1.5; /* Improve readability */
-  flex-direction: column; /* Stack text vertically if needed */
+  align-items: center;
+  line-height: 1.5;
+  flex-direction: column;
 }
 
-/* Mobile-Specific Adjustments */
 @media (max-width: 640px) {
   .callout-container {
-    padding: 0.75rem; /* Adjust padding for smaller screens */
+    padding: 0.75rem;
   }
 
   .text-container {
-    font-size: 0.75rem; /* Smaller text size for mobile */
+    font-size: 0.75rem;
   }
 }
 
-/*********************/
-/*****CALLOUT CSS*****/
-/*********************/
-
-/**********************/
-/****TWEET CARD CSS****/
-/**********************/
-
-/* Light theme (default) */
 [data-theme="light"] .tweet .react-tweet-theme {
-  /* margin is handled by our wrappers */
   --tweet-container-margin: 0;
   --tweet-font-family: inherit;
   --tweet-font-color: inherit;
-
-  /* Light colors */
-  --tweet-bg-color: rgb(232, 236, 228); /* Use the callout background color */
+  --tweet-bg-color: rgb(232, 236, 228);
   --tweet-bg-color-hover: var(--tweet-bg-color);
-  --tweet-color-blue-secondary: theme(
-    "colors.gray.600"
-  ); /* Adjusted to match callout */
-  --tweet-color-blue-secondary-hover: theme(
-    "colors.gray.100"
-  ); /* Adjusted to match callout */
-  --tweet-font-color-secondary: theme(
-    "colors.gray.500"
-  ); /* Adjusted to match callout */
-  --tweet-font-color: var(--text-color); /* Match callout text color */
-
-  /* Common properties for both themes */
+  --tweet-color-blue-secondary: theme("colors.gray.600");
+  --tweet-color-blue-secondary-hover: theme("colors.gray.100");
+  --tweet-font-color-secondary: theme("colors.gray.500");
+  --tweet-font-color: var(--text-color);
   --tweet-quoted-bg-color-hover: rgba(0, 0, 0, 0.03);
-  --tweet-border: 3px solid rgba(225, 216, 203, 0.8); /* Use the callout border color */
+  --tweet-border: 3px solid rgba(225, 216, 203, 0.8);
   --tweet-skeleton-gradient: linear-gradient(
     270deg,
     #fafafa,
@@ -600,54 +469,41 @@ table tbody tr:nth-child(even) {
   --tweet-twitter-icon-color: var(--tweet-font-color);
   --tweet-verified-old-color: rgb(130, 154, 171);
   --tweet-verified-blue-color: var(--tweet-color-blue-primary);
-
   --tweet-actions-font-weight: 500;
   --tweet-replies-font-weight: 500;
 }
-
-/* Dark theme */
 @media (prefers-color-scheme: dark) {
   .tweet .react-tweet-theme {
-    /* margin is handled by our wrappers */
     --tweet-container-margin: 0;
     --tweet-font-family: inherit;
     --tweet-font-color: inherit;
-
-    /* Dark theme colors */
-    --tweet-bg-color: #1f293493; /* Use the callout background color */
+    --tweet-bg-color: #1f293493;
     --tweet-bg-color-hover: var(--tweet-bg-color);
     --tweet-quoted-bg-color-hover: rgba(255, 255, 255, 0.03);
-    --tweet-border: 3px solid #322d47; /* Use the callout border color */
-    --tweet-color-blue-secondary: theme(
-      "colors.white"
-    ); /* Adjusted to match callout */
+    --tweet-border: 3px solid #322d47;
+    --tweet-color-blue-secondary: theme("colors.white");
     --tweet-color-blue-secondary-hover: #333;
-    --tweet-font-color-secondary: theme(
-      "colors.gray.400"
-    ); /* Adjusted to match callout */
-    --tweet-font-color: var(--text-color); /* Match callout text color */
+    --tweet-font-color-secondary: theme("colors.gray.400");
+    --tweet-font-color: var(--text-color);
   }
 }
 
-/* Common styles for both themes */
 .tweet .react-tweet-theme p {
   font-size: inherit;
   line-height: 1.3rem;
-  color: var(--tweet-font-color); /* Ensure text color matches the callout */
+  color: var(--tweet-font-color);
 }
 
 .tweet .react-tweet-theme p a {
   @apply border-b border-gray-300 transition-[border-color] hover:border-gray-600;
 }
 
-/* Dark theme link styles */
 @media (prefers-color-scheme: dark) {
   .tweet .react-tweet-theme p a {
     @apply border-gray-500 text-white hover:border-white;
   }
 }
 
-/* Remove link underline on hover for both themes */
 .tweet .react-tweet-theme p a:hover {
   text-decoration: none;
 }
@@ -660,126 +516,77 @@ table tbody tr:nth-child(even) {
   max-height: 250px;
 }
 
-/* Ensure tweet cards take full width on desktop */
 @media (min-width: 1024px) {
   .tweet .react-tweet-theme {
     width: 100%;
     max-width: 100%;
-    padding: 16px; /* Add padding inside the tweet card */
-    box-sizing: border-box; /* Ensure padding is included in the total width */
+    padding: 16px;
+    box-sizing: border-box;
   }
 }
 
-/**********************/
-/****TWEET CARD CSS****/
-/**********************/
-
-/********************/
-/****SANDPACK CSS****/
-/********************/
-
-/* Hide scrollbars for all Sandpack components */
 .custom-wrapper {
-  overflow: hidden !important; /* Hide scrollbars for the entire Sandpack wrapper */
+  overflow: hidden !important;
 }
 
 .custom-editor,
 .custom-preview {
-  overflow: hidden !important; /* Hide scrollbars in the editor and preview areas */
+  overflow: hidden !important;
 }
 
 .custom-editor .sp-code-editor,
 .custom-preview .sp-preview-iframe {
-  overflow: hidden !important; /* Ensure scrollbars are hidden within these components */
+  overflow: hidden !important;
 }
 
-/* Additional rule to ensure scrollbars are hidden */
 * {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 *::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, and Opera */
+  display: none;
 }
 
-/********************/
-/****SANDPACK CSS****/
-/********************/
-
-/*************************/
-/****PRO-CON CARDS CSS****/
-/*************************/
-
-/* Parent container for the cards */
 .pro-cons-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.8rem; /* Space between cards */
+  gap: 0.8rem;
 }
 
-/* Card styling */
 .pros-card,
 .cons-card {
-  flex: 1 1 calc(50% - 0.5rem); /* Each card takes up half of the available width minus gap */
-  border-radius: 0.6rem; /* Slightly rounded corners */
+  flex: 1 1 calc(50% - 0.5rem);
+  border-radius: 0.6rem;
   padding: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
-  border: 3px solid rgba(0, 0, 0, 0.1); /* Subtle border */
-  backdrop-filter: blur(10px); /* Frosted glass effect */
-  box-shadow: 0 10px 10px rgba(42, 42, 42, 0.05); /* Subtle shadow */
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 10px rgba(42, 42, 42, 0.05);
   box-sizing: border-box;
   margin-bottom: 0.2rem;
 }
 
-/* Light theme styles */
 [data-theme="light"] .pros-card {
-  border-color: rgba(
-    156,
-    204,
-    101,
-    0.8
-  ); /* Adjusted border color for light mode */
-  background-color: rgba(
-    241,
-    241,
-    241,
-    0.9
-  ); /* Lightened background color for light mode */
+  border-color: rgba(156, 204, 101, 0.8);
+  background-color: rgba(241, 241, 241, 0.9);
 }
 
 [data-theme="light"] .cons-card {
-  border-color: rgba(
-    249,
-    124,
-    124,
-    0.6
-  ); /* Adjusted border color for light mode */
-  background-color: rgba(
-    241,
-    241,
-    241,
-    0.9
-  ); /* Lightened background color for light mode */
+  border-color: rgba(249, 124, 124, 0.6);
+  background-color: rgba(241, 241, 241, 0.9);
 }
 
-/* Dark theme styles */
 [data-theme="dark"] .pros-card {
-  border-color: rgba(0, 255, 60, 0.5); /* Adjusted border color for dark mode */
-  background-color: #1f293493; /* Darkened background color for dark mode */
+  border-color: rgba(0, 255, 60, 0.5);
+  background-color: #1f293493;
 }
 
 [data-theme="dark"] .cons-card {
-  border-color: rgba(
-    255,
-    132,
-    0,
-    0.5
-  ); /* Adjusted border color for dark mode */
-  background-color: #1f293493; /* Darkened background color for dark mode */
+  border-color: rgba(255, 132, 0, 0.5);
+  background-color: #1f293493;
 }
 
-/* Emoji and text container styling */
 .emoji-container {
   display: flex;
   align-items: center;
@@ -794,16 +601,8 @@ table tbody tr:nth-child(even) {
   flex-direction: column;
 }
 
-/*************************/
-/****PRO-CON CARDS CSS****/
-/*************************/
-
-/*********************/
-/****FOOTNOTES CSS****/
-/*********************/
-
 .footnote-ref {
-  font-size: 0.75rem; /* Adjust size if needed */
+  font-size: 0.75rem;
   cursor: pointer;
   color: var(--button-crayola-light);
 }
@@ -820,14 +619,11 @@ table tbody tr:nth-child(even) {
 }
 
 .footnote-container ul {
-  list-style-type: none; /* Removes the bullets */
-  padding-left: 0; /* Removes default padding */
+  list-style-type: none;
+  padding-left: 0;
 }
 
 .footnote-container li {
   margin-bottom: 0.5rem;
   font-size: 0.8rem;
 }
-/*********************/
-/****FOOTNOTES CSS****/
-/*********************/
