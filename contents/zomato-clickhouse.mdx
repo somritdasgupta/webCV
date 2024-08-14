@@ -1,26 +1,11 @@
 ---
-title: "Why zomato switched from elasticsearch to clickhouse?"
+title: "How zomato manages it's logs?"
 publishedAt: "2024-04-28"
 summary: "How Zomato overcame the limitations of Elasticsearch and optimized their logging system to handle petabyte-scale data with ClickHouse."
 tags: [databases, analysis, trends]
 ---
 
-![Zomato Scaling](https://zomatoblog.com/wp-content/uploads/2023/04/blog_header_db.png)
-
-### Table of Contents
-
-- [Introduction](#introduction)
-- [Challenges with Elasticsearch](#challenges-with-elasticsearch)
-- [Why ClickHouse?](#why-clickhouse)
-- [Zomato’s Logging System Design](#zomatos-logging-system-design)
-- [Improvements achieved](#improvements-achieved)
-- [Conclusion](#conclusion)
-
----
-
-## Introduction
-
-Zomato, is not only India's biggest palyer in food delivery market but it also south asia's biggest food delivery aggregator, serves millions of users daily, resulting in an enormous volume of log data. With a peak log rate of 150 million events per minute and over 50 terabytes of uncompressed logs generated each day, maintaining efficient and scalable logging infrastructure is paramount. This article explores Zomato's transition from Elasticsearch to ClickHouse for managing their massive logging needs, detailing the challenges faced, the reasons for adopting ClickHouse, and the architectural and design choices that enabled the system's success.
+Well zomato, is not only India's biggest palyer in food delivery market but it also south asia's biggest food delivery aggregator, serves millions of users daily, resulting in an enormous volume of log data. With a peak log rate of 150 million events per minute and over 50 terabytes of uncompressed logs generated each day, maintaining efficient and scalable logging infrastructure is paramount. This article explores Zomato's transition from Elasticsearch to ClickHouse for managing their massive logging needs, detailing the challenges faced, the reasons for adopting ClickHouse, and the architectural and design choices that enabled the system's success.
 
 ### Challenges with elasticsearch
 
@@ -49,10 +34,6 @@ To address these challenges, Zomato evaluated several alternatives before settli
 ### Zomato’s logging system design
 
 ![Zomato Loggin Sytsem Architecture](https://lh7-us.googleusercontent.com/NL6Y3340UT23f97lPmAV-dhyH6PHBML1hkq3ifyVIDFkIs1WOVxEuivMhS1LbUiVy7bIuWfwsKBilysAc3RSOPtSD6uHm58g49_qvUQTkl_8SlZIlluNcVyOGRlDFUdSImh0CoJ5hFLtImnC5KxkyQY)
-
-### Log collection
-
-Zomato's logging infrastructure involves several key components:
 
 1. **Filebeat:** Collects logs from Docker containers and EC2 instances. Filebeat is a lightweight shipper that forwards logs to Kafka, ensuring reliable and scalable log collection.
 
@@ -95,26 +76,15 @@ func main() {
 }
 ```
 
-### Data storage
+### Data storage & ingestion
 
 The log data is stored in ClickHouse, which is scaled to handle Zomato's requirements. Initially, the system utilized 10 M6g.16xlarge AWS EC2 nodes, but this configuration may evolve based on changing needs. The use of EC2 instances with high memory and compute capabilities ensures that ClickHouse can handle large volumes of data efficiently.
 
 ![ClickHouse Buckets](https://lh6.googleusercontent.com/-q42plmXWjIfx61IuQbqQKWMkfCgEzid0eZ-eAzMdhW167bYFdCnZdg7VC8F5-qOBz83udtg_NYtPOKXURxv1roj4CATYQuRgeUyNRqAxH4MXFdU4vrCXXLwcdxu7pAYo3QxC1U5NQQYhnxFZmALcMk)
 
-### UI Application
+1. **Batch Processing Ingestion:** Instead of using ClickHouse Kafka plugins, Zomato opted for custom Golang workers to batch log entries. Each batch contains up to 20,000 entries, reducing the overhead on ClickHouse and maintaining a lag of less than 5 seconds. Batch processing minimizes the number of write operations and optimizes the use of system resources.
 
-A custom dashboard was developed for viewing and filtering logs. This dashboard is designed for high performance, achieving:
-
-- **First Contentful Paint (FCP):** 0.95 seconds
-- **Largest Contentful Paint (LCP):** 1.9 seconds
-
-The dashboard utilizes modern web technologies and performance optimization techniques to ensure a responsive user experience. Features like lazy loading and efficient data fetching contribute to the dashboard’s fast load times.
-
-### Efficient data ingestion
-
-1. **Batch Processing:** Instead of using ClickHouse Kafka plugins, Zomato opted for custom Golang workers to batch log entries. Each batch contains up to 20,000 entries, reducing the overhead on ClickHouse and maintaining a lag of less than 5 seconds. Batch processing minimizes the number of write operations and optimizes the use of system resources.
-
-2. **Native Format Insertion:** Data is inserted using ClickHouse’s native format, resulting in a performance boost and reduced I/O intensity compared to HTTP-based insertion. Native format insertion leverages ClickHouse’s optimized binary protocols for efficient data transfer.
+2. **Native Format Ingestion:** Data is inserted using ClickHouse’s native format, resulting in a performance boost and reduced I/O intensity compared to HTTP-based insertion. Native format insertion leverages ClickHouse’s optimized binary protocols for efficient data transfer.
 
 ```-- Create a table for logs
 CREATE TABLE IF NOT EXISTS logs (
@@ -153,11 +123,11 @@ func insertIntoNode(node string, logEntry LogEntry) {
 }
 ```
 
-### Schema design
+### Schema design in clickhouse
 
-1. **Semi-Structured Tables:** Logs are stored in tables with common columns at the top level and other fields in a `Map<String, String>`. This design allows for flexible querying and efficient storage. The semi-structured approach facilitates easy adaptation to varying log formats and structures.
+Logs are stored in **semi-structured tables** with common columns at the top level and other fields in a `Map<String, String>`. This design allows for flexible querying and efficient storage. The semi-structured approach facilitates easy adaptation to varying log formats and structures.
 
-2. **Compression Optimization:** The schema uses special codecs and `LowCardinality` strings to enhance compression ratios and reduce storage requirements. Compression codecs such as Delta, Gorilla, and LZ4 are employed to achieve high compression rates.
+1. **Compression Optimization:** The schema uses special codecs and `LowCardinality` strings to enhance compression ratios and reduce storage requirements. Compression codecs such as Delta, Gorilla, and LZ4 are employed to achieve high compression rates.
 
 ```
 -- Example schema with semi-structured tables and compression optimization
@@ -171,17 +141,7 @@ PARTITION BY toYYYYMM(timestamp)
 ORDER BY (timestamp);
 ```
 
-3. **Custom SDK:** Zomato developed an SDK to enforce structured logging practices, standardizing top-level fields to simplify log management and improve query efficiency. The SDK provides tools for consistent log formatting and integration with ClickHouse.
-
-### Frontend dashboard
-
-The custom dashboard for log management architecture includes:
-
-1. **Lazy Loading:** Defers loading non-critical resources to improve initial load times. Lazy loading ensures that only essential components are rendered first, reducing the initial page load time.
-
-2. **Filter Application and Date Range Picker:** Provides flexible log filtering and customization options. Users can filter logs by various criteria and select date ranges for analysis, enhancing the dashboard's usability.
-
-3. **DOM Virtualization:** Renders only visible records to handle large data volumes efficiently. DOM virtualization improves performance by minimizing the number of DOM elements rendered at any given time.
+2. **Custom SDK:** Zomato developed an SDK to enforce structured logging practices, standardizing top-level fields to simplify log management and improve query efficiency. The SDK provides tools for consistent log formatting and integration with ClickHouse.
 
 ### Replication and data management
 
@@ -189,7 +149,9 @@ The custom dashboard for log management architecture includes:
 
 2. **Data Tiering:** Implements TTL to move older data to cold storage and deletes data after 3 months. This approach helps manage storage costs and maintains system performance. Data tiering ensures that only recent and relevant data is kept in hot storage.
 
-### Secondary indexes
+<u>**Secondary indexes:**</u> TokenBF_v1 Index significantly improves the query speed bypassing non-matching data blocks, which is beneficial for large-scale data scans. **TokenBF_v1** is a specialized index for efficiently handling high-cardinality data.
+
+<Callout>Bloom filters were used to quickly determine if a query might match a set of records, reducing unnecessary data reads. These are probabilistic data structures that help in reducing the number of I/O operations.</Callout>
 
 ```
 -- Example of Bloom filter usage for optimizing query performance
@@ -205,36 +167,21 @@ PRIMARY KEY (level)
 INDEX idx_level (level) TYPE bloom_filter(0.1);
 ```
 
-1. **TokenBF_v1 Index:** Improves query speed by bypassing non-matching data blocks, which is beneficial for large-scale data scans. TokenBF_v1 is a specialized index for efficiently handling high-cardinality data.
+<u>**Query Throttling:**</u> Implements throttling mechanisms to handle high query loads, prioritizing efficient queries and maintaining system availability. Throttling ensures that the system can handle peak loads without compromising performance.
 
-2. **Bloom Filters:** Used to quickly determine if a query might match a set of records, reducing unnecessary data reads. Bloom filters are probabilistic data structures that help in reducing the number of I/O operations.
+Optimizes resource allocation to prioritize write operations during system stress. The system dynamically adjusts resource allocation based on query types and workloads.
 
-### Ensuring resiliency
+**Metrics collection:** Uses Prometheus to scrape ClickHouse metrics and Grafana for visualization and alerting. Prometheus collects time-series data on system performance, and Grafana provides dashboards for real-time monitoring.
 
-1. **Query Throttling:** Implements throttling mechanisms to handle high query loads, prioritizing efficient queries and maintaining system availability. Throttling ensures that the system can handle peak loads without compromising performance.
+> The migration to ClickHouse has resulted in performance enhancement for zomato
 
-2. **Enhanced Read Query Niceness:** Optimizes resource allocation to prioritize write operations during system stress. The system dynamically adjusts resource allocation based on query types and workloads.
+Achieved real-time data ingestion with less than 5 seconds of lag, supporting timely decision-making. The system's reliability has improved, allowing for near-instantaneous access to log data.
 
-### Performance metrics
+1. **Performance:** Reduced query times to P99 of 10 seconds, with complex queries completing in under 20 seconds. Query performance has been significantly enhanced, making it easier to analyze large volumes of data.
 
-1. **Metrics collection:** Uses Prometheus to scrape ClickHouse metrics and Grafana for visualization and alerting. Prometheus collects time-series data on system performance, and Grafana provides dashboards for real-time monitoring.
+2. **Cost savings:** Potentially saved over a million dollars annually compared to the previous Elasticsearch setup. The cost-effectiveness of ClickHouse has resulted in substantial savings for Zomato.
 
-2. **Performance Insights:** Monitors various health metrics and query performance to continuously optimize the system. Key metrics include query response times, resource utilization, and error rates.
-
-### Security measures
-
-1. **Authentication and Access Control:** Implements Google Authentication, table-level access control, and query auditing to secure log data and prevent unauthorized access. Google Authentication provides secure and scalable user authentication, while table-level access control ensures that users can only access data they are authorized to view.
-
-### Improvements achieved
-
-The migration to ClickHouse brought significant improvements:
-
-1. **Reliability:** Achieved real-time data ingestion with less than 5 seconds of lag, supporting timely decision-making. The system's reliability has improved, allowing for near-instantaneous access to log data.
-
-2. **Performance:** Reduced query times to P99 of 10 seconds, with complex queries completing in under 20 seconds. Query performance has been significantly enhanced, making it easier to analyze large volumes of data.
-
-3. **Cost savings:** Potentially saved over a million dollars annually compared to the previous Elasticsearch setup. The cost-effectiveness of ClickHouse has resulted in substantial savings for Zomato.
 
 ## Conclusion
 
-Zomato's transition to ClickHouse represents a strategic move to enhance their logging infrastructure, addressing scalability and cost issues associated with Elasticsearch. By leveraging ClickHouse's high-performance capabilities, custom design choices, and efficient data management practices, Zomato has significantly improved their logging system's reliability, performance, and cost-effectiveness.
+Zomato's transition to ClickHouse represents a strategic move to enhance their logging infrastructure, addressing scalability and cost issues associated with Elasticsearch. By migrating to ClickHouse's high-performance capabilities, custom design choices, and efficient data management practices, Zomato has significantly improved their logging system's reliability, performance, and cost-effectiveness.
