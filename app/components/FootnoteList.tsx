@@ -40,7 +40,7 @@ export function FootnoteList() {
       <h3 className="text-xl font-semibold mb-2 border-b-1 border-neutral-600 pb-2">
         Footnotes
       </h3>
-      <ul className="list-none p-0 italic">{sortedFootnotes}</ul>
+      <li className="list-none p-0 italic">{sortedFootnotes}</li>
     </div>
   );
 }

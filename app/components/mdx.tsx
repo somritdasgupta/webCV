@@ -10,7 +10,7 @@ import { FootnoteProvider } from "./FootnoteContext";
 
 function Callout(props) {
   return (
-    <div className="callout-container flex items-center p-8 mt-2 mb-2 rounded-lg">
+    <div className="callout-container flex items-center pl-8 pr-8 mt-8 mb-8 rounded-lg">
       <div className="emoji-container text-sm mr-3">{props.emoji}</div>
       <div className="text-container flex-1 text-sm">{props.children}</div>
     </div>

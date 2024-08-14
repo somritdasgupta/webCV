@@ -95,7 +95,7 @@ export default function Page() {
                 )}
                 <a
                   href={featuredProject.html_url}
-                  className="font-semibold text-blue-400 hover:text-blue-300 inline-flex items-center"
+                  className="font-semibold !text-violet-500 hover:text-blue-300 inline-flex items-center"
                 >
                   Github
                   <CommandLineIcon className="w-4 h-4 ml-1" />
