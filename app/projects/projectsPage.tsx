@@ -39,40 +39,6 @@ export default function ProjectsPage() {
   return (
     <div className="text-white">
       <section className="mb-6">
-        <h1 className="text-3xl font-bold mb-4 tracking-tight">Education</h1>
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-xl font-medium">
-              Maulana Abul Kalam Azad University Of Technology
-            </h3>
-            <p className="text-yellow-500">2020 — 2024</p>
-            <p>
-              Pursued Bachelor of Technology in the field of Computer Science
-              and Engineering
-            </p>
-          </div>
-          <div>
-            <h3 className="text-xl font-medium">St. Stephens School</h3>
-            <p className="text-yellow-500">2018 — 2020</p>
-            <p>
-              Undertaken the Indian School Certificate (ISC) examination in
-              Standard-12 held by CISCE, in the field of Computer Science and
-              Mathematics
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <a
-        href="/Resume.pdf"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block px-2 py-2 text-sm font-medium text-white bg-[#ec66524f] rounded-lg mb-6 flex items-center justify-center max-w-[110px] w-full sm:w-auto tracking-tight"
-      >
-        GET RESUME
-      </a>
-
-      <section className="mb-6">
         <h1 className="text-3xl font-bold mb-4 tracking-tight">Projects</h1>
         {error && <p className="text-red-500">{error}</p>}
         <div className="space-y-8">
@@ -110,10 +76,38 @@ export default function ProjectsPage() {
           )}
         </div>
       </section>
+      <section className="mb-6">
+        <h1 className="text-3xl font-bold mb-4 tracking-tight">Education</h1>
+        <div className="space-y-4">
+          <p>
+            I earned my Bachelor of Technology in Computer Science and
+            Engineering from Maulana Abul Kalam Azad University of Technology.
+            Though you merely learn practical world works in college still the
+            time I spent like about 4 years studying various subjects there on
+            Computer Science and focusing on low-level programming using C and
+            Java, it was an exciting journey.
+          </p>
+          <p>
+            Before that, I completed my high-schooling from St. Stephens School
+            where I obtained an Indian School Certificate (ISC) in Computer
+            Science and Mathematics. Those years were all about building a solid
+            foundation and interest in this domain, which later on helped a lot.
+          </p>
+        </div>
+      </section>
+
+      <a
+        href="/Resume.pdf"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block px-2 py-2 text-sm font-medium text-white bg-[#ec66524f] rounded-lg mb-6 flex items-center justify-center max-w-[110px] w-full sm:w-auto tracking-tight"
+      >
+        GET RESUME
+      </a>
 
       {/* Skills Section */}
       <section>
-        <h2 className="text-3xl font-bold mb-4">Skills</h2>
+        <h2 className="text-3xl font-bold mb-4">Stack</h2>
         <div className="flex flex-wrap gap-4">
           <span className="custom-skill-pill">react</span>
           <span className="custom-skill-pill">node.js</span>

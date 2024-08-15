@@ -10,11 +10,11 @@ Well zomato, is not only India's biggest palyer in food delivery market but it a
 ### Challenges with elasticsearch
 
 1. **Scaling Difficulties:** Elasticsearch clusters struggled to keep up with the exponential growth in log data. The need for constant over-provisioning to handle traffic spikes led to increased operational complexity and cost. The Elasticsearch architecture requires horizontal scaling, which involves adding more nodes to the cluster, but the process is not always straightforward and can lead to data rebalancing issues.
-   <Callout emoji="💡">
+<Callout emoji="💡">
      Zomato initially relied on Elasticsearch (ELK Stack) for their logging
      needs. However, as their platform scaled and traffic increased, several
      issues emerged.
-   </Callout>
+</Callout>
 2. **Cost Implications:** The costs associated with maintaining and scaling Elasticsearch clusters became unsustainable. Managing variable traffic patterns required significant financial investment, impacting the overall cost-effectiveness of the logging system. Elasticsearch clusters require significant resources to handle indexing and querying large volumes of data, leading to high operational costs.
 
 3. **Performance Issues:** The performance of Elasticsearch degraded as the data volume grew, resulting in slower query times and increased ingestion lag. Elasticsearch’s performance can be impacted by factors such as query complexity, data volume, and indexing strategy. As the dataset expanded, the system experienced increased latency in search and aggregation queries.

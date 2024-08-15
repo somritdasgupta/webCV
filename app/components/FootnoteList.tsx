@@ -10,10 +10,10 @@ export function FootnoteList() {
   const sortedFootnotes = Array.from(footnotes.entries())
     .sort(([idA], [idB]) => idA - idB)
     .map(([id, { text, link }]) => (
-      <li key={id} className="footnote-item italic">
+      <li key={id} className="footnote-item">
         <a
           id={`footnote-${id}`}
-          className="footnote-ref italic mr-2"
+          className="footnote-ref mr-2"
           href={`#footnote-${id}`}
         >
           [{id}]
@@ -40,7 +40,7 @@ export function FootnoteList() {
       <h3 className="text-xl font-semibold mb-2 border-b-1 border-neutral-600 pb-2">
         Footnotes
       </h3>
-      <li className="list-none p-0 italic">{sortedFootnotes}</li>
+      <li className="list-none p-0">{sortedFootnotes}</li>
     </div>
   );
 }

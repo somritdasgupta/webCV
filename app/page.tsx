@@ -147,7 +147,7 @@ export default function Page() {
               <ArrowTrendingUpIcon className="w-6 h-6 ml-2 text-neutral-500" />
             </h2>
             <BlogPosts limit={3} showTags={false} />
-            <div className="mt-6">
+            <div className="mt-3">
               <Button href="/blog" text="View All Posts" icon="right" />
             </div>
           </div>
