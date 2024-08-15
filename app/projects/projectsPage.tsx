@@ -38,8 +38,10 @@ export default function ProjectsPage() {
 
   return (
     <div className="text-white">
+      <h1 className="text-3xl font-bold mb-4 tracking-tight border-left-2">
+        Projects
+      </h1>
       <section className="mb-6">
-        <h1 className="text-3xl font-bold mb-4 tracking-tight">Projects</h1>
         {error && <p className="text-red-500">{error}</p>}
         <div className="space-y-8">
           {repos.length > 0 ? (
@@ -76,9 +78,21 @@ export default function ProjectsPage() {
           )}
         </div>
       </section>
-      <section className="mb-6">
-        <h1 className="text-3xl font-bold mb-4 tracking-tight">Education</h1>
-        <div className="space-y-4">
+      {/* Skills Section */}
+      <section>
+        <h2 className="text-3xl font-bold mb-4">Stack</h2>
+        <div className="flex flex-wrap gap-4 mb-4">
+          <span className="custom-skill-pill">react</span>
+          <span className="custom-skill-pill">node.js</span>
+          <span className="custom-skill-pill">docker</span>
+          <span className="custom-skill-pill">rest-api</span>
+          <span className="custom-skill-pill">sql</span>
+          <span className="custom-skill-pill">cloud technologies</span>
+          <span className="custom-skill-pill">Next.js</span>
+          <span className="custom-skill-pill">javaScript</span>
+          <span className="custom-skill-pill">typeScript</span>
+        </div>
+        <div className="space-y-4 mb-8">
           <p>
             I earned my Bachelor of Technology in Computer Science and
             Engineering from Maulana Abul Kalam Azad University of Technology.
@@ -94,31 +108,14 @@ export default function ProjectsPage() {
             foundation and interest in this domain, which later on helped a lot.
           </p>
         </div>
-      </section>
-
-      <a
-        href="/Resume.pdf"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block px-2 py-2 text-sm font-medium text-white bg-[#ec66524f] rounded-lg mb-6 flex items-center justify-center max-w-[110px] w-full sm:w-auto tracking-tight"
-      >
-        GET RESUME
-      </a>
-
-      {/* Skills Section */}
-      <section>
-        <h2 className="text-3xl font-bold mb-4">Stack</h2>
-        <div className="flex flex-wrap gap-4">
-          <span className="custom-skill-pill">react</span>
-          <span className="custom-skill-pill">node.js</span>
-          <span className="custom-skill-pill">docker</span>
-          <span className="custom-skill-pill">rest-api</span>
-          <span className="custom-skill-pill">sql</span>
-          <span className="custom-skill-pill">cloud technologies</span>
-          <span className="custom-skill-pill">Next.js</span>
-          <span className="custom-skill-pill">javaScript</span>
-          <span className="custom-skill-pill">typeScript</span>
-        </div>
+        <a
+          href="/Resume.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block px-2 py-2 text-sm font-medium text-white bg-[#ec66524f] rounded-lg mb-4 flex items-center justify-center max-w-[110px] w-full sm:w-auto tracking-tight"
+        >
+          GET RESUME
+        </a>
       </section>
     </div>
   );
