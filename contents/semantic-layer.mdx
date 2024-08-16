@@ -65,8 +65,7 @@ Implementing a semantic layer requires a structured approach that involves sever
 
 2. **Develop a Data Model:** Create a data model that represents the organization's data and relationships between different data entities. Here’s an example of a simple data model in SQL:
 
-```
-sql
+```sql filename="example.sql"
 CREATE TABLE Customers (
     CustomerID INT PRIMARY KEY,
     FirstName VARCHAR(100),
@@ -81,7 +80,6 @@ CREATE TABLE Orders (
     TotalAmount DECIMAL(10, 2),
     FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
 );
-
 ```
 
 3. **Establish a Common Vocabulary:** Define a common vocabulary and terminology that will be used across the organization.

@@ -7,6 +7,7 @@ import { TweetComponent } from "./tweet";
 import { LiveCode } from "./sandpack";
 import dynamic from "next/dynamic";
 import { FootnoteProvider } from "./FootnoteContext";
+import { CodeBlock } from "./CodeBlock";
 
 function Callout(props) {
   return (
@@ -47,9 +48,9 @@ function ProsCard({ pros }) {
     <div className="pros-card">
       <div className="mt-4 ml-4">
         {pros.map((pro) => (
-          <div key={pro} className="flex font-medium items-baseline mb-4">
+          <div key={pro} className="flex font-medium items-center mb-4">
             <div className="h-4 w-4 mr-2">
-              <svg className="h-5 w-4 text-emerald-500" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 text-emerald-500" viewBox="0 0 24 24">
                 <g
                   fill="none"
                   stroke="currentColor"
@@ -76,13 +77,13 @@ function ConsCard({ cons }) {
     <div className="cons-card">
       <div className="mt-4 ml-4">
         {cons.map((con) => (
-          <div key={con} className="flex font-medium items-baseline mb-4">
+          <div key={con} className="flex font-medium items-center mb-4">
             <div className="h-4 w-4 mr-2">
-              <svg className="h-5 w-4 text-red-400" viewBox="0 0 20 20">
+              <svg className="h-5 w-4 text-red-400" viewBox="0 0 24 24">
                 <g
                   xmlns="http://www.w3.org/2000/svg"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
@@ -134,11 +135,6 @@ function RoundedImage(props) {
       {...props}
     />
   );
-}
-
-function Code({ children, ...props }) {
-  let codeHTML = highlight(children);
-  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />;
 }
 
 function slugify(str) {
@@ -230,7 +226,19 @@ let components = {
   Footnote,
   FootnoteList,
   StaticTweet: TweetComponent,
-  code: Code,
+  code: (props) => <CodeBlock {...props} inline />,
+  pre: (props) => {
+    const className = props.children.props.className || "";
+    const matches = className.match(/language-(\w+)/);
+    const language = matches ? matches[1] : "";
+    const filename = props.children.props.filename || null;
+
+    return (
+      <CodeBlock className={className} language={language} filename={filename}>
+        {props.children.props.children.trim()}
+      </CodeBlock>
+    );
+  },
   LiveCode,
   Table,
   Iframe,

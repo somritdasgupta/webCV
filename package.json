@@ -23,6 +23,7 @@
     "postcss": "^8.4.40",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-icons": "^5.3.0",
     "react-tweet": "^3.2.1",
     "sharp": "^0.33.4",
     "sugar-high": "^0.6.1",
