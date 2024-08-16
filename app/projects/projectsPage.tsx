@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CommandLineIcon } from "@heroicons/react/24/outline";
+import { TbBrandGithub } from "react-icons/tb";
 
 export default function ProjectsPage() {
   const [repos, setRepos] = useState<any[]>([]);
@@ -54,11 +54,11 @@ export default function ProjectsPage() {
                   )}
                   <a
                     href={repo.html_url}
-                    className="inline-flex items-center text-yellow-500 hover:underline"
+                    className="font-semibold dark:!text-blue-600 hover:!text-red-500 inline-flex items-center"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <CommandLineIcon className="w-4 h-4 mr-1" />
+                    <TbBrandGithub className="w-4 h-4 mr-1" />
                     GitHub
                   </a>
                   {repo.topics && (
@@ -94,12 +94,12 @@ export default function ProjectsPage() {
         </div>
         <div className="space-y-4 mb-8">
           <p>
-            I earned my Bachelor of Technology in Computer Science and
-            Engineering from Maulana Abul Kalam Azad University of Technology.
-            Though you merely learn practical world works in college still the
-            time I spent like about 4 years studying various subjects there on
-            Computer Science and focusing on low-level programming using C and
-            Java, it was an exciting journey.
+            I earned my bachelor's (B.Tech) in Computer Science and Engineering
+            from Maulana Abul Kalam Azad University of Technology. Though you
+            merely learn practical world works in college still the time I spent
+            like about 4 years studying various subjects there on Computer
+            Science and focusing on low-level programming using C and Java, it
+            was an exciting journey.
           </p>
           <p>
             Before that, I completed my high-schooling from St. Stephens School

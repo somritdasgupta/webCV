@@ -46,35 +46,16 @@ export function CodeBlock({
   }
 
   return (
-    <div className="border-2 code-block relative my-4 rounded-lg overflow-hidden bg-[var(--header-bg-color)] border-[var(--code-border)]">
-      {filename && (
-        <div className="flex items-center justify-between bg-[#2d2d2d] px-4 py-2 text-xs text-gray-200">
-          <span>{filename}</span>
-          <span>{lang}</span>
+    <div className="border-2 code-block relative my-4 rounded-lg overflow-hidden bg-[var(--code-border)] border-[var(--code-border)]">
+      {/* Tabs at the top */}
+      <div className="tabs flex rounded-lg items-center justify-between bg-[var(--code-border)] text-slate-300 text-xs">
+        <div className="tab-info flex items-center  py-2">
+          {filename && <span className="filename">{filename}</span>}
+          <span className="language ml-2">{lang}</span>
         </div>
-      )}
-      <div className="relative flex">
-        <div className="bg-[var(--code-border)] text-center indent-1.5 select-none py-4 pr-2 flex flex-col items-end">
-          {codeLines.map((_, index) => (
-            <div
-              key={index}
-              className="leading-6 text-[0.65rem]"
-              style={{ color: "var(--sh-class)" }}
-            >
-              {index + 1}
-            </div>
-          ))}
-        </div>
-        <pre className="p-4 overflow-x-auto flex-1">
-          <code
-            dangerouslySetInnerHTML={{ __html: highlightedCode }}
-            className="text-sm leading-5"
-            {...props}
-          />
-        </pre>
         <button
           onClick={copyToClipboard}
-          className="absolute top-2 right-2 p-1 rounded-md bg-[var(--code-border)] text-gray-400 hover:text-white transition-colors"
+          className="copy-button p-1 rounded-md text-gray-500 hover:text-yellow-700 transition-colors"
           aria-label="Copy code"
         >
           {isCopied ? (
@@ -83,6 +64,16 @@ export function CodeBlock({
             <HiOutlineClipboardCopy className="h-4 w-4" />
           )}
         </button>
+      </div>
+      {/* Code block */}
+      <div className="relative flex rounded-lg bg-[var(--header-bg-color)]">
+        <pre className="p-4 overflow-x-auto flex-1 rounded-lg bg-[var(--header-bg-color)]">
+          <code
+            dangerouslySetInnerHTML={{ __html: highlightedCode }}
+            className="text-sm leading-5"
+            {...props}
+          />
+        </pre>
       </div>
     </div>
   );

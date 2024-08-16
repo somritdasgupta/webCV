@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SunIcon, MoonIcon } from '@heroicons/react/24/solid';
+import { FiSun, FiMoon } from "react-icons/fi";
 
 interface ThemeSwitcherProps {
   className?: string;
@@ -50,9 +50,9 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         }}
       >
         {isDarkMode ? (
-          <SunIcon className="w-5 h-5" />
+          <FiSun className="w-5 h-5" />
         ) : (
-          <MoonIcon className="w-5 h-5" />
+          <FiMoon className="w-5 h-5" />
         )}
       </span>
     );

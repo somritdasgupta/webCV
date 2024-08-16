@@ -43,7 +43,6 @@ async function parseFrontmatter(
       metadata[key.trim() as keyof Metadata] = value;
     }
   });
-
   return { metadata: metadata as Metadata, content };
 }
 

@@ -8,6 +8,7 @@ import { LiveCode } from "./sandpack";
 import dynamic from "next/dynamic";
 import { FootnoteProvider } from "./FootnoteContext";
 import { CodeBlock } from "./CodeBlock";
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 function Callout(props) {
   return (
@@ -49,20 +50,7 @@ function ProsCard({ pros }) {
       <div className="mt-4 ml-4">
         {pros.map((pro) => (
           <div key={pro} className="flex font-medium items-center mb-4">
-            <div className="h-4 w-4 mr-2">
-              <svg className="h-4 w-4 text-emerald-500" viewBox="0 0 24 24">
-                <g
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
-                  <path d="M22 4L12 14.01l-3-3" />
-                </g>
-              </svg>
-            </div>
+            <FiCheckCircle className="h-4 w-4 mr-2 text-emerald-500" />
             <span>{pro}</span>
           </div>
         ))}
@@ -78,19 +66,7 @@ function ConsCard({ cons }) {
       <div className="mt-4 ml-4">
         {cons.map((con) => (
           <div key={con} className="flex font-medium items-center mb-4">
-            <div className="h-4 w-4 mr-2">
-              <svg className="h-5 w-4 text-red-400" viewBox="0 0 24 24">
-                <g
-                  xmlns="http://www.w3.org/2000/svg"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                </g>
-              </svg>
-            </div>
+            <FiXCircle className="h-4 w-4 mr-2 text-red-400" />
             <span>{con}</span>
           </div>
         ))}
@@ -131,7 +107,7 @@ function RoundedImage(props) {
   return (
     <Image
       alt={props.alt}
-      className="rounded-lg border-2 border-gray-300 shadow-lg transition-transform transform hover:scale-105"
+      className="rounded-lg border-2 border-slate-800 shadow-lg transition-transform transform hover:scale-105"
       {...props}
     />
   );
@@ -239,6 +215,7 @@ let components = {
       </CodeBlock>
     );
   },
+
   LiveCode,
   Table,
   Iframe,

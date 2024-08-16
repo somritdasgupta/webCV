@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useFootnotes } from "./FootnoteContext";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
+import { FaExternalLinkAlt } from "react-icons/fa"; // Importing from react-icons
 
 export function FootnoteList() {
   const { footnotes } = useFootnotes();
@@ -13,7 +13,7 @@ export function FootnoteList() {
       <li key={id} className="footnote-item">
         <a
           id={`footnote-${id}`}
-          className="footnote-ref mr-2"
+          className="footnote-ref mr-2 light-text-color"
           href={`#footnote-${id}`}
         >
           [{id}]
@@ -28,7 +28,7 @@ export function FootnoteList() {
               aria-label="Resource External link"
               className="ml-1 inline-flex items-center relative top-0.5"
             >
-              <ArrowTopRightOnSquareIcon className="h-4 light-text-color" />
+              <FaExternalLinkAlt className="h-4 light-text-color" />
             </a>
           )}
         </span>

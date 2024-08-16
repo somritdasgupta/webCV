@@ -1,18 +1,16 @@
-// components/Button.tsx
-
 import React from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa"; // Importing from react-icons
 
 interface ButtonProps {
   href: string;
   text: string;
-  icon: "left" | "right"; // Props passed on and helps me choose the icon to use
+  icon: "left" | "right"; // Props passed on and helps choose the icon to use
 }
 
 const icons = {
-  left: <ArrowLeftIcon className="w-3 h-3 mr-1" />,
-  right: <ArrowRightIcon className="w-3 h-3 ml-1 mt-1" />,
+  left: <FaArrowLeft className="w-3 h-3 mr-1" />,
+  right: <FaArrowRight className="w-3 h-3 ml-1 mt-1" />,
 };
 
 const Button: React.FC<ButtonProps> = ({ href, text, icon }) => {

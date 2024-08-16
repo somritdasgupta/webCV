@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Square3Stack3DIcon } from "@heroicons/react/24/outline";
+import { TiFlash } from "react-icons/ti";
 
 interface RelatedPost {
   metadata: {
@@ -64,7 +64,7 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
         <div className="mb-8 pt-4">
           <h2 className="text-xl font-bold mb-4 flex items-center">
             Other posts
-            <Square3Stack3DIcon className="w-6 h-5 ml-1 mt-1" />
+            <TiFlash className="w-6 h-5 ml-1 mt-1" />
           </h2>
           <Link href={`/blog/${randomPost.slug}`} className="block mb-0">
             <div className="post-title-container">
@@ -82,7 +82,7 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
     <div className="mb-8 pt-4">
       <h2 className="text-xl font-bold mb-4 flex items-center">
         Related posts
-        <Square3Stack3DIcon className="w-6 h-5 ml-1 mt-1" />
+        <TiFlash className="w-6 h-5 ml-1 mt-1" />
       </h2>
       <div className="space-y-4">
         {shuffledRelatedPosts.map((post) => (

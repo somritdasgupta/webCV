@@ -54,7 +54,7 @@ export function LiveCode({ mode, fileNames, template }: LiveCodeProps) {
   }, [fileNames]);
 
   return (
-    <div className="rounded-lg overflow-hidden border-2 border-indigo-900">
+    <div className="rounded-lg overflow-hidden border-2 border-[var(--code-border)]">
       <Sandpack
         theme={levelUp}
         template={template}

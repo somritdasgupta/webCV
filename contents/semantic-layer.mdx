@@ -65,7 +65,7 @@ Implementing a semantic layer requires a structured approach that involves sever
 
 2. **Develop a Data Model:** Create a data model that represents the organization's data and relationships between different data entities. Here’s an example of a simple data model in SQL:
 
-```sql filename="example.sql"
+```sql
 CREATE TABLE Customers (
     CustomerID INT PRIMARY KEY,
     FirstName VARCHAR(100),
@@ -90,8 +90,7 @@ CREATE TABLE Orders (
 
 6. **Develop a Semantic Framework:** Develop a semantic framework that defines the relationships between data entities and provides a standardized approach for data access and queries. Here’s an example using a data mapping tool:
 
-```
-json
+```json
 {
     "Customer": {
        "id": "CustomerID",
@@ -116,8 +115,7 @@ A semantic layer plays a critical role in data analysis by providing a unified v
 
 - **Data Visualization:** A semantic layer provides a simplified and unified view of complex data structures, making it easier for users to visualize and understand data. For example, using a data visualization library like D3.js:
 
-```
-javascript
+```javascript
 d3.select("body")
     .append("svg")
     .attr("width", 500)
@@ -137,8 +135,7 @@ d3.select("body")
 
 - **Machine Learning:** A semantic layer provides a unified view of data, enabling organizations to train machine learning models on consistent and accurate data. Example in Python using scikit-learn:
 
-```
-python
+```python
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
@@ -166,8 +163,7 @@ organization.
 
 - **Data Quality:** A semantic layer ensures that data is accurate, complete, and consistent across the organization. Example of data quality checks:
 
-```
-sql
+```sql
 SELECT CustomerID
 FROM Customers
 WHERE Email IS NULL OR Email = '';
@@ -175,8 +171,7 @@ WHERE Email IS NULL OR Email = '';
 
 - **Data Security:** A semantic layer provides a standardized approach for data access and queries, ensuring that data is secure and protected from unauthorized access. Example of data access control in SQL:
 
-```
-sql
+```sql
 GRANT SELECT ON Orders TO analytics_user;
 ```
 

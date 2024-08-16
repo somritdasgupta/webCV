@@ -7,7 +7,7 @@ import { useFootnotes } from "./FootnoteContext";
 interface FootnoteProps {
   id: number;
   text: string;
-  link?: string; // Add optional link property
+  link?: string;
 }
 
 export function Footnote({ id, text, link }: FootnoteProps) {

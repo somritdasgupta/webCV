@@ -5,11 +5,10 @@ import Button from "app/components/Button";
 import dynamic from "next/dynamic";
 import Signature from "app/components/signature";
 import { getBlogPosts } from "../getBlogPosts";
-import RelatedPosts from "app/components/RelatedPosts"; // Update this path if necessary
+import RelatedPosts from "app/components/RelatedPosts";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://somrit.vercel.app";
 
-// Dynamically import components with client-side rendering
 const FootnoteProvider = dynamic(
   () =>
     import("../../components/FootnoteContext").then(
@@ -120,7 +119,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       <Button href="/blog" text="Back to posts" icon="left" />
       <h1 className="title font-bold text-2xl">{post.metadata.title}</h1>
       <div className="flex justify-between items-center mt-2 mb-4 ml-0.5 text-sm">
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm !text-blue-600 dark:!text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
         </p>
       </div>

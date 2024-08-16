@@ -1,3 +1,4 @@
+import React from "react";
 import { BlogPosts } from "app/components/posts";
 import { Metadata } from "next";
 import { baseUrl } from "../sitemap";
@@ -40,7 +41,12 @@ export default function Page() {
       <h1 className="bg-color font-bold text-3xl mb-4 tracking-tight">
         My Blog
       </h1>
-      <BlogPosts />
+      <BlogPosts
+        showTags={true}
+        showBorders={true}
+        showPublicationYear={true}
+        groupByYear={true}
+      />
     </section>
   );
 }

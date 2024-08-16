@@ -1,14 +1,13 @@
+// app/page.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  ArrowTrendingUpIcon,
-  CommandLineIcon,
-} from "@heroicons/react/24/outline";
 import { BlogPosts } from "./components/posts";
 import Button from "./components/Button";
 import displayImage from "../public/somritdasgupta.jpg";
+import { HiArrowTrendingUp } from "react-icons/hi2";
+import { TbBrandGithub } from "react-icons/tb";
 
 export default function Page() {
   const [featuredProject, setFeaturedProject] = useState<any>(null);
@@ -95,10 +94,10 @@ export default function Page() {
                 )}
                 <a
                   href={featuredProject.html_url}
-                  className="font-semibold !text-violet-500 hover:text-blue-300 inline-flex items-center"
+                  className="font-semibold !text-violet-500 hover:!text-red-300 inline-flex items-center"
                 >
+                  <TbBrandGithub className="w-4 h-4 mr-1" />
                   Github
-                  <CommandLineIcon className="w-4 h-4 ml-1" />
                 </a>
                 {featuredProject.topics && (
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -144,9 +143,14 @@ export default function Page() {
           <div>
             <h2 className="text-2xl font-bold mb-2 lg:mb-2 flex items-center">
               Recent Posts
-              <ArrowTrendingUpIcon className="w-6 h-6 ml-2 text-neutral-500" />
+              <HiArrowTrendingUp className="w-6 h-6 ml-2 text-gray-500" />{" "}
             </h2>
-            <BlogPosts limit={3} showTags={false} />
+            <BlogPosts
+              limit={3}
+              showTags={false}
+              showBorders={false}
+              showPublicationYear={true}
+            />
             <div className="mt-3">
               <Button href="/blog" text="View All Posts" icon="right" />
             </div>
