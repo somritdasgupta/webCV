@@ -50,9 +50,9 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         }}
       >
         {isDarkMode ? (
-          <FiSun className="w-5 h-5" />
+          <FiSun className="w-5 h-5 text-violet-400" />
         ) : (
-          <FiMoon className="w-5 h-5" />
+          <FiMoon className="w-5 h-5 text-violet-400" />
         )}
       </span>
     );

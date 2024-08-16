@@ -119,7 +119,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       <Button href="/blog" text="Back to posts" icon="left" />
       <h1 className="title font-bold text-2xl">{post.metadata.title}</h1>
       <div className="flex justify-between items-center mt-2 mb-4 ml-0.5 text-sm">
-        <p className="text-sm !text-blue-600 dark:!text-neutral-400">
+        <p className="!font-semibold text-sm !text-violet-400">
           {formatDate(post.metadata.publishedAt)}
         </p>
       </div>

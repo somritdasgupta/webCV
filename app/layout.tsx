@@ -12,7 +12,7 @@ import { SandpackCSS } from "./blog/[slug]/sandpack";
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Somrit Dasgupta / Developer x Extraordinaire",
+    default: "hey, I'm Somrit 👋",
     template: "%s | Somrit Dasgupta",
   },
   description: "hey, I'm Somrit | Developer x Extraordinaire",

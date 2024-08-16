@@ -11,6 +11,7 @@
   --text-p: #6a2a2a;
 
   /* UI Elements */
+  --bronzer: #1f7d89;
   --callout-bg: #fcf2e5f3;
   --callout-border: #dfcdb4cc;
   --card-bg: #f1f1f1e6;
@@ -47,6 +48,7 @@
   --text-p: #d8d8d8;
 
   /* UI Elements */
+  --bronzer: #1f8982;
   --callout-bg: #1f293493;
   --callout-border: #322d47;
   --card-bg: #1f293493;
@@ -366,7 +368,7 @@ nav a {
 }
 
 .custom-skill-pill {
-  background-color: #ec806f3f !important;
+  background-color: rgba(192, 132, 252, 0.250) !important;
 }
 
 .custom-topic-pill {
@@ -553,7 +555,6 @@ table tbody tr:nth-child(even) {
 }
 
 .footnote-container li {
-  margin-bottom: 0.5rem;
   font-size: 0.8rem;
 }
 

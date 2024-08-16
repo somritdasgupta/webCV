@@ -94,7 +94,7 @@ export default function Page() {
                 )}
                 <a
                   href={featuredProject.html_url}
-                  className="font-semibold !text-violet-500 hover:!text-red-300 inline-flex items-center"
+                  className="font-semibold !text-violet-400 hover:!text-red-300 inline-flex items-center"
                 >
                   <TbBrandGithub className="w-4 h-4 mr-1" />
                   Github
@@ -143,7 +143,7 @@ export default function Page() {
           <div>
             <h2 className="text-2xl font-bold mb-2 lg:mb-2 flex items-center">
               Recent Posts
-              <HiArrowTrendingUp className="w-6 h-6 ml-2 text-gray-500" />{" "}
+              <HiArrowTrendingUp className="w-6 h-6 ml-2 text-[var(--bronzer)]" />{" "}
             </h2>
             <BlogPosts
               limit={3}

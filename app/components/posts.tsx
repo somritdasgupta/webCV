@@ -103,19 +103,17 @@ export function BlogPosts({
                   <Link
                     key={post.slug}
                     className={`flex flex-col mb-2 mt-2 ${
-                      showBorders ? "border-b border-gray-700 pb-4" : ""
+                      showBorders ? "border-dashed border-b-2 border-violet-400 pb-4" : ""
                     }`}
                     href={`/blog/${post.slug}`}
                   >
-                    <div className="w-full flex flex-col md:flex-row hover:bg-[var(--header-bg-color)] rounded-md transition duration-600 ease space-x-0 md:space-x-2">
+                    <div className="w-full flex flex-col md:flex-row border-[var(--bronzer)] hover:bg-[var(--header-bg-color)] rounded-md transition duration-600 ease space-x-0 md:space-x-2">
                       {showPublicationYear && (
-                        <p className="font-bold w-[150px] tabular-nums">
+                        <p className="font-bold !text-violet-400 w-[150px] tabular-nums">
                           {formatDate(post.metadata.publishedAt, false)}
                         </p>
                       )}
-                      <p className="light-text-color dark:light-text-color">
-                        {post.metadata.title}
-                      </p>
+                      <p>{post.metadata.title}</p>
                     </div>
                   </Link>
                 ))}
@@ -126,19 +124,17 @@ export function BlogPosts({
             <Link
               key={post.slug}
               className={`flex flex-col space-y-1 mb-4 ${
-                showBorders ? "border-b border-gray-700 pb-4" : ""
+                showBorders ? "border-b border-[var(--bronzer)] pb-4" : ""
               }`}
               href={`/blog/${post.slug}`}
             >
               <div className="w-full flex flex-col md:flex-row space-x-0 md:space-x-2">
                 {showPublicationYear && (
-                  <p className="font-bold w-[150px] tabular-nums">
+                  <p className="font-bold !text-violet-400 w-[150px] tabular-nums">
                     {formatDate(post.metadata.publishedAt, false)}
                   </p>
                 )}
-                <p className="light-text-color dark:light-text-color">
-                  {post.metadata.title}
-                </p>
+                <p>{post.metadata.title}</p>
               </div>
             </Link>
           ))}
