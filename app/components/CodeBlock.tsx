@@ -42,16 +42,16 @@ export function CodeBlock({
   }
 
   return (
-    <div className="border-2 code-block relative my-4 rounded-lg overflow-hidden bg-[var(--code-border)] border-[var(--code-border)]">
+    <div className="border-3 p-1 code-block relative my-4 rounded-lg overflow-hidden bg-[var(--tweet-bg)] border-[var(--code-border)]">
       {/* Tabs at the top */}
-      <div className="tabs flex rounded-lg items-center justify-between bg-[var(--code-border)] text-slate-300 text-xs">
+      <div className="tabs flex rounded-md items-center justify-between bg-[var(--code-border)] text-slate-300 text-xs">
         <div className="tab-info flex items-center  py-2">
           {filename && <span className="filename">{filename}</span>}
           <span className="language ml-2">{lang}</span>
         </div>
         <button
           onClick={copyToClipboard}
-          className="copy-button p-1 rounded-md text-gray-500 hover:text-violet-500 transition ease duration-600"
+          className="copy-button p-1 text-gray-500 hover:text-violet-500 transition ease duration-600"
           aria-label="Copy code"
         >
           {isCopied ? (
@@ -62,15 +62,13 @@ export function CodeBlock({
         </button>
       </div>
       {/* Code block */}
-      <div className="relative flex rounded-lg bg-[var(--header-bg-color)]">
-        <pre className="p-4 overflow-x-auto flex-1 rounded-lg bg-[var(--header-bg-color)]">
-          <code
-            dangerouslySetInnerHTML={{ __html: highlightedCode }}
-            className="text-sm leading-5"
-            {...props}
-          />
-        </pre>
-      </div>
+      <pre className="p-4 overflow-x-auto flex-1 rounded-md">
+        <code
+          dangerouslySetInnerHTML={{ __html: highlightedCode }}
+          className="text-sm leading-5"
+          {...props}
+        />
+      </pre>
     </div>
   );
 }

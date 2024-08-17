@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "predev": "figlet Somrit-WebCV",
-    "dev": "rm -rf .next && next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start"
   },
@@ -10,11 +10,13 @@
     "@codesandbox/sandpack-react": "^2.18.2",
     "@codesandbox/sandpack-themes": "^2.0.21",
     "@tailwindcss/postcss": "4.0.0-alpha.13",
+    "@tailwindcss/typography": "^0.5.14",
     "@types/node": "20.11.17",
     "@types/react": "18.2.55",
     "@types/react-dom": "18.2.19",
     "@vercel/analytics": "^1.3.1",
     "@vercel/speed-insights": "^1.0.12",
+    "autoprefixer": "^10.4.20",
     "cli-banner": "^1.0.3",
     "geist": "1.2.2",
     "next": "14.2.5",
@@ -26,11 +28,11 @@
     "react-tweet": "^3.2.1",
     "sharp": "^0.33.5",
     "sugar-high": "^0.6.1",
-    "tailwindcss": "4.0.0-alpha.13",
     "typescript": "5.3.3"
   },
   "devDependencies": {
     "@types/next": "^9.0.0",
-    "raw-loader": "^4.0.2"
+    "raw-loader": "^4.0.2",
+    "tailwindcss": "4.0.0-alpha.13"
   }
 }

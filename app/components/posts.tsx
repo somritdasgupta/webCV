@@ -34,7 +34,7 @@ export function BlogPosts({
   const [allTags, setAllTags] = useState<string[]>([]);
 
   const searchParams = useSearchParams();
-  const tag = searchParams.get('tag') || '';
+  const tag = searchParams.get("tag") || "";
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -44,7 +44,7 @@ export function BlogPosts({
         setAllPosts(data.posts);
         setAllTags(data.tags);
       } catch (error) {
-        console.error('Failed to fetch posts:', error);
+        console.error("Failed to fetch posts:", error);
       }
     };
 
@@ -53,9 +53,7 @@ export function BlogPosts({
 
   const filteredPosts = useMemo(() => {
     if (!tag) return allPosts;
-    return allPosts.filter((post) =>
-      post.metadata.tags?.includes(tag)
-    );
+    return allPosts.filter((post) => post.metadata.tags?.includes(tag));
   }, [allPosts, tag]);
 
   const sortedPosts = useMemo(() => {
@@ -101,12 +99,14 @@ export function BlogPosts({
           onTagsSelect={(selectedTag) => {
             const newParams = new URLSearchParams(window.location.search);
             if (selectedTag) {
-              newParams.set('tag', selectedTag);
+              newParams.set("tag", selectedTag);
             } else {
-              newParams.delete('tag');
+              newParams.delete("tag");
             }
-            const newUrl = `${window.location.pathname}?${newParams.toString()}`;
-            window.history.pushState({}, '', newUrl);
+            const newUrl = `${
+              window.location.pathname
+            }?${newParams.toString()}`;
+            window.history.pushState({}, "", newUrl);
           }}
         />
       )}
@@ -121,7 +121,9 @@ export function BlogPosts({
                   <Link
                     key={post.slug}
                     className={`flex flex-col mb-2 mt-2 ${
-                      showBorders ? "border-dashed border-slate-600 border-b pb-4" : ""
+                      showBorders
+                        ? "border-dashed border-slate-600 border-b pb-4"
+                        : ""
                     }`}
                     href={`/blog/${post.slug}`}
                   >
@@ -146,7 +148,7 @@ export function BlogPosts({
               }`}
               href={`/blog/${post.slug}`}
             >
-              <div className="w-full flex flex-col md:flex-row space-x-0 md:space-x-2">
+              <div className="w-full flex flex-col hover:bg-[var(--header-bg-color)] rounded-md transition duration-600 ease  md:flex-row space-x-0 md:space-x-2">
                 {showPublicationYear && (
                   <p className="font-bold !text-[var(--bronzer)] w-[150px] tabular-nums">
                     {formatDate(post.metadata.publishedAt, false)}

@@ -85,16 +85,7 @@ export default function RootLayout({
         />
         <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
         <link rel="apple-touch-icon" href="/favicon.png" />
-        <meta
-          name="theme-color"
-          media="(prefers-color-scheme: light)"
-          content="#fffbfb"
-        />
-        <meta
-          name="theme-color"
-          media="(prefers-color-scheme: dark)"
-          content="#0a0310"
-        />
+        <meta name="theme-color" content="#fffbfb" />
 
         <SandpackCSS />
 
@@ -115,9 +106,25 @@ export default function RootLayout({
                 document.documentElement.style.setProperty('color-scheme', colorMode);
                 if (colorMode === 'dark') {
                   document.documentElement.classList.add('dark');
+                  document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
                 } else {
                   document.documentElement.classList.remove('dark');
+                  document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
                 }
+
+                // Listen for changes in color scheme
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                  const newColorMode = e.matches ? 'dark' : 'light';
+                  document.documentElement.setAttribute('data-theme', newColorMode);
+                  document.documentElement.style.setProperty('color-scheme', newColorMode);
+                  if (newColorMode === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
+                  }
+                });
               })();
             `,
           }}

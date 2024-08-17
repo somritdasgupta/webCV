@@ -86,14 +86,14 @@ function Iframe({ src }) {
       loading="lazy"
       allow="web-share; clipboard-write"
       title="Embedded content"
-      className="w-full h-[600px] rounded-lg border-2 border-[aquamarine] shadow-md block mx-auto"
+      className="w-full h-[600px] rounded-lg border-2 border-[aquamarine] block mx-auto"
     />
   );
 }
 
 function Callout(props) {
   return (
-    <div className="callout-container flex items-center pl-8 pr-8 mt-8 mb-8 shadow-md rounded-lg">
+    <div className="callout-container flex items-center pl-8 pr-8 mt-8 mb-8 rounded-lg">
       <div className="emoji-container text-sm mr-3">{props.emoji}</div>
       <div className="text-container flex-1 text-sm">{props.children}</div>
     </div>
@@ -159,7 +159,7 @@ function ConsCard({ cons }) {
 // Container Component
 function ProConsComparison({ pros, cons }) {
   return (
-    <div className="pro-cons-container shadow-md">
+    <div className="pro-cons-container rounded-lg">
       <ProsCard pros={pros} />
       <ConsCard cons={cons} />
     </div>
