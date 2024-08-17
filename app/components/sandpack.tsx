@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { SandpackTemplate } from "./types/sandpack";
-import { cobalt2, dracula, levelUp } from "@codesandbox/sandpack-themes";
+import { cobalt2 } from "@codesandbox/sandpack-themes";
 
 const Sandpack = dynamic(
   () => import("@codesandbox/sandpack-react").then((mod) => mod.Sandpack),
@@ -56,7 +56,7 @@ export function LiveCode({ mode, fileNames, template }: LiveCodeProps) {
   return (
     <div className="rounded-lg overflow-hidden border-2 border-[var(--code-border)] transition-colors">
       <Sandpack
-        theme="auto"
+        theme={cobalt2}
         template={template}
         options={{
           recompileMode: "delayed",

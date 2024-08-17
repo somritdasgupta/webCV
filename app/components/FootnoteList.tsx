@@ -28,7 +28,7 @@ export function FootnoteList() {
               aria-label="Resource External link"
               className="ml-1 inline-flex items-center relative top-0.5"
             >
-              <FaExternalLinkAlt className="h-4 light-text-color" />
+              <FaExternalLinkAlt className="h-3 light-text-color" />
             </a>
           )}
         </span>

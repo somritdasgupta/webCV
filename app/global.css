@@ -46,7 +46,7 @@
   --bg-color: #0a0310;
   --light-text-color: #b0b0b0;
   --text-color: #fefefe;
-  --text-p: #d8d8d8;
+  --text-p: #a0c0be;
 
   /* UI Elements */
   --bronzer: #906ffd;
@@ -211,7 +211,7 @@ div {
 
 /* ===== BLOCKQUOTE STYLES ===== */
 .prose blockquote {
-  @apply border-l-4 border-neutral-300 pl-4 py-2 my-6 italic;
+  @apply border-l-3 border-[var(--bronzer)] pl-4 py-2 my-6 italic;
   margin: 2rem 0;
 }
 
@@ -231,21 +231,6 @@ div {
 }
 .prose ol {
   @apply list-decimal;
-}
-
-.prose ul,
-.prose ol,
-.prose ul ul,
-.prose ol ol,
-.prose ul ol,
-.prose ol ul {
-  font-size: inherit;
-}
-
-.prose li,
-.prose li p {
-  font-size: inherit;
-  line-height: inherit;
 }
 
 /* ===== LINK STYLES ===== */
@@ -584,7 +569,6 @@ table tbody tr:nth-child(even) {
     overflow-wrap: break-word;
     word-wrap: break-word;
     white-space: inherit;
-    margin: 1rem 0 !important;
   }
 
   .post-title-text {
@@ -593,18 +577,20 @@ table tbody tr:nth-child(even) {
   }
 
   .prose p {
-    @apply my-4 leading-relaxed;
-    font-size: 0.9rem;
+    @apply leading-relaxed;
+    font-size: 0.9em;
     line-height: 1.75rem;
-    margin: 1em 0 !important;
   }
 
   .prose ul,
   .prose ol,
-  .prose li,
-  .prose li p {
-    font-size: 0.9rem;
+  .prose li {
+    font-size: 1rem;
     line-height: 1.75rem;
+  }
+
+  .prose strong {
+    @apply font-medium;
   }
 }
 
