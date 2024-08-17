@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import { BlogPosts } from "./components/posts";
 import Button from "./components/Button";
@@ -54,7 +54,7 @@ export default function Page() {
               alt="Somrit Dasgupta"
               width={220}
               height={220}
-              className="rounded-full shadow-lg"
+              className="rounded-full"
             />
           </div>
           <div className="w-full mb-8 lg:hidden">
@@ -78,7 +78,7 @@ export default function Page() {
           </div>
 
           <div className="w-full mb-4">
-            <h2 className="text-xl font-bold mb-4 lg:text-center">
+            <h2 className="text-xl font-bold mb-4 transition-colors lg:text-center">
               Featured Project ✦
             </h2>
             {error && <p className="text-red-500">{error}</p>}
@@ -94,7 +94,7 @@ export default function Page() {
                 )}
                 <a
                   href={featuredProject.html_url}
-                  className="font-semibold !text-violet-400 hover:!text-red-300 inline-flex items-center"
+                  className="font-semibold !text-violet-500 hover:!text-red-500 inline-flex items-center"
                 >
                   <TbBrandGithub className="w-4 h-4 mr-1" />
                   Github
@@ -143,14 +143,16 @@ export default function Page() {
           <div>
             <h2 className="text-2xl font-bold mb-2 lg:mb-2 flex items-center">
               Recent Posts
-              <HiArrowTrendingUp className="w-6 h-6 ml-2 text-[var(--bronzer)]" />{" "}
+              <HiArrowTrendingUp className="w-6 h-6 ml-2" />{" "}
             </h2>
-            <BlogPosts
-              limit={3}
-              showTags={false}
-              showBorders={false}
-              showPublicationYear={true}
-            />
+            <Suspense fallback={<p>Brewing the posts 🚀</p>}>
+              <BlogPosts
+                limit={3}
+                showTags={false}
+                showBorders={false}
+                showPublicationYear={true}
+              />
+            </Suspense>
             <div className="mt-3">
               <Button href="/blog" text="View All Posts" icon="right" />
             </div>

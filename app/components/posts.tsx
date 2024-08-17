@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { formatDate } from "../blog/utils";
 import Tags from "./tags";
+import { useSearchParams } from "next/navigation";
 
 interface BlogPost {
   metadata: {
@@ -29,25 +30,33 @@ export function BlogPosts({
   showPublicationYear = true,
   groupByYear = false,
 }: BlogPostsProps) {
-  const [selectedTags, setSelectedTags] = useState<string | null>(null);
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
 
+  const searchParams = useSearchParams();
+  const tag = searchParams.get('tag') || '';
+
   useEffect(() => {
-    fetch("/api/blog-posts")
-      .then((response) => response.json())
-      .then((data) => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch("/api/blog-posts");
+        const data = await response.json();
         setAllPosts(data.posts);
         setAllTags(data.tags);
-      });
+      } catch (error) {
+        console.error('Failed to fetch posts:', error);
+      }
+    };
+
+    fetchPosts();
   }, []);
 
   const filteredPosts = useMemo(() => {
-    if (!selectedTags) return allPosts;
+    if (!tag) return allPosts;
     return allPosts.filter((post) =>
-      post.metadata.tags?.includes(selectedTags)
+      post.metadata.tags?.includes(tag)
     );
-  }, [allPosts, selectedTags]);
+  }, [allPosts, tag]);
 
   const sortedPosts = useMemo(() => {
     return filteredPosts
@@ -79,7 +88,7 @@ export function BlogPosts({
   }, [allTags, allPosts]);
 
   if (allPosts.length === 0) {
-    return <p className="mt-2 mb-2">Granting wishes 🚀</p>;
+    return <p className="mt-2 mb-2">Brewing the posts 🚀</p>;
   }
 
   return (
@@ -88,8 +97,17 @@ export function BlogPosts({
         <Tags
           tags={allTags}
           tagsCounts={tagCounts}
-          selectedTags={selectedTags}
-          onTagsSelect={setSelectedTags}
+          selectedTags={tag}
+          onTagsSelect={(selectedTag) => {
+            const newParams = new URLSearchParams(window.location.search);
+            if (selectedTag) {
+              newParams.set('tag', selectedTag);
+            } else {
+              newParams.delete('tag');
+            }
+            const newUrl = `${window.location.pathname}?${newParams.toString()}`;
+            window.history.pushState({}, '', newUrl);
+          }}
         />
       )}
       {groupByYear
@@ -103,13 +121,13 @@ export function BlogPosts({
                   <Link
                     key={post.slug}
                     className={`flex flex-col mb-2 mt-2 ${
-                      showBorders ? "border-dashed border-b-2 border-violet-400 pb-4" : ""
+                      showBorders ? "border-dashed border-slate-600 border-b pb-4" : ""
                     }`}
                     href={`/blog/${post.slug}`}
                   >
-                    <div className="w-full flex flex-col md:flex-row border-[var(--bronzer)] hover:bg-[var(--header-bg-color)] rounded-md transition duration-600 ease space-x-0 md:space-x-2">
+                    <div className="w-full flex flex-col md:flex-row hover:bg-[var(--header-bg-color)] rounded-md transition duration-600 ease space-x-0 md:space-x-2">
                       {showPublicationYear && (
-                        <p className="font-bold !text-violet-400 w-[150px] tabular-nums">
+                        <p className="font-bold !text-[var(--bronzer)] w-[150px] tabular-nums">
                           {formatDate(post.metadata.publishedAt, false)}
                         </p>
                       )}
@@ -119,18 +137,18 @@ export function BlogPosts({
                 ))}
               </div>
             ))
-            .reverse() // Reversing the entries in descending order
+            .reverse()
         : sortedPosts.map((post) => (
             <Link
               key={post.slug}
               className={`flex flex-col space-y-1 mb-4 ${
-                showBorders ? "border-b border-[var(--bronzer)] pb-4" : ""
+                showBorders ? "border-b pb-4" : ""
               }`}
               href={`/blog/${post.slug}`}
             >
               <div className="w-full flex flex-col md:flex-row space-x-0 md:space-x-2">
                 {showPublicationYear && (
-                  <p className="font-bold !text-violet-400 w-[150px] tabular-nums">
+                  <p className="font-bold !text-[var(--bronzer)] w-[150px] tabular-nums">
                     {formatDate(post.metadata.publishedAt, false)}
                   </p>
                 )}

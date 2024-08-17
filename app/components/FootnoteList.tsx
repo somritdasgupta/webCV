@@ -37,7 +37,7 @@ export function FootnoteList() {
 
   return (
     <div id="footnote-list" className="footnote-container footnotes">
-      <h3 className="text-xl font-semibold mb-2 border-b-1 border-neutral-600 pb-2">
+      <h3 className="text-xl font-semibold border-b-1 border-neutral-600 pb-2">
         Footnotes
       </h3>
       <li className="list-none p-0">{sortedFootnotes}</li>

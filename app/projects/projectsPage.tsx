@@ -54,7 +54,7 @@ export default function ProjectsPage() {
                   )}
                   <a
                     href={repo.html_url}
-                    className="font-semibold dark:!text-violet-400 hover:!text-red-500 inline-flex items-center"
+                    className="font-semibold dark:!text-violet-500 hover:!text-red-500 inline-flex items-center"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -112,7 +112,7 @@ export default function ProjectsPage() {
           href="/Resume.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          className="block px-2 py-2 text-sm font-medium text-white bg-[#ec66524f] rounded-lg mb-4 flex items-center justify-center max-w-[110px] w-full sm:w-auto tracking-tight"
+          className="block px-2 py-2 text-sm font-medium text-white bg-[#906ffd33] rounded-lg mb-4 flex items-center justify-center max-w-[110px] w-full sm:w-auto tracking-tight"
         >
           GET RESUME
         </a>

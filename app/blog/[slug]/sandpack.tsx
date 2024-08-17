@@ -6,13 +6,13 @@ import { useServerInsertedHTML } from "next/navigation";
 // Component to inject Sandpack CSS
 export function SandpackCSS() {
   useServerInsertedHTML(() => {
+    const sandpackCss = getSandpackCssText();
     return (
       <style
-        dangerouslySetInnerHTML={{ __html: getSandpackCssText() }}
+        dangerouslySetInnerHTML={{ __html: `${sandpackCss}` }}
         id="sandpack"
       />
     );
   });
-
-  return null; // This component does not render anything on its own
+  return null;
 }

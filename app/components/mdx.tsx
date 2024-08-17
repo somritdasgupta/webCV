@@ -10,9 +10,90 @@ import { FootnoteProvider } from "./FootnoteContext";
 import { CodeBlock } from "./CodeBlock";
 import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
+function slugify(str) {
+  return str
+    .toString()
+    .toLowerCase()
+    .trim() // Remove whitespace from both ends of a string
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/&/g, "-and-") // Replace & with 'and'
+    .replace(/[^\w\-]+/g, "") // Remove all non-word characters except for -
+    .replace(/\-\-+/g, "-"); // Replace multiple - with single -
+}
+
+function createHeading(level) {
+  const Heading = ({ children }) => {
+    let slug = slugify(children);
+    return React.createElement(
+      `h${level}`,
+      { id: slug },
+      [
+        React.createElement("a", {
+          href: `#${slug}`,
+          key: `link-${slug}`,
+          className: "anchor",
+        }),
+      ],
+      children
+    );
+  };
+
+  Heading.displayName = `Heading${level}`;
+
+  return Heading;
+}
+
+function Paragraph({ children }) {
+  return <p className="mb-4">{children}</p>;
+}
+
+function BlockQuote({ children }) {
+  return <blockquote className="p-0.5">{children}</blockquote>;
+}
+
+function CustomLink(props) {
+  let href = props.href;
+
+  if (href.startsWith("/")) {
+    return (
+      <Link href={href} {...props}>
+        {props.children}
+      </Link>
+    );
+  }
+
+  if (href.startsWith("#")) {
+    return <a {...props} />;
+  }
+
+  return <a target="_blank" rel="noopener noreferrer" {...props} />;
+}
+
+function RoundedImage(props) {
+  return (
+    <Image
+      alt={props.alt}
+      className="rounded-lg border-2 border-slate-800 shadow-md transition-transform transform hover:scale-105"
+      {...props}
+    />
+  );
+}
+
+function Iframe({ src }) {
+  return (
+    <iframe
+      src={src}
+      loading="lazy"
+      allow="web-share; clipboard-write"
+      title="Embedded content"
+      className="w-full h-[600px] rounded-lg border-2 border-[aquamarine] shadow-md block mx-auto"
+    />
+  );
+}
+
 function Callout(props) {
   return (
-    <div className="callout-container flex items-center pl-8 pr-8 mt-8 mb-8 rounded-lg">
+    <div className="callout-container flex items-center pl-8 pr-8 mt-8 mb-8 shadow-md rounded-lg">
       <div className="emoji-container text-sm mr-3">{props.emoji}</div>
       <div className="text-container flex-1 text-sm">{props.children}</div>
     </div>
@@ -78,105 +159,13 @@ function ConsCard({ cons }) {
 // Container Component
 function ProConsComparison({ pros, cons }) {
   return (
-    <div className="pro-cons-container">
+    <div className="pro-cons-container shadow-md">
       <ProsCard pros={pros} />
       <ConsCard cons={cons} />
     </div>
   );
 }
 
-function CustomLink(props) {
-  let href = props.href;
-
-  if (href.startsWith("/")) {
-    return (
-      <Link href={href} {...props}>
-        {props.children}
-      </Link>
-    );
-  }
-
-  if (href.startsWith("#")) {
-    return <a {...props} />;
-  }
-
-  return <a target="_blank" rel="noopener noreferrer" {...props} />;
-}
-
-function RoundedImage(props) {
-  return (
-    <Image
-      alt={props.alt}
-      className="rounded-lg border-2 border-slate-800 shadow-lg transition-transform transform hover:scale-105"
-      {...props}
-    />
-  );
-}
-
-function slugify(str) {
-  return str
-    .toString()
-    .toLowerCase()
-    .trim() // Remove whitespace from both ends of a string
-    .replace(/\s+/g, "-") // Replace spaces with -
-    .replace(/&/g, "-and-") // Replace & with 'and'
-    .replace(/[^\w\-]+/g, "") // Remove all non-word characters except for -
-    .replace(/\-\-+/g, "-"); // Replace multiple - with single -
-}
-
-function createHeading(level) {
-  const Heading = ({ children }) => {
-    let slug = slugify(children);
-    return React.createElement(
-      `h${level}`,
-      { id: slug },
-      [
-        React.createElement("a", {
-          href: `#${slug}`,
-          key: `link-${slug}`,
-          className: "anchor",
-        }),
-      ],
-      children
-    );
-  };
-
-  Heading.displayName = `Heading${level}`;
-
-  return Heading;
-}
-
-function Paragraph({ children }) {
-  return <p className="mb-4">{children}</p>;
-}
-
-function BlockQuote({ children }) {
-  return <blockquote className="p-0.5">{children}</blockquote>;
-}
-
-function Iframe({ src }) {
-  const iframeStyle = {
-    width: "100%",
-    height: "600px",
-    borderRadius: "12px", // Slightly larger border radius for a more modern look
-    border: "3px solid purple", // Brighter blue color
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Adding a subtle shadow for depth
-    display: "block", // Ensures no inline spacing issues
-    margin: "0 auto", // Centers the iframe horizontally
-  };
-
-  return (
-    <iframe
-      src={src}
-      loading="lazy"
-      style={iframeStyle}
-      allow="web-share; clipboard-write"
-      title="Embedded content" // Provides a title for accessibility
-    />
-  );
-}
-
-// Dynamically import components
 const Footnote = dynamic(
   () => import("../components/Footnote").then((mod) => mod.Footnote),
   { ssr: false }
@@ -215,7 +204,6 @@ let components = {
       </CodeBlock>
     );
   },
-
   LiveCode,
   Table,
   Iframe,

@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import Signature from "app/components/signature";
 import { getBlogPosts } from "../getBlogPosts";
 import RelatedPosts from "app/components/RelatedPosts";
+import Link from "next/link";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://somrit.vercel.app";
 
@@ -119,16 +120,20 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       <Button href="/blog" text="Back to posts" icon="left" />
       <h1 className="title font-bold text-2xl">{post.metadata.title}</h1>
       <div className="flex justify-between items-center mt-2 mb-4 ml-0.5 text-sm">
-        <p className="!font-semibold text-sm !text-violet-400">
+        <p className="!font-semibold text-sm !text-[var(--bronzer)]">
           {formatDate(post.metadata.publishedAt)}
         </p>
       </div>
       {post.metadata.tags && (
         <div className="flex flex-wrap gap-2 mb-4">
           {post.metadata.tags.map((tag) => (
-            <span key={tag} className="custom-topic-pill">
+            <Link
+              key={tag}
+              href={`/blog?tag=${encodeURIComponent(tag)}`}
+              className="custom-topic-pill hover:!bg-violet-500/25"
+            >
               {tag}
-            </span>
+            </Link>
           ))}
         </div>
       )}

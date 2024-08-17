@@ -16,7 +16,7 @@ export default function Footer() {
         {links.map((link, index) => (
           <li className="!mb-0 !mt-2" key={index}>
             <a
-              className="flex items-center text-neutral-600 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
+              className="flex items-center text-neutral-600 hover:!text-violet-500 transition-colors"
               rel="noopener noreferrer"
               target={link.href.startsWith("mailto:") ? "_self" : "_blank"}
               href={link.href}

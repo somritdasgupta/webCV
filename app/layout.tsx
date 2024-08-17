@@ -85,29 +85,38 @@ export default function RootLayout({
         />
         <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
         <link rel="apple-touch-icon" href="/favicon.png" />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: light)"
+          content="#fffbfb"
+        />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: dark)"
+          content="#0a0310"
+        />
+
         <SandpackCSS />
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 function getInitialColorMode() {
                   const persistedColorPreference = window.localStorage.getItem('theme');
-                  const hasPersistedPreference = typeof persistedColorPreference === 'string';
-                  if (hasPersistedPreference) {
+                  if (persistedColorPreference) {
                     return persistedColorPreference;
                   }
                   const mql = window.matchMedia('(prefers-color-scheme: dark)');
-                  const hasMediaQueryPreference = typeof mql.matches === 'boolean';
-                  if (hasMediaQueryPreference) {
-                    return mql.matches ? 'dark' : 'light';
-                  }
-                  return 'light';
+                  return mql.matches ? 'dark' : 'light';
                 }
                 const colorMode = getInitialColorMode();
                 document.documentElement.setAttribute('data-theme', colorMode);
                 document.documentElement.style.setProperty('color-scheme', colorMode);
                 if (colorMode === 'dark') {
                   document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
                 }
               })();
             `,

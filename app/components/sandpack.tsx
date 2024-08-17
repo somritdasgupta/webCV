@@ -54,9 +54,9 @@ export function LiveCode({ mode, fileNames, template }: LiveCodeProps) {
   }, [fileNames]);
 
   return (
-    <div className="rounded-lg overflow-hidden border-2 border-[var(--code-border)]">
+    <div className="rounded-lg overflow-hidden border-2 border-[var(--code-border)] transition-colors">
       <Sandpack
-        theme={levelUp}
+        theme="auto"
         template={template}
         options={{
           recompileMode: "delayed",

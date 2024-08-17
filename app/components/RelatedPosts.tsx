@@ -91,7 +91,7 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
             href={`/blog/${post.slug}`}
             className="block mb-0"
           >
-            <div className="post-title-container">
+            <div className="post-title-container transition-colors hover:!bg-slate-700/15">
               <div className="post-title-text">{post.metadata.title}</div>
             </div>
           </Link>

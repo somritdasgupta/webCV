@@ -48,7 +48,7 @@ export function Navbar() {
               <Link
                 key={path}
                 href={path}
-                className={`transition-all relative py-1 px-2 m-1 ${isActive ? 'font-bold' : ''}`} // Apply bold style if active
+                className={`transition-all hover:!text-[var(--bronzer)] relative py-1 px-2 m-1 ${isActive ? 'font-bold' : ''}`}
               >
                 {name}
               </Link>

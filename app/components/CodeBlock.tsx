@@ -37,11 +37,7 @@ export function CodeBlock({
 
   if (inline) {
     return (
-      <code
-        dangerouslySetInnerHTML={{ __html: highlightedCode }}
-        className="inline-code"
-        {...props}
-      />
+      <code dangerouslySetInnerHTML={{ __html: highlightedCode }} {...props} />
     );
   }
 
@@ -55,7 +51,7 @@ export function CodeBlock({
         </div>
         <button
           onClick={copyToClipboard}
-          className="copy-button p-1 rounded-md text-gray-500 hover:text-yellow-700 transition-colors"
+          className="copy-button p-1 rounded-md text-gray-500 hover:text-violet-500 transition ease duration-600"
           aria-label="Copy code"
         >
           {isCopied ? (
