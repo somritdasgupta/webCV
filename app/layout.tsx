@@ -12,32 +12,33 @@ import { SandpackCSS } from "./blog/[slug]/sandpack";
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "hey, I'm Somrit / Developer, Engineer, Extraordinaire",
+    default: "Somrit Dasgupta - Developer and Engineer",
     template: "%s | Somrit Dasgupta",
   },
-  description: "hey, I'm Somrit / Developer x Extraordinaire",
+  description:
+    "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuffs, I'm a fan of football, to be specific an avid real madrid fanboy. Also, who doesn't love good jokes and memes?",
   openGraph: {
-    title: "Somrit Dasgupta",
-    description: "hey, I'm Somrit / Developer x Extraordinaire",
+    title: "Somrit Dasgupta - Developer and Engineer",
+    description:
+      "Welcome to the personal website of Somrit Dasgupta. Explore projects, blog posts, and insights from an engineer's perspective.",
     url: baseUrl,
     siteName: "Somrit Dasgupta",
     locale: "en_US",
     type: "website",
     images: [
       {
-        url: `${baseUrl}/api/og?title=${encodeURIComponent(
-          "hey, I'm Somrit 👋"
-        )}`,
+        url: `${baseUrl}/api/og?title=${encodeURIComponent("hey, I'm Somrit 👋")}`,
         width: 2400,
         height: 1260,
-        alt: "Somrit Dasgupta",
+        alt: "Somrit Dasgupta - Developer and Engineer",
       },
     ],
   },
   twitter: {
-    title: "Somrit Dasgupta",
+    title: "Somrit Dasgupta - Developer and Engineer",
     card: "summary_large_image",
-    description: "hey, I'm Somrit / Developer x Extraordinaire",
+    description:
+      "The official website of Somrit Dasgupta, featuring projects, blog posts, and insights from an engineer's perspective.",
     images: [
       `${baseUrl}/api/og?title=${encodeURIComponent("hey, I'm Somrit 👋")}`,
     ],
@@ -60,60 +61,6 @@ export const metadata: Metadata = {
 };
 
 const cx = (...classes) => classes.filter(Boolean).join(" ");
-
-const structuredData = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Person",
-      "@id": `${baseUrl}/#person`,
-      name: "Somrit Dasgupta",
-      givenName: "Somrit",
-      familyName: "Dasgupta",
-      url: baseUrl,
-      image: `${baseUrl}/somritdasgupta.jpg`,
-      sameAs: [
-        "https://github.com/somritdasgupta",
-        "https://linkedin.com/in/somritdasgupta",
-        "https://twitter.com/kitsomrit",
-      ],
-      jobTitle: "Developer & Engineer",
-      description:
-        "hey, I'm Somrit / Developer, Engineer, Extraordinaire. Explore my projects, blog, and more.",
-      knowsAbout: [
-        "Web Development",
-        "Software Engineering",
-        "AI",
-        "Open-Source",
-      ],
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${baseUrl}/#website`,
-      url: baseUrl,
-      name: "Somrit Dasgupta / Developer, Engineer, Extraordinarie",
-      description:
-        "Personal website and blog of Somrit Dasgupta, showcasing projects, articles, and insightson software development and technology trends.",
-      publisher: {
-        "@id": `${baseUrl}/#person`,
-      },
-    },
-    {
-      "@type": "Blog",
-      "@id": `${baseUrl}/blog/#blog`,
-      url: `${baseUrl}/blog`,
-      name: "Somrit Dasgupta's Blog",
-      description:
-        "Read my thoughts, insights and articles on software, AI, and technology trends on my blog.",
-      author: {
-        "@id": `${baseUrl}/#person`,
-      },
-      publisher: {
-        "@id": `${baseUrl}/#person`,
-      },
-    },
-  ],
-};
 
 export default function RootLayout({
   children,
@@ -184,7 +131,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased mx-4 mt-8 lg:mx-auto">
+      <body className="subpixel-antialiased mx-4 mt-8 lg:mx-auto">
         <main className="max-w-4xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">
           <Navbar />
           {children}

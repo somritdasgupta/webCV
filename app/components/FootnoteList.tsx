@@ -10,15 +10,15 @@ export function FootnoteList() {
   const sortedFootnotes = Array.from(footnotes.entries())
     .sort(([idA], [idB]) => idA - idB)
     .map(([id, { text, link }]) => (
-      <li key={id} className="footnote-item">
+      <li key={id} >
         <a
           id={`footnote-${id}`}
-          className="footnote-ref mr-2 light-text-color"
+          className="mr-1 light-text-color"
           href={`#footnote-${id}`}
         >
           [{id}]
         </a>
-        <span className="inline">
+        <span className="inline !text-[var(--text-p)]">
           {text}
           {link && (
             <a
@@ -36,8 +36,8 @@ export function FootnoteList() {
     ));
 
   return (
-    <div id="footnote-list" className="footnote-container footnotes">
-      <h3 className="text-xl font-semibold border-b-1 border-neutral-600 pb-2">
+    <div>
+      <h3 className="text-xl font-semibold border-b-1 border-neutral-600 pb-2 mb-0">
         Footnotes
       </h3>
       <li className="list-none p-0">{sortedFootnotes}</li>

@@ -21,7 +21,7 @@ export default function Footer() {
               target={link.href.startsWith("mailto:") ? "_self" : "_blank"}
               href={link.href}
             >
-              <RiArrowRightUpLine className="w-4 h-4 mr-1" />
+              <RiArrowRightUpLine className="w-4 h-4 mr-1 -ml-1" />
               <span className="h-7">{link.label}</span>
             </a>
           </li>

@@ -145,7 +145,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         allPosts={posts}
         currentPostSlug={post.slug}
       />
-      <Signature />
+      <Signature/>
     </section>
   );
 }

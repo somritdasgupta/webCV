@@ -99,7 +99,7 @@ html {
 /* ===== TYPOGRAPHY ===== */
 .font-cursive {
   font-family: "La Belle Aurore", cursive;
-  font-weight: 600;
+  font-weight: 500;
   font-style: normal;
 }
 
@@ -527,24 +527,6 @@ table tbody tr:nth-child(even) {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-}
-
-/* ===== FOOTNOTE STYLES ===== */
-.footnote-ref {
-  font-size: 0.75rem;
-  cursor: pointer;
-  color: var(--button-crayola);
-}
-
-.footnote-ref:hover {
-  text-decoration: underline;
-  color: #ff8c52;
-}
-
-.footnote-container li {
-  font-size: 0.8rem;
-  margin-top: 1rem !important;
-  margin-bottom: 1rem !important;
 }
 
 /* ===== MEDIA QUERIES ===== */

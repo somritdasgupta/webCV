@@ -11,7 +11,7 @@ This is my website built using [Next.js](https://nextjs.org/) and styled with [T
 ## Tech Stack
 
 - **Framework:** Next.js
-- **Styliing:** Tailwind CSS
+- **Styling:** Tailwind CSS
 - **Backend:** Serverless functions
 - **Deployment:** Vercel
 - **Analytics:** Vercel Analytics

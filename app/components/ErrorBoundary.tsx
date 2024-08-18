@@ -15,11 +15,7 @@ function ErrorBoundaryComponent({
     const handleError = (error: any) => {
       setHasError(true);
     };
-
-    // Add your error handling logic here
-
     return () => {
-      // Cleanup error handling logic if needed
     };
   }, []);
 

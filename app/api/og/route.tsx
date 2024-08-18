@@ -30,12 +30,12 @@ export async function GET(req: NextRequest) {
             marginLeft: 140,
             marginRight: 140,
             display: "flex",
-            fontSize: 130,
+            fontSize: 180,
             fontFamily: "Kaisei Tokumin",
-            letterSpacing: "-0.05em",
+            letterSpacing: "1rem",
             fontStyle: "normal",
             color: "white",
-            lineHeight: "120px",
+            lineHeight: "180px",
             whiteSpace: "pre-wrap",
           }}
         >
