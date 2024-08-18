@@ -8,10 +8,10 @@ import { Metadata } from "next";
 // Server-side metadata wrapper
 export const metadata: Metadata = {
   title: "Projects / Somrit Dasgupta",
-  description: "View all my works on the website.",
+  description: "Checkout all my works on the website.",
   openGraph: {
     title: "Projects / Somrit Dasgupta",
-    description: "View all my works on the website.",
+    description: "Checkout all my works on the website.",
     siteName: "Somrit Dasgupta",
     url: `${baseUrl}/projects`,
     type: "website",

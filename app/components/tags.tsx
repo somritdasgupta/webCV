@@ -14,17 +14,23 @@ const Tags: React.FC<TagsProps> = ({
   selectedTags,
   onTagsSelect,
 }) => {
+  const handleClick =
+    (tag: string | null) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      onTagsSelect(tag);
+    };
+
+  // Determine if "All" should be selected
+  const isAllSelected = selectedTags === null || selectedTags === "";
+
   return (
     <div className="flex flex-wrap gap-2 py-2 px-0 mb-4">
       <Link
         href="/blog"
-        className={`custom-topic-pill hover:!bg-slate-500/25 transition-colors ease ${
-          selectedTags !== null ? "custom-skill-pill" : ""
-        }`}
-        onClick={(e) => {
-          e.preventDefault();
-          onTagsSelect(null);
-        }}
+        className={`text-xs px-3 py-1 rounded-md transition-all ease ${
+          isAllSelected ? "bg-[var(--bronzer)]/30" : "bg-[#6169793f]"
+        } hover:bg-slate-500/25 transition-colors ease cursor-pointer`}
+        onClick={handleClick(null)}
       >
         All
       </Link>
@@ -34,13 +40,10 @@ const Tags: React.FC<TagsProps> = ({
           <Link
             key={tag}
             href={`/blog?tag=${encodeURIComponent(tag)}`}
-            className={`custom-topic-pill hover:!bg-violet-500/25 transition-colors ease ${
-              selectedTags === tag ? "custom-skill-pill" : ""
-            }`}
-            onClick={(e) => {
-              e.preventDefault();
-              onTagsSelect(tag);
-            }}
+            className={`text-xs px-3 py-1 rounded-md transition-all ease ${
+              selectedTags === tag ? "bg-[var(--bronzer)]/30" : "bg-[#6169793f]"
+            } hover:bg-violet-500/25 transition-colors ease cursor-pointer`}
+            onClick={handleClick(tag)}
           >
             {tag} {count > 0 && `(${count})`}
           </Link>

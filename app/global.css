@@ -11,7 +11,7 @@
   --text-p: #6a2a2a;
 
   /* UI Elements */
-  --bronzer: #195e5c;
+  --bronzer: #3a836b;
   --callout-bg: #fbf7f7;
   --callout-border: #c8c8c8b3;
   --card-bg: #f1f1f1e6;
@@ -364,16 +364,12 @@ nav a {
 }
 
 /* ===== CUSTOM PILL STYLES ===== */
-.custom-topic-pill,
 .custom-skill-pill {
-  @apply text-xs px-3 py-1 rounded-md;
-}
-
-.custom-skill-pill {
-  background-color: #906ffd33 !important;
+  @apply bg-[var(--bronzer)]/25 text-xs px-3 py-1 rounded-md;
 }
 
 .custom-topic-pill {
+  @apply text-xs px-3 py-1 rounded-md;
   background-color: #6169793f;
   white-space: nowrap;
   text-wrap: pretty;
@@ -545,18 +541,10 @@ table tbody tr:nth-child(even) {
   color: #ff8c52;
 }
 
-.footnote-container ol {
-  list-style: decimal;
-  font-size: 0.8rem;
-}
-
-.footnote-container ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-
 .footnote-container li {
   font-size: 0.8rem;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
 }
 
 /* ===== MEDIA QUERIES ===== */

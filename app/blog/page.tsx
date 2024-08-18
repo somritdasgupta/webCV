@@ -5,10 +5,10 @@ import { baseUrl } from "../sitemap";
 
 export const metadata: Metadata = {
   title: "Blog / Somrit Dasgupta",
-  description: "Read my thoughts on the blog I write on my website.",
+  description: "Read my thoughts, insights and articles on software, AI, and technology trends on my blog.",
   openGraph: {
     title: "Blog / Somrit Dasgupta",
-    description: "Read my thoughts on the blog I write on my website.",
+    description: "Read my thoughts, insights and articles on software, AI, and technology trends on my blog.",
     siteName: "Somrit Dasgupta",
     url: `${baseUrl}/blog`,
     type: "website",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Blog / Somrit Dasgupta",
-    description: "Read my thoughts on the blog I write on my website.",
+    description: "Read my thoughts, insights and articles on software, AI, and technology trends on my blog.",
     images: [
       `${baseUrl}/api/og?title=${encodeURIComponent(
         "hey, I'm Somrit / Read my Blog"

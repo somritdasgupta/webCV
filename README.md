@@ -6,7 +6,7 @@
 
 ## Introduction
 
-This is my website built using [Next.js](https://nextjs.org/) and styled with [Tailwind CSS](https://tailwindcss.com/). It acts as a preview of my projects and blogs. The site is designed to be responsive, intuitive, minimal and optimized for light and dark modes.
+This is my website built using [Next.js](https://nextjs.org/) and styled with [Tailwind CSS](https://tailwindcss.com/). It acts as a frontend of my projects and blog posts. The site is designed to be responsive, intuitive, minimal and optimized for light and dark modes.
 
 ## Features
 
@@ -19,9 +19,12 @@ This is my website built using [Next.js](https://nextjs.org/) and styled with [T
 
 ## Tech Stack
 
-- **Frontend:** Next.js, React, Tailwind CSS
-- **Backend:** Serverless functions (for fetching GitHub repositories)
+- **Framework:** Next.js
+- **Styliing:** Tailwind CSS
+- **Backend:** Serverless functions
 - **Deployment:** Vercel
+- **Analytics:** Vercel Analytics
+- **CMS:** Version Control System (Git)
 
 ## Installation
 
@@ -30,7 +33,7 @@ To get started with this project locally, follow these steps:
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/your-username/your-repository.git
+   git clone https://github.com/somritdasgupta/webCV.git
    ```
 
 2. **Navigate to the Project Directory:**
@@ -53,9 +56,9 @@ To get started with this project locally, follow these steps:
 
    Open your browser and go to `http://localhost:3000` to view the website.
 
+
 ## Usage
 
-- **Viewing the Website:** After running the development server, you can view your website in your browser at `http://localhost:3000`.
 - **Building for Production:** To build the website for production, run:
 
   ```bash
@@ -67,7 +70,7 @@ To get started with this project locally, follow these steps:
 ## Customization
 
 - **Update Content:** Modify the content in the `app` directory, especially in `app/page.tsx` and `app/components`.
-- **Update Styling:** Adjust the styles in `styles/globals.css` and use Tailwind CSS classes for customizations.
+- **Update Styling:** Adjust the styles in `app/global.css` and use Tailwind CSS classes for customizations.
 - **Resume:** Replace the `public/Resume.pdf` file with your updated resume file and update the `Get Resume` button link if necessary.
 - **Favicon:** Update the `public/favicon.png` file to use your own favicon.
 

@@ -12,13 +12,13 @@ import { SandpackCSS } from "./blog/[slug]/sandpack";
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "hey, I'm Somrit 👋",
+    default: "hey, I'm Somrit / Developer, Engineer, Extraordinaire",
     template: "%s | Somrit Dasgupta",
   },
-  description: "hey, I'm Somrit | Developer x Extraordinaire",
+  description: "hey, I'm Somrit / Developer x Extraordinaire",
   openGraph: {
     title: "Somrit Dasgupta",
-    description: "hey, I'm Somrit | Developer x Extraordinaire",
+    description: "hey, I'm Somrit / Developer x Extraordinaire",
     url: baseUrl,
     siteName: "Somrit Dasgupta",
     locale: "en_US",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   twitter: {
     title: "Somrit Dasgupta",
     card: "summary_large_image",
-    description: "hey, I'm Somrit | Developer x Extraordinaire",
+    description: "hey, I'm Somrit / Developer x Extraordinaire",
     images: [
       `${baseUrl}/api/og?title=${encodeURIComponent("hey, I'm Somrit 👋")}`,
     ],
@@ -60,6 +60,60 @@ export const metadata: Metadata = {
 };
 
 const cx = (...classes) => classes.filter(Boolean).join(" ");
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": `${baseUrl}/#person`,
+      name: "Somrit Dasgupta",
+      givenName: "Somrit",
+      familyName: "Dasgupta",
+      url: baseUrl,
+      image: `${baseUrl}/somritdasgupta.jpg`,
+      sameAs: [
+        "https://github.com/somritdasgupta",
+        "https://linkedin.com/in/somritdasgupta",
+        "https://twitter.com/kitsomrit",
+      ],
+      jobTitle: "Developer & Engineer",
+      description:
+        "hey, I'm Somrit / Developer, Engineer, Extraordinaire. Explore my projects, blog, and more.",
+      knowsAbout: [
+        "Web Development",
+        "Software Engineering",
+        "AI",
+        "Open-Source",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${baseUrl}/#website`,
+      url: baseUrl,
+      name: "Somrit Dasgupta / Developer, Engineer, Extraordinarie",
+      description:
+        "Personal website and blog of Somrit Dasgupta, showcasing projects, articles, and insightson software development and technology trends.",
+      publisher: {
+        "@id": `${baseUrl}/#person`,
+      },
+    },
+    {
+      "@type": "Blog",
+      "@id": `${baseUrl}/blog/#blog`,
+      url: `${baseUrl}/blog`,
+      name: "Somrit Dasgupta's Blog",
+      description:
+        "Read my thoughts, insights and articles on software, AI, and technology trends on my blog.",
+      author: {
+        "@id": `${baseUrl}/#person`,
+      },
+      publisher: {
+        "@id": `${baseUrl}/#person`,
+      },
+    },
+  ],
+};
 
 export default function RootLayout({
   children,
