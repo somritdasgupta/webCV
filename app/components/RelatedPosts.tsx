@@ -82,7 +82,7 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
     <div className="mb-8 pt-4">
       <h2 className="text-xl font-bold mb-4 flex items-center">
         Related posts
-        <TiFlash className="w-6 h-5 ml-1 mt-1" />
+        <TiFlash className="w-6 h-5 ml-1 mt-1 animate-pulse" />
       </h2>
       <div className="space-y-4">
         {shuffledRelatedPosts.map((post) => (
@@ -91,7 +91,7 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
             href={`/blog/${post.slug}`}
             className="block mb-0"
           >
-            <div className="post-title-container transition-colors hover:!bg-slate-700/15">
+            <div className="post-title-container transition-colors hover:!bg-[var(--bronzer)]/15 transition-all ease-out duration-600">
               <div className="post-title-text">{post.metadata.title}</div>
             </div>
           </Link>

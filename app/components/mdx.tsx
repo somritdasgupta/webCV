@@ -129,8 +129,11 @@ function ProsCard({ pros }) {
     <div className="pros-card">
       <div className="mt-4 ml-4">
         {pros.map((pro) => (
-          <div key={pro} className="flex font-medium items-center mb-4">
-            <FiCheckCircle className="h-4 w-4 mr-2 text-emerald-500" />
+          <div
+            key={pro}
+            className="flex font-medium items-center align-middle mb-4"
+          >
+            <FiCheckCircle className="h-4 w-4 mr-2 align-middle text-green-500" />
             <span>{pro}</span>
           </div>
         ))}
@@ -145,8 +148,11 @@ function ConsCard({ cons }) {
     <div className="cons-card">
       <div className="mt-4 ml-4">
         {cons.map((con) => (
-          <div key={con} className="flex font-medium items-center mb-4">
-            <FiXCircle className="h-4 w-4 mr-2 text-red-400" />
+          <div
+            key={con}
+            className="flex font-medium items-center align-middle mb-4"
+          >
+            <FiXCircle className="h-4 w-4 mr-2 align-middle text-red-500" />
             <span>{con}</span>
           </div>
         ))}

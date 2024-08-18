@@ -55,7 +55,7 @@ export function CodeBlock({
           aria-label="Copy code"
         >
           {isCopied ? (
-            <HiOutlineClipboardCheck className="h-4 w-4" />
+            <HiOutlineClipboardCheck className="h-4 w-4 animate-pulse" />
           ) : (
             <HiOutlineClipboardCopy className="h-4 w-4" />
           )}

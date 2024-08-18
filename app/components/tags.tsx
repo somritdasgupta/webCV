@@ -29,7 +29,7 @@ const Tags: React.FC<TagsProps> = ({
         href="/blog"
         className={`text-xs px-3 py-1 rounded-md transition-all ease ${
           isAllSelected ? "bg-[var(--bronzer)]/30" : "bg-[#6169793f]"
-        } hover:bg-slate-500/25 transition-colors ease cursor-pointer`}
+        } transition-colors ease cursor-pointer`}
         onClick={handleClick(null)}
       >
         All
@@ -42,7 +42,7 @@ const Tags: React.FC<TagsProps> = ({
             href={`/blog?tag=${encodeURIComponent(tag)}`}
             className={`text-xs px-3 py-1 rounded-md transition-all ease ${
               selectedTags === tag ? "bg-[var(--bronzer)]/30" : "bg-[#6169793f]"
-            } hover:bg-violet-500/25 transition-colors ease cursor-pointer`}
+            } transition-colors ease cursor-pointer`}
             onClick={handleClick(tag)}
           >
             {tag} {count > 0 && `(${count})`}

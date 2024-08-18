@@ -8,15 +8,6 @@
 
 This is my website built using [Next.js](https://nextjs.org/) and styled with [Tailwind CSS](https://tailwindcss.com/). It acts as a frontend of my projects and blog posts. The site is designed to be responsive, intuitive, minimal and optimized for light and dark modes.
 
-## Features
-
-- **Responsive Design:** The site is fully responsive and looks great on desktops, tablets, and mobile devices.
-- **Dark/Light Mode:** Users can toggle between dark and light modes for a personalized experience.
-- **Projects Display:** Features a section showcasing various projects with details and links.
-- **Skills Section:** Highlights technical skills with a modern UI.
-- **Resume Download:** Allows users to download a PDF version of my resume.
-- **Blog Integration:** Displays blog posts fetched from an external API.
-
 ## Tech Stack
 
 - **Framework:** Next.js

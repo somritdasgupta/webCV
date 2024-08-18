@@ -45,7 +45,7 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
   };
 
   if (isDarkMode === null) {
-    return <span className={`py-2.5 px-1 ${className}`}>🚀</span>;
+    return <span className={`py-2.5 px-2 !text-[var(--bronzer)] animate-ping ${className}`}>⦿</span>;
   } else {
     return (
       <span
@@ -60,9 +60,9 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         }}
       >
         {isDarkMode ? (
-          <FiSun className="w-5 h-5 !text-[var(--bronzer)] hover:!text-slate-400 transition ease duration-500" />
+          <FiSun className="w-5 h-5 !text-[var(--bronzer)] transition-all ease-out duration-600" />
         ) : (
-          <FiMoon className="w-5 h-5 !text-[var(--bronzer)] hover:!text-violet-400 transition ease duration-500" />
+          <FiMoon className="w-5 h-5 !text-[var(--bronzer)] transition-all ease-out duration-600" />
         )}
       </span>
     );

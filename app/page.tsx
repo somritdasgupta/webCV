@@ -48,12 +48,13 @@ export default function Page() {
       <div className="flex flex-col lg:flex-row lg:gap-24 items-start">
         {/* Profile Section */}
         <div className="flex-none lg:w-1/4 flex flex-col items-center lg:items-start">
-          <div className="relative mb-12 bg-transparent">
+          <div className="relative mb-12 bg-transparent rounded-full">
             <Image
               src={displayImage}
               alt="Somrit Dasgupta"
               width={220}
               height={220}
+              loading="eager"
               className="rounded-full"
             />
           </div>
@@ -143,9 +144,9 @@ export default function Page() {
           <div>
             <h2 className="text-2xl font-bold mb-2 lg:mb-2 flex items-center">
               Recent Posts
-              <HiArrowTrendingUp className="w-6 h-6 ml-2" />{" "}
+              <HiArrowTrendingUp className="w-6 h-6 ml-2 animate-pulse" />{" "}
             </h2>
-            <Suspense fallback={<p>Brewing the posts 🚀</p>}>
+            <Suspense>
               <BlogPosts
                 limit={3}
                 showTags={false}

@@ -81,7 +81,7 @@
 /* ===== GLOBAL STYLES ===== */
 html,
 body {
-  @apply transition-all duration-1000 ease-out;
+  @apply transition-all duration-1500 ease-out;
   color-scheme: light dark;
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -178,7 +178,7 @@ div {
 /* ===== CODE STYLES ===== */
 .prose pre,
 .prose code {
-  @apply rounded-lg;
+  @apply rounded-md;
   overflow-x: auto;
 }
 
@@ -510,11 +510,11 @@ table tbody tr:nth-child(even) {
 }
 
 .pros-card {
-  border: 3px solid var(--pros-card-border);
+  border: 3px solid var(--bronzer);
 }
 
 .cons-card {
-  border: 3px solid var(--cons-card-border);
+  border: 3px solid var(--bronzer);
 }
 
 .pros-card span,
