@@ -36,7 +36,7 @@ export function FootnoteList() {
     ));
 
   return (
-    <div>
+    <div id="footnote-list">
       <h3 className="text-xl font-semibold border-b-1 border-neutral-600 pb-2 mb-0">
         Footnotes
       </h3>
