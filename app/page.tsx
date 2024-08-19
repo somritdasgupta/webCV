@@ -95,7 +95,7 @@ export default function Page() {
                 )}
                 <a
                   href={featuredProject.html_url}
-                  className="font-semibold !text-[var(--bronzer)] hover:!text-red-500 inline-flex items-center animate-pulse"
+                  className="font-semibold !text-violet-500 hover:!text-red-500 inline-flex items-center"
                 >
                   <TbBrandGithub className="w-4 h-4 mr-1" />
                   Github
