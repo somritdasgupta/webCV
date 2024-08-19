@@ -1,11 +1,9 @@
-// components/Navbar.tsx
-
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ThemeSwitcher } from "./ThemeSwitcher"; // Adjust path as needed
-import { usePathname } from "next/navigation"; // Use usePathname instead
+import { ThemeSwitcher } from "./ThemeSwitcher";
+import { usePathname } from "next/navigation";
 
 const navItems = {
   "/": {
@@ -18,14 +16,13 @@ const navItems = {
     name: "projects",
   },
 };
-
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname(); // Get the current path
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 250);
+      setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -37,22 +34,24 @@ export function Navbar() {
 
   return (
     <aside
-      className={`navbar ${isScrolled ? "scrolled" : ""} ${
-        isScrolled ? "sticky" : "static"
+      className={`sticky top-2 left-0 z-100 rounded-xl h-12 w-fit transition-all duration-300 ease ${
+        isScrolled
+          ? "px-2 bg-[var(--nav-pill)] border-3 border-[var(--code-border)]"
+          : "bg-transparent border-transparent"
       }`}
     >
       <nav
-        className="flex flex-row items-center -ml-[12px] mb-8 tracking-tight"
+        className="flex flex-row items-center -ml-[12px] mb-8 text-[var(--text-p)] tracking-tight transition-all duration-300"
         id="nav"
       >
         <div className="flex flex-row">
           {Object.entries(navItems).map(([path, { name }]) => {
-            const isActive = pathname === path; // Check if the path is the current one
+            const isActive = pathname === path; // Checking if the path is the current one...
             return (
               <Link
                 key={path}
                 href={path}
-                className={`transition-all relative py-1 px-2 m-1 ${
+                className={`transition-all duration-300 relative py-1 px-2 m-1 ${
                   isActive ? "font-bold" : ""
                 }`}
               >

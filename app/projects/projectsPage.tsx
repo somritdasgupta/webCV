@@ -54,7 +54,7 @@ export default function ProjectsPage() {
                   )}
                   <a
                     href={repo.html_url}
-                    className="font-semibold dark:!text-violet-500 hover:!text-red-500 inline-flex items-center"
+                    className="font-semibold !text-[var(--bronzer)] inline-flex items-center animate-pulse"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

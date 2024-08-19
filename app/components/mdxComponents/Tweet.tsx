@@ -1,10 +1,11 @@
-import { getTweet } from 'react-tweet/api';
+import { getTweet } from "react-tweet/api";
 import {
   TweetSkeleton,
   EmbeddedTweet,
   TweetNotFound,
   type TweetProps,
-} from 'react-tweet';
+} from "react-tweet";
+import { Suspense } from "react";
 
 const TweetContent = async ({ id, components, onError }: TweetProps) => {
   let error;
@@ -33,9 +34,9 @@ export async function TweetComponent({ id }: { id: string }) {
   return (
     <div className="tweet my-6">
       <div className={`flex justify-center`}>
-        {/* <Suspense fallback={<TweetSkeleton />}> */}
-        <ReactTweet id={id} />
-        {/* </Suspense> */}
+        <Suspense fallback={<TweetSkeleton />}>
+          <ReactTweet id={id} />
+        </Suspense>
       </div>
     </div>
   );

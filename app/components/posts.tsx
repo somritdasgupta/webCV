@@ -114,9 +114,9 @@ export function BlogPosts({
         ? Object.entries(postsByYear)
             .map(([year, posts]) => (
               <div key={year} className="mb-8">
-                <h2 className="text-2xl font-bold mb-4 flex items-center">
+                <h1 className="text-2xl font-bold mb-4 flex items-center">
                   {year}
-                </h2>
+                </h1>
                 {posts.map((post) => (
                   <Link
                     key={post.slug}

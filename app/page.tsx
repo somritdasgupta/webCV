@@ -95,7 +95,7 @@ export default function Page() {
                 )}
                 <a
                   href={featuredProject.html_url}
-                  className="font-semibold !text-violet-500 hover:!text-red-500 inline-flex items-center"
+                  className="font-semibold !text-[var(--bronzer)] hover:!text-red-500 inline-flex items-center animate-pulse"
                 >
                   <TbBrandGithub className="w-4 h-4 mr-1" />
                   Github
@@ -122,7 +122,7 @@ export default function Page() {
 
         {/* Content Section */}
         <div className="flex-1 lg:w-4/5">
-          <div className="w-full mb-8 hidden lg:block">
+          <div className="w-full mb-10 hidden lg:block">
             <h1 className="text-3xl font-bold mb-4 tracking-tight text-center lg:text-left">
               hey, I'm Somrit 👋
             </h1>
@@ -154,7 +154,7 @@ export default function Page() {
                 showPublicationYear={true}
               />
             </Suspense>
-            <div className="mt-3">
+            <div className="mt-6">
               <Button href="/blog" text="View All Posts" icon="right" />
             </div>
           </div>

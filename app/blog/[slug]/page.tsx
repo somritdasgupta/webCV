@@ -3,26 +3,32 @@ import { CustomMDX } from "app/components/mdx";
 import { formatDate } from "app/blog/utils";
 import Button from "app/components/Button";
 import dynamic from "next/dynamic";
-import Signature from "app/components/signature";
+import Signature from "app/components/mdxComponents/Signature";
 import { getBlogPosts } from "../getBlogPosts";
-import RelatedPosts from "app/components/RelatedPosts";
+import RelatedPosts from "app/components/mdxComponents/RelatedPosts";
 import Link from "next/link";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://somrit.vercel.app";
 
 const FootnoteProvider = dynamic(
   () =>
-    import("../../components/FootnoteContext").then(
+    import("../../components/mdxComponents/Footnote").then(
       (mod) => mod.FootnoteProvider
     ),
   { ssr: false }
 );
 const Footnote = dynamic(
-  () => import("../../components/Footnote").then((mod) => mod.Footnote),
+  () =>
+    import("../../components/mdxComponents/Footnote").then(
+      (mod) => mod.Footnote
+    ),
   { ssr: false }
 );
 const FootnoteList = dynamic(
-  () => import("../../components/FootnoteList").then((mod) => mod.FootnoteList),
+  () =>
+    import("../../components/mdxComponents/Footnote").then(
+      (mod) => mod.FootnoteList
+    ),
   { ssr: false }
 );
 
@@ -92,7 +98,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <section>
+    <section className="py-6">
       <script
         type="application/ld+json"
         suppressHydrationWarning
@@ -118,9 +124,9 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         }}
       />
       <Button href="/blog" text="Back to posts" icon="left" />
-      <h1 className="title font-bold text-2xl">{post.metadata.title}</h1>
-      <div className="flex justify-between items-center mt-2 mb-4 ml-0.5 text-sm">
-        <p className="!font-semibold text-sm !text-[var(--bronzer)]">
+      <h1 className="text-3xl font-semibold mb-2">{post.metadata.title}</h1>
+      <div className="flex justify-between items-center mt-2 mb-4 text-sm font-medium">
+        <p className="!text-[var(--bronzer)]">
           {formatDate(post.metadata.publishedAt)}
         </p>
       </div>
@@ -130,14 +136,14 @@ export default async function Blog({ params }: { params: { slug: string } }) {
             <Link
               key={tag}
               href={`/blog?tag=${encodeURIComponent(tag)}`}
-              className="custom-topic-pill hover:!bg-[var(--bronzer)]/25 transition-colors ease duration-600"
+              className="bg-[var(--pill-color)] hover:!bg-[var(--bronzer)]/25 custom-topic-pill text-sm transition-colors duration-300"
             >
               {tag}
             </Link>
           ))}
         </div>
       )}
-      <article className="prose">
+      <article className="prose max-w-none">
         <CustomMDX source={post.content} />
       </article>
       <RelatedPosts
@@ -145,7 +151,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         allPosts={posts}
         currentPostSlug={post.slug}
       />
-      <Signature/>
+      <Signature />
     </section>
   );
 }

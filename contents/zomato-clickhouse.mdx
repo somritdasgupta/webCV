@@ -31,7 +31,10 @@ To address these challenges, Zomato evaluated several alternatives before settli
 
 ### Zomato’s logging system design
 
-![Zomato Loggin Sytsem Architecture](https://lh7-us.googleusercontent.com/NL6Y3340UT23f97lPmAV-dhyH6PHBML1hkq3ifyVIDFkIs1WOVxEuivMhS1LbUiVy7bIuWfwsKBilysAc3RSOPtSD6uHm58g49_qvUQTkl_8SlZIlluNcVyOGRlDFUdSImh0CoJ5hFLtImnC5KxkyQY)
+<Image
+  src="https://lh7-us.googleusercontent.com/NL6Y3340UT23f97lPmAV-dhyH6PHBML1hkq3ifyVIDFkIs1WOVxEuivMhS1LbUiVy7bIuWfwsKBilysAc3RSOPtSD6uHm58g49_qvUQTkl_8SlZIlluNcVyOGRlDFUdSImh0CoJ5hFLtImnC5KxkyQY"
+  alt="Zomato's logging system architecture"
+/>
 
 - **Filebeat:** Collects logs from Docker containers and EC2 instances. Filebeat is a lightweight shipper that forwards logs to Kafka, ensuring reliable and scalable log collection.
 
@@ -76,7 +79,10 @@ func main() {
 
 The log data is stored in ClickHouse, which is scaled to handle Zomato's requirements. Initially, the system utilized 10 M6g.16xlarge AWS EC2 nodes, but this configuration may evolve based on changing needs. The use of EC2 instances with high memory and compute capabilities ensures that ClickHouse can handle large volumes of data efficiently.
 
-![ClickHouse Buckets](https://lh6.googleusercontent.com/-q42plmXWjIfx61IuQbqQKWMkfCgEzid0eZ-eAzMdhW167bYFdCnZdg7VC8F5-qOBz83udtg_NYtPOKXURxv1roj4CATYQuRgeUyNRqAxH4MXFdU4vrCXXLwcdxu7pAYo3QxC1U5NQQYhnxFZmALcMk)
+<Image
+  src="https://lh6.googleusercontent.com/-q42plmXWjIfx61IuQbqQKWMkfCgEzid0eZ-eAzMdhW167bYFdCnZdg7VC8F5-qOBz83udtg_NYtPOKXURxv1roj4CATYQuRgeUyNRqAxH4MXFdU4vrCXXLwcdxu7pAYo3QxC1U5NQQYhnxFZmALcMk"
+  alt="ClickHouse buckets"
+/>
 
 - **Batch Processing Ingestion:** Instead of using ClickHouse Kafka plugins, Zomato opted for custom Golang workers to batch log entries. Each batch contains up to 20,000 entries, reducing the overhead on ClickHouse and maintaining a lag of less than 5 seconds. Batch processing minimizes the number of write operations and optimizes the use of system resources.
 - **Native Format Ingestion:** Data is inserted using ClickHouse’s native format, resulting in a performance boost and reduced I/O intensity compared to HTTP-based insertion. Native format insertion leverages ClickHouse’s optimized binary protocols for efficient data transfer.

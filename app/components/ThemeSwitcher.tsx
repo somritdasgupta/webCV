@@ -53,6 +53,7 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         className={`py-3 px-1 cursor-pointer text-xl ${className}`}
         role="button"
         tabIndex={0}
+        aria-label="Toggle theme"
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             toggleTheme();

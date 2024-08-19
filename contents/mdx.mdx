@@ -29,6 +29,8 @@ Also, you can add the link to the source you are reffering to and<Footnote id={3
 
 _This is how italic text looks like_
 
+~~This is how strikethrough looks like~~
+
 #### Ordered List
 
 ---
@@ -49,7 +51,11 @@ _This is how italic text looks like_
 
 > “The best part of beauty is that which no picture can express”– Francis Bacon
 
-![Demo Showcase](https://picsum.photos/900/400)
+<Image
+  src="https://picsum.photos/900/600"
+  alt="This is an auto-image example from picsum"
+/>
+
 
 ### Table
 
@@ -72,10 +78,6 @@ Tables are useful for presenting structured data in a clear, organized manner. H
     ],
   }}
 />
-
-### InsightQuote
-
-> > “Readers prefers to view tl;dr of an article in the form of pro's & con's more than paragraphs”
 
 ### Pro-Con Cards
 
@@ -125,14 +127,12 @@ Live code allows interactive code snippets and their outputs directly in my webp
 
 <LiveCode mode="preview" fileName={["App.js"]} template="angular" />
 
-### Tweet Card
-
 <Callout emoji="💡">
   **Callout:** Alright this block is a callout block to highlight essential
   information that readers shouldn’t overlook. Below is how the tweet card looks
   like.
 </Callout>
 
-<StaticTweet id="1505668279678824448" />
+<Tweet id="1505668279678824448" />
 
 <FootnoteList />

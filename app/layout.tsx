@@ -27,7 +27,9 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${baseUrl}/api/og?title=${encodeURIComponent("hey, I'm Somrit 👋")}`,
+        url: `${baseUrl}/api/og?title=${encodeURIComponent(
+          "hey, I'm Somrit 👋"
+        )}`,
         width: 2400,
         height: 1260,
         alt: "Somrit Dasgupta - Developer and Engineer",
@@ -59,6 +61,12 @@ export const metadata: Metadata = {
     google: "gv-aymi4k24u76uxs.dv.googlehosted.com",
   },
 };
+
+if (metadata.metadataBase) {
+  console.log("Metadata Base URL (fetched from .env):", metadata.metadataBase.toString());
+} else {
+  console.error("Metadata base is not defined");
+}
 
 const cx = (...classes) => classes.filter(Boolean).join(" ");
 
