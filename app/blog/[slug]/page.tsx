@@ -98,7 +98,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <section className="py-6">
+    <section className="py-2">
       <script
         type="application/ld+json"
         suppressHydrationWarning
@@ -124,7 +124,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         }}
       />
       <Button href="/blog" text="Back to posts" icon="left" />
-      <h1 className="text-3xl font-semibold mb-2">{post.metadata.title}</h1>
+      <h1 className="text-2xl font-semibold mb-2 lg:text-3xl">{post.metadata.title}</h1>
       <div className="flex justify-between items-center mt-2 mb-4 text-sm font-medium">
         <p className="!text-[var(--bronzer)]">
           {formatDate(post.metadata.publishedAt)}

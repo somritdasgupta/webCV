@@ -1,18 +1,14 @@
-/*app/global.css*/
-
 /* ===== IMPORTS ===== */
 @import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap");
 
 /* ===== ROOT VARIABLES ===== */
 :root {
-  /* General Colors */
   --bg-color: #fffbfb;
   --light-text-color: #000000;
   --text-color: #471919;
   --text-p: #6a2a2a;
 
-  /* UI Elements */
   --bronzer: #2e6754;
   --callout-bg: #fbf7f7;
   --callout-border: #c8c8c8b3;
@@ -30,7 +26,6 @@
   --row-odd-bg-color: #fffbfb;
   --tweet-bg: #f5f5f5e6;
 
-  /* Syntax Highlighting */
   --sh-class: #4e75a8;
   --sh-comment: #9e80ff;
   --sh-entity: #475458;
@@ -44,13 +39,11 @@
 
 /* ===== DARK THEME ===== */
 [data-theme="dark"] {
-  /* General Colors */
   --bg-color: #0a0310;
   --light-text-color: #b0b0b0;
   --text-color: #fefefe;
   --text-p: #a0c0be;
 
-  /* UI Elements */
   --bronzer: #906ffd;
   --callout-bg: #1f293493;
   --callout-border: #322d47;
@@ -68,7 +61,6 @@
   --row-odd-bg-color: #0d0415;
   --tweet-bg: #1f293493;
 
-  /* Syntax Highlighting */
   --sh-class: #4c97f8;
   --sh-comment: #ccc6e9;
   --sh-entity: #e25a1c;
@@ -83,54 +75,48 @@
 /* ===== GLOBAL STYLES ===== */
 html,
 body {
-  @apply transition-all duration-1500 ease-out;
-  color-scheme: light dark;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-html {
-  min-width: 360px;
+  @apply transition-all duration-1500 ease-out bg-[var(--bg-color)] text-[var(--text-color)] min-w-[360px];
+  font-family: var(--font-geist-sans), system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+    "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 ::selection {
-  background-color: #6a2a2a;
-  color: #fefefe;
+  @apply bg-[#6a2a2a] text-[#fefefe];
 }
 
-/* =====GLOBAL TYPOGRAPHY ===== */
+/* ===== GLOBAL TYPOGRAPHY ===== */
 .font-cursive {
   font-family: "La Belle Aurore", cursive;
-  font-weight: 500;
-  font-style: normal;
+  @apply font-medium;
 }
 
 h1,
 h2,
 h3,
-h4,
-h5,
-h6 {
-  color: var(--text-color); /* Headings */
+h4 {
+  @apply text-[var(--text-color)];
 }
 
 p {
-  color: var(--text-p); /* Paragraphs */
+  @apply text-[var(--text-p)];
+}
+
+strong {
+  @apply font-bold;
 }
 
 section {
-  color: var(--text-color);
+  @apply text-[var(--text-color)];
 }
 
 section p {
-  color: var(--text-p);
+  @apply text-[var(--text-p)];
 }
 
 /* ===== LAYOUT STYLES ===== */
 .container-custom {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  @apply mx-auto px-[1rem];
 }
 
 /* ===== CUSTOM PILL STYLES ===== */
@@ -139,45 +125,42 @@ section p {
 }
 
 .custom-topic-pill {
-  @apply text-xs px-3 py-1 rounded-md;
-  background-color: #6169793f;
-  white-space: nowrap;
-  text-wrap: pretty;
-  text-overflow: ellipsis;
-  display: inline-flex;
-  cursor: pointer;
+  @apply text-xs px-3 py-1 rounded-md bg-[#6169793f] whitespace-nowrap overflow-hidden text-ellipsis inline-flex cursor-pointer;
 }
 
 /* ===== ICON STYLES ===== */
 .icon-white {
-  color: white;
+  @apply text-white;
 }
 
 /* ===== CUSTOM WRAPPER STYLES ===== */
 .custom-wrapper,
 .custom-editor,
 .custom-preview {
-  overflow: hidden !important;
+  @apply overflow-hidden;
 }
 
 .custom-editor .sp-code-editor,
 .custom-preview .sp-preview-iframe {
-  overflow: hidden !important;
+  @apply overflow-hidden;
 }
 
-/* ===== SCROLLBAR STYLES ===== */
+/* ===== DISABLE WEBKIT SCROLLBAR ===== */
+/* For WebKit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  display: none; /* Hide the scrollbar */
+}
+
+/* For Firefox */
 * {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: none; /* Disable scrollbar */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
-*::-webkit-scrollbar {
-  display: none;
-}
-
-/* ===== TWEET STYLES ===== */
-.tweet .react-tweet-theme {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+/* Remove scrollbar from elements */
+body,
+html,
+.overflow-hidden {
+  overflow: -moz-scrollbars-none;
+  -ms-overflow-style: none; /* IE and Edge */
 }

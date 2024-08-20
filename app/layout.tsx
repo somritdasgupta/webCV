@@ -63,12 +63,15 @@ export const metadata: Metadata = {
 };
 
 if (metadata.metadataBase) {
-  console.log("Metadata Base URL (fetched from .env):", metadata.metadataBase.toString());
+  console.log(
+    "Metadata Base URL (fetched from .env):",
+    metadata.metadataBase.toString()
+  );
 } else {
   console.error("Metadata base is not defined");
 }
 
-const cx = (...classes) => classes.filter(Boolean).join(" ");
+const cx = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
 export default function RootLayout({
   children,
@@ -139,7 +142,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="subpixel-antialiased mx-4 mt-8 lg:mx-auto">
+      <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans">
         <main className="max-w-4xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">
           <Navbar />
           {children}

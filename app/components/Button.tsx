@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa"; // Importing from react-icons
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 interface ButtonProps {
   href: string;
@@ -10,7 +10,7 @@ interface ButtonProps {
 
 const icons = {
   left: <FaArrowLeft className="w-3 h-3 mr-1" />,
-  right: <FaArrowRight className="w-3 h-3 ml-1 mt-1" />,
+  right: <FaArrowRight className="w-3 h-3 ml-1" />,
 };
 
 const Button: React.FC<ButtonProps> = ({ href, text, icon }) => {

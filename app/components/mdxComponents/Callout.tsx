@@ -11,7 +11,7 @@ export function Callout({ emoji, children }: CalloutProps) {
       <div className="text-lg mr-3 flex items-center justify-center flex-shrink-0 animate-pulse">
         {emoji}
       </div>
-      <div className="flex-1 text-sm leading-6">
+      <div className="flex-1 text-xs leading-6">
         {children}
       </div>
     </div>

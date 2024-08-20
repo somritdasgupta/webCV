@@ -30,10 +30,14 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     document.documentElement.style.setProperty("color-scheme", newTheme);
     if (isDark) {
       document.documentElement.classList.add("dark");
-      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#0a0310");
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute("content", "#0a0310");
     } else {
       document.documentElement.classList.remove("dark");
-      document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#fffbfb");
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute("content", "#fffbfb");
     }
   };
 
@@ -45,12 +49,18 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
   };
 
   if (isDarkMode === null) {
-    return <span className={`py-2.5 px-2 !text-[var(--bronzer)] animate-ping ${className}`}>⦿</span>;
+    return (
+      <span
+        className={`py-2.5 px-2 !text-[var(--bronzer)] animate-ping ${className}`}
+      >
+        ⦿
+      </span>
+    );
   } else {
     return (
       <span
         onClick={toggleTheme}
-        className={`py-3 px-1 cursor-pointer text-xl ${className}`}
+        className={`py-2.5 px-1 cursor-pointer text-xl ${className}`}
         role="button"
         tabIndex={0}
         aria-label="Toggle theme"

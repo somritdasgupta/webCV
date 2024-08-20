@@ -33,7 +33,7 @@ export function createHeading(level) {
           {
             href: `#${slug}`,
             key: `link-${slug}`,
-            className: `absolute -left-4 text-[var(--text-p)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 
+            className: `absolute -left-4 text-[var(--text-p)] text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 
                       focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--bronzer)] cursor-pointer`,
             "aria-hidden": true,
             "aria-label": `Anchor for ${children}`,

@@ -34,14 +34,14 @@ export function Navbar() {
 
   return (
     <aside
-      className={`sticky top-2 left-0 z-100 rounded-xl h-12 w-fit transition-all duration-600 ease ${
+      className={`sticky top-2 left-0 z-100 rounded-xl h-12 w-fit transition-color duration-100 ${
         isScrolled
-          ? "px-2 bg-[var(--nav-pill)] border-3 border-[var(--code-border)]"
+          ? " mb-6 px-2 bg-[var(--nav-pill)] border-3 border-[var(--code-border)]"
           : "bg-transparent border-transparent mb-6"
       }`}
     >
       <nav
-        className="flex flex-row items-center -ml-[12px] text-[var(--text-p)] tracking-tight transition-all duration-600"
+        className="flex flex-row items-center -ml-[12px] text-[var(--text-p)]"
         id="nav"
       >
         <div className="flex flex-row">
