@@ -4,11 +4,10 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Navbar } from "./components/nav";
 import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import Footer from "./components/footer";
 import { baseUrl } from "./sitemap";
 import { SandpackCSS } from "./blog/[slug]/sandpack";
-import Script from 'next/script';
+import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -63,15 +62,6 @@ export const metadata: Metadata = {
   },
 };
 
-if (metadata.metadataBase) {
-  console.log(
-    "Metadata Base URL (fetched from .env):",
-    metadata.metadataBase.toString()
-  );
-} else {
-  console.error("Metadata base is not defined");
-}
-
 const cx = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
 export default function RootLayout({
@@ -79,6 +69,24 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Determine the theme on the server-side and embed it in the HTML
+  const themeScript = `
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.style.setProperty('color-scheme', theme);
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
+      }
+    })();
+  `;
+
   return (
     <html
       lang="en"
@@ -100,50 +108,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/favicon.png" />
         <meta name="theme-color" content="#fffbfb" />
 
+        {/* Sandpack CSS for blog */}
         <SandpackCSS />
 
-        <Script
-          id="color-scheme-script"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                function getInitialColorMode() {
-                  const persistedColorPreference = window.localStorage.getItem('theme');
-                  if (persistedColorPreference) {
-                    return persistedColorPreference;
-                  }
-                  const mql = window.matchMedia('(prefers-color-scheme: dark)');
-                  return mql.matches ? 'dark' : 'light';
-                }
-                const colorMode = getInitialColorMode();
-                document.documentElement.setAttribute('data-theme', colorMode);
-                document.documentElement.style.setProperty('color-scheme', colorMode);
-                if (colorMode === 'dark') {
-                  document.documentElement.classList.add('dark');
-                  document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                  document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
-                }
-
-                // Listen for changes in color scheme
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-                  const newColorMode = e.matches ? 'dark' : 'light';
-                  document.documentElement.setAttribute('data-theme', newColorMode);
-                  document.documentElement.style.setProperty('color-scheme', newColorMode);
-                  if (newColorMode === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
-                  }
-                });
-              })();
-            `,
-          }}
-          strategy="beforeInteractive"
-        />
+        {/* Inline script to set the theme before any content is rendered */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
 
         {/* Person schema (Somrit) */}
         <Script
@@ -153,16 +122,17 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Person",
-              "name": "Somrit Dasgupta",
-              "jobTitle": "Software Engineer",
-              "description": "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
-              "url": "https://somrit.in",
-              "image": "https://somrit.in/somritdasgupta.jpg",
-              "sameAs": [
+              name: "Somrit Dasgupta",
+              jobTitle: "Software Engineer",
+              description:
+                "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
+              url: baseUrl,
+              image: `${baseUrl}/somritdasgupta.jpg`,
+              sameAs: [
                 "https://www.instagram.com/somritdasgupta",
                 "https://www.linkedin.com/in/somritdasgupta",
-                "https://github.com/somritdasgupta"
-              ]
+                "https://github.com/somritdasgupta",
+              ],
             }),
           }}
         />
@@ -175,24 +145,24 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              "url": "https://your-website.com",
-              "name": "Somrit Dasgupta - Developer and Engineer",
-              "description": "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
-              "publisher": {
+              url: baseUrl,
+              name: "Somrit Dasgupta - Developer and Engineer",
+              description:
+                "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
+              publisher: {
                 "@type": "Person",
-                "name": "Somrit Dasgupta"
-              }
+                name: "Somrit Dasgupta",
+              },
             }),
           }}
         />
       </head>
-      <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans">
+      <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans bg-white dark:bg-black">
         <main className="max-w-4xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">
           <Navbar />
           {children}
           <Footer />
           <Analytics />
-          <SpeedInsights />
         </main>
       </body>
     </html>

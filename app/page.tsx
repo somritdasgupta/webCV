@@ -56,6 +56,7 @@ export default function Page() {
               width={220}
               height={220}
               className="rounded-full"
+              priority
             />
           </div>
           <div className="w-full mb-8 lg:hidden">
