@@ -127,7 +127,7 @@ export function BlogPosts({
                     }`}
                     href={`/blog/${post.slug}`}
                   >
-                    <div className="w-full flex flex-col md:flex-row hover:bg-[var(--bronzer)]/10 rounded-md transition duration-500 ease space-x-0 md:space-x-2">
+                    <div className="w-full flex flex-col md:flex-row hover:bg-[var(--bronzer)]/10 rounded-md transition duration-500 ease py-2 space-x-0 md:space-x-2">
                       {showPublicationYear && (
                         <p className="font-bold !text-[var(--bronzer)] w-[150px] tabular-nums">
                           {formatDate(post.metadata.publishedAt, false)}

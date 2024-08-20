@@ -8,6 +8,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import Footer from "./components/footer";
 import { baseUrl } from "./sitemap";
 import { SandpackCSS } from "./blog/[slug]/sandpack";
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s | Somrit Dasgupta",
   },
   description:
-    "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuffs, I'm a fan of football, to be specific an avid real madrid fanboy. Also, who doesn't love good jokes and memes?",
+    "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
   openGraph: {
     title: "Somrit Dasgupta - Developer and Engineer",
     description:
@@ -101,7 +102,8 @@ export default function RootLayout({
 
         <SandpackCSS />
 
-        <script
+        <Script
+          id="color-scheme-script"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -139,6 +141,48 @@ export default function RootLayout({
                 });
               })();
             `,
+          }}
+          strategy="beforeInteractive"
+        />
+
+        {/* Person schema (Somrit) */}
+        <Script
+          id="person-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              "name": "Somrit Dasgupta",
+              "jobTitle": "Software Engineer",
+              "description": "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
+              "url": "https://somrit.in",
+              "image": "https://somrit.in/somritdasgupta.jpg",
+              "sameAs": [
+                "https://www.instagram.com/somritdasgupta",
+                "https://www.linkedin.com/in/somritdasgupta",
+                "https://github.com/somritdasgupta"
+              ]
+            }),
+          }}
+        />
+
+        {/* WebSite schema */}
+        <Script
+          id="website-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "url": "https://your-website.com",
+              "name": "Somrit Dasgupta - Developer and Engineer",
+              "description": "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
+              "publisher": {
+                "@type": "Person",
+                "name": "Somrit Dasgupta"
+              }
+            }),
           }}
         />
       </head>

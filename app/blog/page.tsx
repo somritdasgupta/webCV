@@ -41,7 +41,7 @@ export default function Page() {
       <Suspense fallback={<p>Brewing the posts 🚀</p>}>
         <BlogPosts
           showTags={true}
-          showBorders={true}
+          showBorders={false}
           showPublicationYear={true}
           groupByYear={true}
         />

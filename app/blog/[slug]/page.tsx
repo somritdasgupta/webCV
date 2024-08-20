@@ -59,7 +59,7 @@ export async function generateMetadata({
 
   const ogImageUrl = image
     ? `${baseUrl}${image}`
-    : `${baseUrl}/api/og?title=${encodeURIComponent(title)}`;
+    : `${baseUrl}/api/og?title=${encodeURIComponent(title)}&date=${encodeURIComponent(publishedTime || '')}`;
 
   return {
     title,

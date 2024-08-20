@@ -51,7 +51,7 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
   if (isDarkMode === null) {
     return (
       <span
-        className={`py-2.5 px-2 !text-[var(--bronzer)] animate-ping ${className}`}
+        className={`py-2 px-1.5 !text-[var(--bronzer)] animate-ping ${className}`}
       >
         ⦿
       </span>

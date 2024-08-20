@@ -51,10 +51,10 @@ export default function Page() {
           <div className="relative mb-12 bg-transparent rounded-full">
             <Image
               src={displayImage}
-              alt="Somrit Dasgupta"
+              alt="Photo of Somrit Dasgupta"
+              aria-label="Photo of Somrit Dasgupta"
               width={220}
               height={220}
-              loading="eager"
               className="rounded-full"
             />
           </div>
