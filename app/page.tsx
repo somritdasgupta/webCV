@@ -63,25 +63,47 @@ export default function Page() {
             <h1 className="text-3xl font-bold mb-8 tracking-tight text-center lg:text-left">
               hey, I'm Somrit 👋
             </h1>
-            <p className="text-gray-300 mt-4 mb-4 tracking-tight">
-              I’m an engineer and likes to work and experiment with modern
-              technologies. I have experience with frontend development as well
-              as integrating the backend solutions. I’m also experimenting on
-              how generative AI can simplify development tasks, especially with
-              RAG (Retrieval-Augmented Generation) and till now it seems pretty
-              promising.
+            <p className="text-gray-300 mt-4 mb-4">
+              I’m an <b>engineer</b>, who likes to work and <b>experiment</b>{" "}
+              with modern technologies. I have experiences with frontend
+              development as well as integrating the backend solutions.
+              Recently, I've been learning and experimenting on how generative
+              AI can{" "}
+              <u>
+                <b>
+                  <a href="https://somrit.vercel.app/blog/developers-copilot">
+                    simplify
+                  </a>
+                </b>
+              </u>{" "}
+              development tasks, especially with RAG (Retrieval-Augmented
+              Generation) and till now it seems pretty promising.
             </p>
-            <p className="text-gray-300 tracking-tight">
-              Though I hold a bachelor's in computer science & engineering,
-              outside of all technical stuffs, I'm a fan of football, to be
-              specific an avid real madrid fanboy. Also, who doesn't love good
-              jokes and memes?
+            <p className="text-gray-300">
+              Though I hold a{" "}
+              <b>bachelor's in computer science & engineering</b>, outside of
+              all technical stuffs, I'm a fan of football, to be specific an
+              avid{" "}
+              <u>
+                <b>
+                  <a href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9">
+                    real madrid
+                  </a>
+                </b>
+              </u>{" "}
+              fanboy. Also, who doesn't love good jokes and{" "}
+              <u>
+                <b>
+                  <a href="https://www.reddit.com/r/memes/">memes</a>
+                </b>
+              </u>
+              ?
             </p>
           </div>
 
           <div className="w-full mb-4">
             <h2 className="text-xl font-bold mb-4 transition-colors lg:text-center">
-              Featured Project ✦
+              Featured Project <span className="animate-pulse">✦</span>
             </h2>
             {error && <p className="text-red-500">{error}</p>}
             {featuredProject ? (
@@ -123,23 +145,45 @@ export default function Page() {
 
         {/* Content Section */}
         <div className="flex-1 lg:w-4/5">
-          <div className="w-full mb-10 hidden lg:block">
+          <div className="w-full mb-8 -mt-2 hidden lg:block">
             <h1 className="text-3xl font-bold mb-4 tracking-tight text-center lg:text-left">
               hey, I'm Somrit 👋
             </h1>
-            <p className="text-gray-300 mb-4">
-              I’m an engineer and likes to work and experiment with modern
-              technologies. I have experience with frontend development as well
-              as integrating the backend solutions. I’m also experimenting on
-              how generative AI can simplify development tasks, especially with
-              RAG (Retrieval-Augmented Generation) and till now it seems pretty
-              promising.
+            <p className="text-gray-300 mt-4 mb-4">
+              I’m an <b>engineer</b>, who likes to work and <b>experiment</b>{" "}
+              with modern technologies. I have experiences with frontend
+              development as well as integrating the backend solutions.
+              Recently, I've been learning and experimenting on how generative
+              AI can{" "}
+              <u>
+                <b>
+                  <a href="https://somrit.vercel.app/blog/developers-copilot">
+                    simplify
+                  </a>
+                </b>
+              </u>{" "}
+              development tasks, especially with RAG (Retrieval-Augmented
+              Generation) and till now it seems pretty promising.
             </p>
             <p className="text-gray-300">
-              Though I hold a bachelor's in computer science & engineering,
-              outside of all technical stuffs, I'm a fan of football, to be
-              specific an avid real madrid fanboy. Also, who doesn't love good
-              jokes and memes?
+              Though I hold a{" "}
+              <b>bachelor's in computer science & engineering</b>, outside of
+              all technical stuffs, I'm a fan of football, to be specific an
+              avid{" "}
+              <u>
+                <b>
+                  <a href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9">
+                    real madrid
+                  </a>
+                </b>
+              </u>{" "}
+              fanboy. Also, who doesn't love good jokes and{" "}
+              <u>
+                <b>
+                  <a href="https://www.reddit.com/r/memes/">memes</a>
+                </b>
+              </u>
+              ?
             </p>
           </div>
           <div>
@@ -155,7 +199,7 @@ export default function Page() {
                 showPublicationYear={true}
               />
             </Suspense>
-            <div className="mt-6">
+            <div className="mt-4">
               <Button href="/blog" text="View All Posts" icon="right" />
             </div>
           </div>

@@ -15,8 +15,6 @@ export async function GET(req: NextRequest) {
           year: "numeric",
         }).format(new Date(searchParams.get("date")!))
       : null;
-
-    // Load the font
     const font = await fetch(
       new URL("/public/kaisei-tokumin-bold.ttf", import.meta.url)
     ).then((res) => res.arrayBuffer());
@@ -60,13 +58,10 @@ export async function GET(req: NextRequest) {
           />
           <div
             style={{
-              marginLeft: 10,
-              marginRight: 10,
-              fontSize: 140,
+              fontSize: 60,
               fontFamily: "Kaisei Tokumin",
               letterSpacing: "0em",
               fontStyle: "normal",
-              lineHeight: "150px",
               whiteSpace: "pre-wrap",
               display: "flex",
               flexDirection: "column",
@@ -78,7 +73,7 @@ export async function GET(req: NextRequest) {
             <div
               style={{
                 marginTop: "40px",
-                fontSize: 40,
+                fontSize: 20,
                 fontFamily: "Kaisei Tokumin",
                 color: "#aaa",
                 borderTop: "2px solid #aaa",
@@ -91,8 +86,8 @@ export async function GET(req: NextRequest) {
         </div>
       ),
       {
-        width: 2400,
-        height: 1260,
+        width: 630,
+        height: 630,
         fonts: [
           {
             name: "Kaisei Tokumin",

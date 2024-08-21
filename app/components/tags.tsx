@@ -40,7 +40,7 @@ const Tags: React.FC<TagsProps> = ({
           <Link
             key={tag}
             href={`/blog?tag=${encodeURIComponent(tag)}`}
-            className={`text-xs px-3 py-1 rounded-md transition-all ease ${
+            className={`text-xs px-2 py-1 rounded-md transition-all ease ${
               selectedTags === tag ? "bg-[var(--bronzer)]/30" : "bg-[#6169793f]"
             } transition-colors ease cursor-pointer`}
             onClick={handleClick(tag)}

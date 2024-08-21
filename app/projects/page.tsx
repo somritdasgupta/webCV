@@ -1,11 +1,10 @@
 import React from "react";
 import ProjectsPage from "./projectsPage";
-import { Metadata } from "next";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Projects",
   description:
-    "Checkout a summary of my projects I've worked on engineering software, leveraging AI, and more.",
+    "Checkout the projects I've worked on related to development of software, leveraging AI, and more.",
 };
 
 export default function Projects() {

@@ -75,18 +75,13 @@ export async function generateMetadata({
       url: `${baseUrl}/blog/${post.slug}`,
       images: [
         {
+          type:"image/png",
+          width: 630,
+          height: 630,
           url: ogImageUrl,
-          width: 2400,
-          height: 1260,
           alt: title,
         },
       ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [ogImageUrl],
     },
   };
 }

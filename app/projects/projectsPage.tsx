@@ -38,17 +38,51 @@ export default function ProjectsPage() {
 
   return (
     <div className="text-white">
-      <h1 className="text-3xl font-bold mb-4 tracking-tight border-left-2">
-        Projects
+      <h1 className="text-3xl font-semibold mb-4 tracking-tight">
+        my projects
       </h1>
-      <section className="mb-6">
+      <section className="mb-8 border-b border-[var(--callout-border)]">
+        <div className="space-y-4 mb-4">
+          <p className="!text-[var(--text-p)]/80">
+            I completed my schooling from St. Stephens School, where I developed
+            an{" "}
+            <u>
+              <b>interest</b>
+            </u>{" "}
+            for computers and programming.
+          </p>
+          <p className="!text-[var(--text-p)]/80">
+            Then, I earned a{" "}
+            <u>
+              <b>B.Tech</b>
+            </u>{" "}
+            in Computer Science and Engineering from Maulana Abul Kalam Azad
+            University of Technology, where I learned low-level programming
+            using java. Since then, I've worked on some personal projects, and
+            I'd{" "}
+            <u>
+              <b>love</b>
+            </u>{" "}
+            for you to check them out.
+          </p>
+        </div>
+        <a
+          href="/Resume.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block px-2 py-2 text-sm font-medium text-[var(text-p)] bg-[var(--bronzer)]/25 rounded-lg mb-6 flex items-center justify-center max-w-[110px] w-full sm:w-auto"
+        >
+          GET RESUME
+        </a>
+      </section>
+      <section className="mb-4">
         {error && <p className="text-red-500">{error}</p>}
         <div className="space-y-8">
           {repos.length > 0 ? (
             repos.map((repo: any) => (
               <div key={repo.id} className="flex items-start lg:items-center">
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold">{repo.name}</h3>
+                  <h3 className="text-xl font-semibold">{repo.name}</h3>
                   {repo.description && (
                     <p className="text-gray-400 mb-2">{repo.description}</p>
                   )}
@@ -77,45 +111,6 @@ export default function ProjectsPage() {
             <p className="mt-2 mb-2">Doing the heavy lifting 🚀</p>
           )}
         </div>
-      </section>
-      {/* Skills Section */}
-      <section>
-        <h2 className="text-3xl font-bold mb-4">Stack</h2>
-        <div className="flex flex-wrap gap-4 mb-4">
-          <span className="custom-skill-pill">react</span>
-          <span className="custom-skill-pill">node.js</span>
-          <span className="custom-skill-pill">docker</span>
-          <span className="custom-skill-pill">rest-api</span>
-          <span className="custom-skill-pill">sql</span>
-          <span className="custom-skill-pill">cloud technologies</span>
-          <span className="custom-skill-pill">Next.js</span>
-          <span className="custom-skill-pill">javaScript</span>
-          <span className="custom-skill-pill">typeScript</span>
-        </div>
-        <div className="space-y-4 mb-8">
-          <p>
-            I earned my bachelor's (B.Tech) in Computer Science and Engineering
-            from Maulana Abul Kalam Azad University of Technology. Though you
-            merely learn practical world works in college still the time I spent
-            like about 4 years studying various subjects there on Computer
-            Science and focusing on low-level programming using C and Java, it
-            was an exciting journey.
-          </p>
-          <p>
-            Before that, I completed my high-schooling from St. Stephens School
-            where I obtained an Indian School Certificate (ISC) in Computer
-            Science and Mathematics. Those years were all about building a solid
-            foundation and interest in this domain, which later on helped a lot.
-          </p>
-        </div>
-        <a
-          href="/Resume.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block px-2 py-2 text-sm font-medium text-[var(text-p)] bg-[var(--bronzer)]/25 rounded-lg mb-4 flex items-center justify-center max-w-[110px] w-full sm:w-auto"
-        >
-          GET RESUME
-        </a>
       </section>
     </div>
   );

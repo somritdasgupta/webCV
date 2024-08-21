@@ -21,26 +21,22 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Somrit Dasgupta - Developer and Engineer",
     description:
-      "Welcome to the personal website of Somrit Dasgupta. Explore projects, blog posts, and insights from an engineer's perspective.",
+      "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuffs, I'm a fan of football, to be specific an avid real madrid fanboy. Also, who doesn't love good jokes and memes?",
     url: baseUrl,
     siteName: "Somrit Dasgupta",
     locale: "en_US",
     type: "website",
     images: [
       {
+        type: "image/png",
+        width: 630,
+        height: 630,
         url: `${baseUrl}/api/og?title=${encodeURIComponent(
           "hey, I'm Somrit 👋"
         )}`,
-        width: 2400,
-        height: 1260,
         alt: "Somrit Dasgupta - Developer and Engineer",
       },
     ],
-  },
-  twitter: {
-    title: "Somrit Dasgupta - Developer and Engineer",
-    card: "summary_large_image",
-    creator: "@kitsomrit",
   },
   robots: {
     index: true,
