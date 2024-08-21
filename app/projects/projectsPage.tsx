@@ -112,7 +112,7 @@ export default function ProjectsPage() {
           href="/Resume.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          className="block px-2 py-2 text-sm font-medium text-white bg-[var(--bronzer)]/25 rounded-lg mb-4 flex items-center justify-center max-w-[110px] w-full sm:w-auto tracking-tight"
+          className="block px-2 py-2 text-sm font-medium text-[var(text-p)] bg-[var(--bronzer)]/25 rounded-lg mb-4 flex items-center justify-center max-w-[110px] w-full sm:w-auto"
         >
           GET RESUME
         </a>

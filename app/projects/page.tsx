@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     images: [
       {
         url: `${baseUrl}/api/og?title=${encodeURIComponent(
-          "hey, I'm Somrit / Check Out What I've Worked On"
+          "hey, I'm Somrit - Check Out What I've Worked On"
         )}`,
         width: 2400,
         height: 1260,
@@ -28,13 +28,6 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Projects - Somrit Dasgupta",
-    description:
-      "Explore the projects I've worked on, focusing on software, AI, and modern technologies.",
-    images: [
-      `${baseUrl}/api/og?title=${encodeURIComponent(
-        "hey, I'm Somrit / Check Out What I've Worked On"
-      )}`,
-    ],
   },
 };
 export default function Projects() {

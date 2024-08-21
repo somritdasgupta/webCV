@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { TiFlash } from "react-icons/ti";
+import { RiArrowRightUpLine } from "react-icons/ri";
 
 interface RelatedPost {
   metadata: {
@@ -23,7 +24,10 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   while (currentIndex !== 0) {
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
-    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
   }
 
   return array;
@@ -54,14 +58,14 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
         <div className="mb-8 pt-4">
           <h2 className="text-2xl font-semibold mb-4 flex items-center text-[var(--text-color)]">
             Other posts
-            <TiFlash className="w-6 h-6 ml-2 text-[var(--bronzer)] mt-0.5" />
           </h2>
           <Link
             href={`/blog/${randomPost.slug}`}
             className="block mb-0 text-[var(--text-color)] hover:bg-[var(--bronzer)]/10 rounded-lg transition-colors duration-300"
           >
-            <div className="bg-[var(--post-title-bg)] border border-[var(--post-title-border)] text-[var(--post-title-color)] backdrop-blur-md rounded-lg p-3 text-base">
+            <div className="bg-[var(--post-title-bg)] border border-[var(--post-title-border)] text-[var(--post-title-color)] backdrop-blur-md rounded-lg p-3 text-base flex justify-between items-center">
               {randomPost.metadata.title}
+              <RiArrowRightUpLine className="w-5 h-5 ml-2 text-[var(--bronzer)]" />
             </div>
           </Link>
         </div>
@@ -75,7 +79,6 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
     <div className="mb-8 pt-4">
       <h2 className="text-2xl font-semibold mb-4 flex items-center text-[var(--text-color)]">
         Related posts
-        <TiFlash className="w-6 h-6 ml-1 text-[var(--bronzer)] mt-1 animate-pulse" />
       </h2>
       <div className="space-y-4">
         {shuffledRelatedPosts.map((post) => (
@@ -84,8 +87,9 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
             href={`/blog/${post.slug}`}
             className="block mb-0 text-[var(--text-color)] hover:bg-[var(--bronzer)]/10 rounded-lg transition-colors duration-300"
           >
-            <div className="bg-[var(--post-title-bg)] border border-[var(--post-title-border)] text-[var(--post-title-color)] backdrop-blur-md rounded-lg p-3 text-base">
+            <div className="bg-[var(--post-title-bg)] border border-[var(--post-title-border)] text-[var(--post-title-color)] backdrop-blur-md rounded-lg p-3 text-base flex justify-between items-center">
               {post.metadata.title}
+              <RiArrowRightUpLine className="w-5 h-5 ml-2 text-[var(--bronzer)] animate-pulse" />
             </div>
           </Link>
         ))}

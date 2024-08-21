@@ -124,7 +124,6 @@ export function FootnoteList() {
         </span>
       </li>
     ));
-
   return (
     <div id="footnote-list" className="mt-6">
       <h3 className="text-2xl font-semibold border-b-1 border-gray-600 pb-2 mb-4">
