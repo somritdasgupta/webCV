@@ -26,9 +26,6 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Somrit's Blog - Thoughts on Software, AI, and More",
-    description:
-      "Welcome to my blog! Here, I share my thoughts and experiences with software development, AI, and technology. Grab a cup of coffee and read my thoughts.",
-    images: [`${baseUrl}/api/og?title=${encodeURIComponent("Somrit's Blog")}`],
   },
 };
 
