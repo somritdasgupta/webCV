@@ -59,7 +59,9 @@ export async function generateMetadata({
 
   const ogImageUrl = image
     ? `${baseUrl}${image}`
-    : `${baseUrl}/api/og?title=${encodeURIComponent(title)}&date=${encodeURIComponent(publishedTime || '')}`;
+    : `${baseUrl}/api/og?title=${encodeURIComponent(
+        title
+      )}&date=${encodeURIComponent(publishedTime || "")}`;
 
   return {
     title,
@@ -83,6 +85,8 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title,
+      description,
+      images: [ogImageUrl],
     },
   };
 }
@@ -122,7 +126,9 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         }}
       />
       <Button href="/blog" text="Back to posts" icon="left" />
-      <h1 className="text-2xl font-semibold mb-2 lg:text-3xl">{post.metadata.title}</h1>
+      <h1 className="text-2xl font-semibold mb-2 lg:text-3xl">
+        {post.metadata.title}
+      </h1>
       <div className="flex justify-between items-center mt-2 mb-4 text-sm font-medium">
         <p className="!text-[var(--bronzer)]">
           {formatDate(post.metadata.publishedAt)}

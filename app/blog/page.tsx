@@ -1,32 +1,9 @@
 import React, { Suspense } from "react";
 import { BlogPosts } from "app/components/posts";
-import { Metadata } from "next";
-import { baseUrl } from "../sitemap";
 
-export const metadata: Metadata = {
-  title: "Somrit's Blog - Thoughts on Software, AI, and More",
-  description:
-    "Welcome to my blog! Here, I share my thoughts and experiences with software development, AI, and technology. Grab a cup of coffee and read my thoughts.",
-  openGraph: {
-    title: "Somrit's Blog - Thoughts on Software, AI, and More",
-    description:
-      "Welcome to my blog! Here, I share my thoughts and experiences with software development, AI, and technology. Grab a cup of coffee and read my thoughts.",
-    siteName: "Somrit Dasgupta",
-    url: `${baseUrl}/blog`,
-    type: "website",
-    images: [
-      {
-        url: `${baseUrl}/api/og?title=${encodeURIComponent("Somrit's Blog")}`,
-        width: 2400,
-        height: 1260,
-        alt: "Somrit's Blog",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Somrit's Blog - Thoughts on Software, AI, and More",
-  },
+export const metadata = {
+  title: "Somrit Dasgupta's Blog - Thoughts on Software, AI, and More",
+  description: 'Grab a cup of coffee and read my thoughts on software development, technology, and more.',
 };
 
 export default function Page() {
