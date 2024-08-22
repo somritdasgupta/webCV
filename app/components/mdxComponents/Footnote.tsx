@@ -85,7 +85,7 @@ export function Footnote({ id, text, link }: FootnoteProps) {
   return (
     <a
       id={`footnote-${id}`}
-      className="!text-violet-500 hover:!text-red-500 font-medium"
+      className="!text-violet-500 hover:!text-red-500 font-medium animate-pulse text-xs"
       href={`#footnote-list`}
     >
       [{id}]

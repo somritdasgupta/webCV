@@ -55,7 +55,7 @@ export default function Page() {
               aria-label="Photo of Somrit Dasgupta"
               width={220}
               height={220}
-              className="rounded-full border-2 border-[var(--bronzer)]/25"
+              className="rounded-full border-2 border-[var(--bronzer)]/50"
               priority
             />
           </div>
@@ -165,7 +165,7 @@ export default function Page() {
               Generation) and till now it seems pretty promising.
             </p>
             <p className="text-gray-300">
-              Although I hold a{" "}
+              Although, I hold a{" "}
               <b>bachelor's</b> in computer science & engineering, apart from of
               all technical stuffs, I'm a fan of football—specifically, an avid{" "}
               <u>
