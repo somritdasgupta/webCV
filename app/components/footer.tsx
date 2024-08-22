@@ -2,8 +2,6 @@ import Link from "next/link";
 import { RiArrowRightUpLine } from "react-icons/ri";
 
 const links = [
-  { href: "/rss", label: "rss" },
-  { href: "/json", label: "json" },
   { href: "mailto:somritdasgupta@outlook.com", label: "mail" },
   { href: "https://github.com/somritdasgupta", label: "github" },
   { href: "https://linkedin.com/in/somritdasgupta", label: "linkedIn" },
@@ -16,12 +14,12 @@ export default function Footer() {
         {links.map((link, index) => (
           <li className="!mb-0 !mt-2" key={index}>
             <a
-              className="flex items-center text-[var(--text-color)] hover:!text-[var(--bronzer)] transition-all ease-out duration-600"
+              className="flex items-center text-[var(--text-p)] hover:!text-[var(--bronzer)] transition-all ease-out duration-600"
               rel="noopener noreferrer"
               target={link.href.startsWith("mailto:") ? "_self" : "_blank"}
               href={link.href}
             >
-              <RiArrowRightUpLine className="w-4 h-4 mr-1 -ml-1" />
+              <RiArrowRightUpLine className="text-lg mr-1 -ml-1" />
               <span className="h-7">{link.label}</span>
             </a>
           </li>

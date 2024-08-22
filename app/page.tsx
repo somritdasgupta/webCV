@@ -55,7 +55,7 @@ export default function Page() {
               aria-label="Photo of Somrit Dasgupta"
               width={220}
               height={220}
-              className="rounded-full"
+              className="rounded-full border-2 border-[var(--bronzer)]/25"
               priority
             />
           </div>
@@ -80,10 +80,9 @@ export default function Page() {
               Generation) and till now it seems pretty promising.
             </p>
             <p className="text-gray-300">
-              Though I hold a{" "}
-              <b>bachelor's in computer science & engineering</b>, outside of
-              all technical stuffs, I'm a fan of football, to be specific an
-              avid{" "}
+              Although, I hold a{" "}
+              <b>bachelor's</b> in computer science & engineering, apart from
+              all technical stuffs, I'm a fan of football—specifically, an avid{" "}
               <u>
                 <b>
                   <a href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9">
@@ -107,7 +106,7 @@ export default function Page() {
             </h2>
             {error && <p className="text-red-500">{error}</p>}
             {featuredProject ? (
-              <div className="border-2 border-gray-800 rounded-lg p-4 mb-4">
+              <div className="border-2 border-[var(--bronzer)]/25 rounded-lg p-4 mb-4">
                 <h3 className="text-xl font-semibold mb-2">
                   {featuredProject.name}
                 </h3>
@@ -166,10 +165,9 @@ export default function Page() {
               Generation) and till now it seems pretty promising.
             </p>
             <p className="text-gray-300">
-              Though I hold a{" "}
-              <b>bachelor's in computer science & engineering</b>, outside of
-              all technical stuffs, I'm a fan of football, to be specific an
-              avid{" "}
+              Although I hold a{" "}
+              <b>bachelor's</b> in computer science & engineering, apart from of
+              all technical stuffs, I'm a fan of football—specifically, an avid{" "}
               <u>
                 <b>
                   <a href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9">

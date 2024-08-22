@@ -44,15 +44,15 @@ export default function ProjectsPage() {
       <section className="mb-8 border-b border-[var(--callout-border)]">
         <div className="space-y-4 mb-4">
           <p className="!text-[var(--text-p)]/80">
-            I completed my schooling from St. Stephens School, where I developed
+            I completed my schooling at St. Stephens School, where I developed
             an{" "}
             <u>
               <b>interest</b>
             </u>{" "}
-            for computers and programming.
+            in computers and programming.
           </p>
           <p className="!text-[var(--text-p)]/80">
-            Then, I earned a{" "}
+            Afterwards, I earned a{" "}
             <u>
               <b>B.Tech</b>
             </u>{" "}
