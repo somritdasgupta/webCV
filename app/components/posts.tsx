@@ -114,7 +114,7 @@ export function BlogPosts({
         ? Object.entries(postsByYear)
             .map(([year, posts]) => (
               <div key={year} className="mb-8">
-                <h1 className="text-2xl font-bold mb-4 flex items-center border-b-1 border-[var(--callout-border)]">
+                <h1 className="text-2xl font-bold mb-4 flex items-center border-dashed border-b-1 border-[var(--callout-border)]">
                   {year}
                 </h1>
                 {posts.map((post) => (

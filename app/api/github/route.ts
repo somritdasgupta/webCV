@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const FILTERED_REPO_IDS = [
-  818561625, 638619916, 694654420, 482468668, 620773103,
+  818561625, 482468668, 638619916, 694654420, 620773103,
 ]; // Replace with actual IDs you want to include
 
 export async function POST(request: Request) {

@@ -14,14 +14,14 @@ const FeedLinks = () => (
       href="/rss"
       className="flex items-center text-violet-400 hover:text-red-500 transition-all duration-300 ease"
     >
-      <RiArrowRightUpLine className="mr-1 animate-pulse" />
+      <RiArrowRightUpLine className="animate-pulse" />
       <span className="hover:font-medium">RSS</span>
     </a>
     <a
       href="/json"
       className="flex items-center text-violet-400 hover:text-red-500 transition-all duration-300 ease"
     >
-      <RiArrowRightUpLine className="mr-1 animate-pulse" />
+      <RiArrowRightUpLine className="animate-pulse" />
       <span className="hover:font-medium">JSON</span>
     </a>
   </div>
