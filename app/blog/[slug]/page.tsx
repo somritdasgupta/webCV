@@ -2,35 +2,12 @@ import { notFound } from "next/navigation";
 import { CustomMDX } from "app/components/mdx";
 import { formatDate } from "app/blog/utils";
 import Button from "app/components/Button";
-import dynamic from "next/dynamic";
-import Signature from "app/components/mdxComponents/Signature";
 import { getBlogPosts } from "../getBlogPosts";
 import RelatedPosts from "app/components/mdxComponents/RelatedPosts";
 import Link from "next/link";
+import Signature from "app/components/mdxComponents/Signature";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://somrit.vercel.app";
-
-const FootnoteProvider = dynamic(
-  () =>
-    import("../../components/mdxComponents/Footnote").then(
-      (mod) => mod.FootnoteProvider
-    ),
-  { ssr: false }
-);
-const Footnote = dynamic(
-  () =>
-    import("../../components/mdxComponents/Footnote").then(
-      (mod) => mod.Footnote
-    ),
-  { ssr: false }
-);
-const FootnoteList = dynamic(
-  () =>
-    import("../../components/mdxComponents/Footnote").then(
-      (mod) => mod.FootnoteList
-    ),
-  { ssr: false }
-);
 
 export async function generateStaticParams() {
   const posts = await getBlogPosts();
@@ -75,7 +52,7 @@ export async function generateMetadata({
       url: `${baseUrl}/blog/${post.slug}`,
       images: [
         {
-          type:"image/png",
+          type: "image/png",
           width: 630,
           height: 630,
           url: ogImageUrl,
