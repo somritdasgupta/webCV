@@ -17,11 +17,11 @@ export const metadata: Metadata = {
     template: "%s | Somrit Dasgupta",
   },
   description:
-    "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuffs, I'm a fan of football, to be specific an avid real madrid fanboy. Also, who doesn't love good jokes and memes?",
+    "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
   openGraph: {
     title: "Somrit Dasgupta - Developer and Engineer",
     description:
-      "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuffs, I'm a fan of football, to be specific an avid real madrid fanboy. Also, who doesn't love good jokes and memes?",
+      "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
     url: baseUrl,
     siteName: "Somrit Dasgupta",
     locale: "en_US",
@@ -136,8 +136,7 @@ export default function RootLayout({
               name: "Somrit Dasgupta",
               jobTitle: "Software Engineer",
               description:
-                "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
-              url: baseUrl,
+                "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
               image: `${baseUrl}/somritdasgupta.jpg`,
               sameAs: [
                 "https://www.instagram.com/somritdasgupta",
@@ -159,7 +158,7 @@ export default function RootLayout({
               url: baseUrl,
               name: "Somrit Dasgupta - Developer and Engineer",
               description:
-                "Personal website and blog of Somrit Dasgupta, a developer and engineer. I hold a bachelor's in computer science & engineering and outside of all technical stuff, I'm a fan of football, specifically an avid Real Madrid fanboy. Also, who doesn't love good jokes and memes?",
+                "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
               publisher: {
                 "@type": "Person",
                 name: "Somrit Dasgupta",

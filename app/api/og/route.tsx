@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            position: "relative", // Make the parent container position relative
+            position: "relative", // Making the parent container position relative
             backgroundImage: `url(${baseUrl}/og.png)`,
             backgroundSize: "cover",
             padding: "50px",
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
               justifyContent: "center",
               backgroundSize: "cover",
               overflow: "hidden",
-              backgroundColor: "rgba(0, 0, 0, 0.25)", // Dark overlay with 50% opacity
+              backgroundColor: "rgba(0, 0, 0, 0.25)", // Dark overlay with 25% opacity
               zIndex: -1,
             }}
           />
