@@ -1,0 +1,192 @@
+---
+title: "Objects in java vs javascript"
+publishedAt: "2023-04-15"
+summary: "Know the key differences and similarities between Java objects and JavaScript objects"
+tags: [technology, guides]
+---
+
+One thing I must say that I've always found objects to be a key part of programming, especially in Object-Oriented Programming (OOP). Objects are essentially pieces of code that represent real-world things or concepts, making it easier to build software that works well and is easy to understand.
+With time I'm learning more and I’ve realized that understanding how different programming languages handle objects is important for writing efficient and maintainable code. Java and JavaScript, for example, both use objects but in different ways. While they share some similarities, there are also several key differences that can affect how we write and organize our code.
+
+I will try to break it down what actually I'm talking about. Let's start!!
+
+### Pretty much everything is an object...
+
+In **Java**, objects are defined using classes. A class serves as a blueprint or template for creating objects, specifying the properties (fields) and behaviors (methods) that each object of that class will possess. This approach enforces a clear structure and type safety, which can be beneficial for larger applications. Here’s a simple example:
+
+```java
+public class Person {
+    private String name;
+    private int age;
+    // Constructor to initialize the object
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+    // Method to introduce the person
+    public void introduce() {
+        System.out.println("Hi, I'm " + name + " and I'm " + age + " years old.");
+    }
+}
+```
+
+To create an object based on this class, you would use the `new` keyword:
+
+```java
+Person john = new Person("John", 30);
+john.introduce(); // Output: Hi, I'm John and I'm 30 years old.
+```
+
+In this example, the `Person` class has a constructor that initializes the `name` and `age` properties. The `introduce` method allows the object to display its information.
+
+In **JavaScript**, the approach to defining objects is more flexible and dynamic. You can create objects using object literals, constructor functions, or the `class` syntax (introduced in ES6). Here’s an example using object literals:
+
+```javascript
+const person = {
+  name: "John",
+  age: 30,
+  introduce: function () {
+    console.log(`Hi, I'm ${this.name} and I'm ${this.age} years old.`);
+  },
+};
+person.introduce(); // Output: Hi, I'm John and I'm 30 years old.
+```
+
+In this case, we define a `person` object directly using curly braces `{}`, specifying its properties and methods inline. This approach allows for quick object creation and modification, making JavaScript particularly suited for rapid development and prototyping.
+
+### The _this_ Keyword
+
+The `this` keyword is a fundamental concept in object-oriented programming, but its behavior can vary significantly between Java and JavaScript.
+
+In **Java**, `this` is a reference to the current object instance. It is used to access the object's properties and methods from within the object itself. The usage of `this` is straightforward and predictable:
+
+```java
+public class Car {
+    private String model;
+    public Car(String model) {
+        this.model = model; // 'this' refers to the current Car instance
+    }
+    public void displayModel() {
+        System.out.println("The model of this car is " + this.model);
+    }
+}
+```
+
+`this.model` clearly points to the `model` of the current `Car` object. This clarity is one of the strengths of Java's object-oriented design.
+
+In **JavaScript**, however, the value of `this` is determined by how a function is called, not by where it is defined. This can lead to unexpected behavior if you're not careful. For instance:
+
+```javascript
+function showVar() {
+  console.log(this.globalVar);
+}
+const obj = {
+  globalVar: "I'm from the object!",
+  showVar: showVar,
+};
+showVar(); // Output: undefined
+obj.showVar(); // Output: I'm from the object!
+```
+
+In the first `showVar()` call, `this` refers to the global object (e.g., `window` in a browser environment), and since `globalVar` is not defined there, it outputs `undefined`. In the second call, `obj.showVar()`, `this` refers to the `obj` object because `showVar` is called as a method of `obj`.
+
+Understanding the behavior of `this` is crucial when working with objects in JavaScript, as it can lead to confusion and bugs if not handled properly. To mitigate these issues, developers often use arrow functions, which lexically bind `this` to the surrounding context:
+
+```javascript
+const obj = {
+  globalVar: "I'm from the object!",
+  showVar: () => {
+    console.log(this.globalVar); // 'this' refers to the surrounding lexical context
+  },
+};
+obj.showVar(); // Output depends on the surrounding context
+```
+
+### Inheritance: Class-based vs. Prototypal
+
+Inheritance is a fundamental concept in object-oriented programming, allowing objects to inherit properties and methods from other objects. Java and JavaScript approach inheritance differently.
+
+In **Java**, inheritance is achieved through classes. A subclass inherits from a superclass using the `extends` keyword. This structure allows for a clear hierarchy and promotes code reuse:
+
+```java
+public class ElectricCar extends Car {
+    private int batteryCapacity;
+    public ElectricCar(String model, int batteryCapacity) {
+        super(model); // Call the constructor of the parent class
+        this.batteryCapacity = batteryCapacity;
+    }
+    public void chargeCar() {
+        System.out.println("Charging the " + super.getModel() + " with a battery capacity of " + batteryCapacity + " kWh.");
+    }
+}
+```
+
+In this example, `ElectricCar` inherits from `Car`, gaining access to its properties and methods while also introducing its own unique features.
+
+In **JavaScript**, inheritance works through prototypes. Every object in JavaScript has a prototype, which is another object. When you try to access a property or method on an object, JavaScript first looks for it on the object itself, and if not found, it follows the prototype chain until it finds the desired property or method or reaches the end of the chain. Here’s an example using the `class` syntax:
+
+```javascript
+class ElectricCar extends Car {
+  constructor(model, batteryCapacity) {
+    super(model); // Call the parent class constructor
+    this.batteryCapacity = batteryCapacity;
+  }
+  chargeCar() {
+    console.log(
+      `Charging the ${this.model} with a battery capacity of ${this.batteryCapacity} kWh.`
+    );
+  }
+}
+```
+
+Both Java and JavaScript support inheritance, but the way they implement it is quite different. Understanding these differences can help you choose the right approach depending on the language you’re using.
+
+### Object mutability is a game-changer
+
+Another important aspect of objects is mutability. In **Java**, objects are generally mutable, meaning you can change their state after they’ve been created. However, if you create an object with the `final` keyword, it becomes immutable:
+
+```java
+public final class ImmutablePerson {
+    private final String name;
+    public ImmutablePerson(String name) {
+        this.name = name;
+    }
+    public String getName() {
+        return name;
+    }
+}
+```
+
+In this case, once you create an `ImmutablePerson`, you can’t change their name. This immutability can be beneficial in multi-threaded environments, where shared data can lead to inconsistencies.
+
+In **JavaScript**, objects are mutable by default. You can easily add, remove, or change properties at any time:
+
+```javascript
+const person = {
+  name: "John",
+  age: 30,
+};
+person.age = 31; // Changing the age
+console.log(person.age); // Outputs: 31
+```
+
+This flexibility is great for rapid development, but it also means you need to be careful about unintended changes to your objects. To create immutable objects in JavaScript, you can use methods like `Object.freeze()`:
+
+```javascript
+const person = Object.freeze({
+  name: "John",
+  age: 30,
+});
+person.age = 31; // This will not change the age
+console.log(person.age); // Outputs: 30
+```
+
+### The thing you should keep in mind...
+
+As a developer, you might find yourself working with both Java and JavaScript in different contexts. Both have their own unique approaches to object manipulation, each with its own strengths and use cases.
+
+In **Java**, objects are created using classes, which define properties and methods. Key concepts like **encapsulation** help protect an object's data by restricting access to its internal state, while **inheritance** allows classes to inherit properties and methods from other classes, promoting code reuse. **Interfaces** provide a way to define a contract that classes can implement, ensuring consistency across different implementations. **Polymorphism** enables objects of different classes to be treated as objects of a common superclass, allowing for flexible and dynamic code.
+
+In **JavaScript**, objects are more flexible and can be created using object literals or constructors. JavaScript objects can hold multiple values as key-value pairs, making them versatile for various applications. The principles of encapsulation and inheritance also apply, although JavaScript uses prototypes for inheritance rather than classes. Polymorphism is achieved through duck typing, where the type of an object is determined by its behavior rather than its class.
+
+Java's class-based inheritance and static typing provide a structured and predictable approach, while JavaScript's prototypal inheritance and dynamic typing offer flexibility and expressiveness.

@@ -18,6 +18,7 @@ export default function NotFound() {
               src="/cat.png"
               alt="Meow!"
               className="object-cover object-top w-full h-full"
+              loading="lazy"
             />
           </div>
         </div>
