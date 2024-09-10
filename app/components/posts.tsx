@@ -16,6 +16,8 @@ interface BlogPost {
 }
 
 interface BlogPostsProps {
+  initialPosts: BlogPost[];
+  initialTags: string[];
   limit?: number;
   showTags?: boolean;
   showBorders?: boolean;
@@ -23,33 +25,20 @@ interface BlogPostsProps {
   groupByYear?: boolean;
 }
 
-export function BlogPosts({
+function ClientBlogPosts({
+  initialPosts,
+  initialTags,
   limit = Infinity,
   showTags = true,
   showBorders = true,
   showPublicationYear = true,
   groupByYear = false,
 }: BlogPostsProps) {
-  const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
-  const [allTags, setAllTags] = useState<string[]>([]);
+  const [allPosts] = useState<BlogPost[]>(initialPosts);
+  const [allTags] = useState<string[]>(initialTags);
 
   const searchParams = useSearchParams();
   const tag = searchParams.get("tag") || "";
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch("/api/blog-posts");
-        const data = await response.json();
-        setAllPosts(data.posts);
-        setAllTags(data.tags);
-      } catch (error) {
-        console.error("Failed to fetch posts:", error);
-      }
-    };
-
-    fetchPosts();
-  }, []);
 
   const filteredPosts = useMemo(() => {
     if (!tag) return allPosts;
@@ -84,14 +73,6 @@ export function BlogPosts({
       return acc;
     }, {} as { [key: string]: number });
   }, [allTags, allPosts]);
-
-  if (allPosts.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -164,4 +145,34 @@ export function BlogPosts({
           ))}
     </div>
   );
+}
+
+export function BlogPosts(props: Omit<BlogPostsProps, 'initialPosts' | 'initialTags'>) {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch("/api/blog-posts");
+        const data = await response.json();
+        setPosts(data.posts);
+        setTags(data.tags);
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  if (posts.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
+
+  return <ClientBlogPosts initialPosts={posts} initialTags={tags} {...props} />;
 }
