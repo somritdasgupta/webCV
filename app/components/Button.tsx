@@ -19,7 +19,7 @@ const Button: React.FC<ButtonProps> = ({ href, text, icon }) => {
   return (
     <Link
       href={href}
-      className="inline-flex items-center mb-4 hover:!text-[var(--bronzer)] transition-colors ease duration-600"
+      className="inline-flex items-center mb-4 hover:!text-[var(--bronzer)]"
     >
       {icon === "left" && IconComponent}
       {text}

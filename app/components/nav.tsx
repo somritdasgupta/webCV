@@ -52,7 +52,7 @@ export function Navbar() {
                 key={path}
                 href={path}
                 className={`transition-all duration-300 relative py-1 px-2 m-1 ${
-                  isActive ? "font-bold" : ""
+                  isActive ? "font-black" : ""
                 }`}
               >
                 {name}

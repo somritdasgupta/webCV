@@ -129,7 +129,7 @@ function ClientBlogPosts({
             <Link
               key={post.slug}
               className={`flex flex-col space-y-1 mb-4 ${
-                showBorders ? "border-b pb-4" : ""
+                showBorders ? "border-dashed border-[var(--bronzer)]/50 border-b pb-4" : ""
               }`}
               href={`/blog/${post.slug}`}
             >

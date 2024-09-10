@@ -9,10 +9,10 @@ const Resume = () => (
       href="/Resume.pdf"
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center text-violet-400 hover:text-red-500 transition-all duration-300 ease"
+      className="flex items-center text-violet-400 font-medium hover:text-red-500 transition-all duration-300 ease"
     >
       <RiArrowRightUpLine className="animate-pulse" />
-      <span className="hover:font-medium">RESUME</span>
+      <span>RESUME</span>
     </a>
   </div>
 );
