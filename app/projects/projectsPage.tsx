@@ -104,7 +104,9 @@ export default function ProjectsPage() {
                     </a>
                   </h3>
                   {repo.description && (
-                    <p className="!text-[var(--text-p)]/80 mb-2">{repo.description}</p>
+                    <p className="!text-[var(--text-p)]/80 mb-2">
+                      {repo.description}
+                    </p>
                   )}
                   {repo.topics && (
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -119,7 +121,9 @@ export default function ProjectsPage() {
               </div>
             ))
           ) : (
-            <p className="mt-2 mb-2">Doing the heavy lifting 🚀</p>
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+            </div>
           )}
         </div>
       </section>

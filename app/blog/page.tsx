@@ -42,7 +42,13 @@ export default function Page() {
         explore the posts that I've written over time and I hope you find them
         interesting.{" "}
       </p>
-      <Suspense fallback={<p>Brewing the posts 🚀</p>}>
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          </div>
+        }
+      >
         <BlogPosts
           showTags={true}
           showBorders={false}

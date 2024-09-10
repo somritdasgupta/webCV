@@ -1,15 +1,14 @@
-// app/page.tsx
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { BlogPosts } from "./components/posts";
 import Button from "./components/Button";
-import displayImage from "../public/somritdasgupta.jpg";
-import { HiArrowTrendingUp } from "react-icons/hi2";
+import { HiArrowTrendingUp, HiSparkles } from "react-icons/hi2";
 import { TbBrandGithub } from "react-icons/tb";
 
-export default function Page() {
+export default function Home() {
   const [featuredProject, setFeaturedProject] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,165 +43,119 @@ export default function Page() {
   }, []);
 
   return (
-    <section className="py-4 lg:py-6">
-      <div className="flex flex-col lg:flex-row lg:gap-24 items-start">
+    <div className="min-h-screen w-full py-8">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Profile Section */}
-        <div className="flex-none lg:w-1/4 flex flex-col items-center lg:items-start">
-          <div className="relative mb-12 bg-transparent rounded-full">
+        <div className="flex flex-col items-center text-center">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-purple-500 blur-3xl rounded-full opacity-25 group-hover:opacity-50 blur transition duration-1000 group-hover:duration-1000 animate-tilt"></div>
             <Image
-              src={displayImage}
+              src="/somritdasgupta.jpg"
               alt="Photo of Somrit Dasgupta"
-              aria-label="Photo of Somrit Dasgupta"
               width={220}
               height={220}
-              className="rounded-full border-2 border-[var(--bronzer)]/50"
+              className="relative rounded-full border-4 border-[var(--bronzer)]/80"
               priority
             />
           </div>
-          <div className="w-full mb-8 lg:hidden">
-            <h1 className="text-3xl font-bold mb-8 tracking-tight text-center lg:text-left">
-              hey, I'm Somrit 👋
-            </h1>
-            <p className="text-gray-300 mt-4 mb-4">
-              I’m an <b>engineer</b>, who likes to work and <b>experiment</b>{" "}
+          <h1 className="mt-8 text-4xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+            hey, I'm Somrit
+          </h1>
+          <div className="mt-8 text-lg sm:text-xl max-w-3xl">
+            <p className="leading-8 text-gray-700 dark:text-gray-300">
+              I'm an{" "}
+              <span className="font-semibold text-violet-600 dark:text-violet-400">
+                engineer
+              </span>
+              , who likes to work and{" "}
+              <span className="font-semibold text-violet-600 dark:text-violet-400">
+                experiment
+              </span>{" "}
               with modern technologies. I have experiences with frontend
-              development as well as integrating the backend solutions.
-              Recently, I've been learning and experimenting on how generative
-              AI can{" "}
-              <u>
-                <b>
-                  <a href="https://somrit.vercel.app/blog/developers-copilot">
-                    simplify
-                  </a>
-                </b>
-              </u>{" "}
+              development as well as integrating backend solutions. Recently,
+              I've been exploring how generative AI can{" "}
+              <Link
+                href="/blog/developers-copilot"
+                className="underline decoration-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+              >
+                simplify
+              </Link>{" "}
               development tasks, especially with RAG (Retrieval-Augmented
-              Generation) and till now it seems pretty promising.
+              Generation) and it seems pretty promising.
             </p>
-            <p className="text-gray-300">
-              Although, I hold a{" "}
-              <b>bachelor's</b> in computer science & engineering, apart from
-              all technical stuffs, I'm a fan of football—specifically, an avid{" "}
-              <u>
-                <b>
-                  <a href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9">
-                    real madrid
-                  </a>
-                </b>
-              </u>{" "}
+            <p className="mt-6 leading-8 text-gray-700 dark:text-gray-300">
+              Although I hold a{" "}
+              <span className="font-semibold">bachelor's</span> in computer
+              science & engineering, apart from all technical stuff, I'm a fan
+              of football—specifically, an avid{" "}
+              <Link
+                href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9"
+                className="underline decoration-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+              >
+                real madrid
+              </Link>{" "}
               fanboy. Also, who doesn't love good jokes and{" "}
-              <u>
-                <b>
-                  <a href="https://www.reddit.com/r/memes/">memes</a>
-                </b>
-              </u>
+              <Link
+                href="https://www.reddit.com/r/memes/"
+                className="underline decoration-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+              >
+                memes
+              </Link>
               ?
             </p>
           </div>
+        </div>
 
-          <div className="w-full mb-4">
-            <h2 className="text-xl font-bold mb-4 transition-colors lg:text-center">
-              Featured Project <span className="animate-pulse">✦</span>
-            </h2>
+        {/* Featured Project */}
+        <div className="space-y-4">
+          <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+            Featured Project
+          </h2>
+          <div className="bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-3xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
             {error && <p className="text-red-500">{error}</p>}
             {featuredProject ? (
-              <div className="border-2 border-[var(--bronzer)]/25 rounded-lg p-4 mb-4">
-                <h3 className="text-xl font-semibold mb-2">
+              <div className="space-y-4">
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
                   {featuredProject.name}
                 </h3>
-                {featuredProject.description && (
-                  <p className="text-xs text-gray-400 mb-4">
-                    {featuredProject.description}
-                  </p>
-                )}
+                <p className="text-lg text-gray-700 dark:text-gray-300">
+                  {featuredProject.description}
+                </p>
                 <a
                   href={featuredProject.html_url}
-                  className="font-semibold !text-[var(--bronzer)] hover:!text-red-400 inline-flex items-center"
+                  className="font-black hover:text-[var(--bronzer)] inline-flex items-center"
                 >
                   <TbBrandGithub className="w-4 h-4 mr-1" />
                   Github
                 </a>
-                {featuredProject.topics && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {featuredProject.topics.map(
-                      (topic: string, index: number) => (
-                        <span key={index} className="custom-topic-pill">
-                          {topic}
-                        </span>
-                      )
-                    )}
-                  </div>
-                )}
               </div>
             ) : (
-              <p className="mt-2 mb-2 lg:text-center">
-                Doing the heavy lifting 🚀
-              </p>
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Content Section */}
-        <div className="flex-1 lg:w-4/5">
-          <div className="w-full mb-8 -mt-2 hidden lg:block">
-            <h1 className="text-3xl font-bold mb-4 tracking-tight text-center lg:text-left">
-              hey, I'm Somrit 👋
-            </h1>
-            <p className="text-gray-300 mt-4 mb-4">
-              I’m an <b>engineer</b>, who likes to work and <b>experiment</b>{" "}
-              with modern technologies. I have experiences with frontend
-              development as well as integrating the backend solutions.
-              Recently, I've been learning and experimenting on how generative
-              AI can{" "}
-              <u>
-                <b>
-                  <a href="https://somrit.vercel.app/blog/developers-copilot">
-                    simplify
-                  </a>
-                </b>
-              </u>{" "}
-              development tasks, especially with RAG (Retrieval-Augmented
-              Generation) and till now it seems pretty promising.
-            </p>
-            <p className="text-gray-300">
-              Although, I hold a{" "}
-              <b>bachelor's</b> in computer science & engineering, apart from of
-              all technical stuffs, I'm a fan of football—specifically, an avid{" "}
-              <u>
-                <b>
-                  <a href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9">
-                    real madrid
-                  </a>
-                </b>
-              </u>{" "}
-              fanboy. Also, who doesn't love good jokes and{" "}
-              <u>
-                <b>
-                  <a href="https://www.reddit.com/r/memes/">memes</a>
-                </b>
-              </u>
-              ?
-            </p>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold mb-2 lg:mb-2 flex items-center">
-              Recent Posts
-              <HiArrowTrendingUp className="w-6 h-6 ml-2 animate-pulse" />{" "}
-            </h2>
-            <Suspense>
-              <BlogPosts
-                limit={3}
-                showTags={false}
-                showBorders={false}
-                showPublicationYear={true}
-              />
-            </Suspense>
-            <div className="mt-4">
+        {/* Recent Posts */}
+        <div className="space-y-4">
+          <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+            Recent Posts
+            <HiArrowTrendingUp className="w-8 h-8 ml-4 text-[var(--bronzer)] animate-pulse" />
+          </h2>
+          <div className="bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-3xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
+            <BlogPosts
+              limit={3}
+              showTags={false}
+              showBorders={false}
+              showPublicationYear={true}
+            />
+            <div className="mt-8 -mb-4 flex font-black">
               <Button href="/blog" text="View All Posts" icon="right" />
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

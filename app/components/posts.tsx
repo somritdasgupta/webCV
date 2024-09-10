@@ -86,7 +86,11 @@ export function BlogPosts({
   }, [allTags, allPosts]);
 
   if (allPosts.length === 0) {
-    return <p className="mt-2 mb-2">Brewing the posts 🚀</p>;
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+      </div>
+    );
   }
 
   return (
