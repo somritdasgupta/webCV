@@ -48,7 +48,7 @@ export default function Home() {
         {/* Profile Section */}
         <div className="flex flex-col items-center text-center">
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-purple-500 blur-3xl rounded-full opacity-25 group-hover:opacity-50 blur transition duration-1000 group-hover:duration-1000 animate-tilt"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-purple-500 blur-3xl rounded-full opacity-25 transition-colors duration-1000 animate-tilt"></div>
             <Image
               src="/somritdasgupta.jpg"
               alt="Photo of Somrit Dasgupta"
@@ -58,7 +58,7 @@ export default function Home() {
               priority
             />
           </div>
-          <h1 className="mt-8 text-4xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+          <h1 className="mt-8 text-4xl sm:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
             hey, I'm Somrit
           </h1>
           <div className="mt-8 text-lg sm:text-xl max-w-3xl">
@@ -108,17 +108,17 @@ export default function Home() {
 
         {/* Featured Project */}
         <div className="space-y-4">
-          <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+          <h2 className="text-2xl sm:text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
             Featured Project
           </h2>
-          <div className="bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-3xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
+          <div className="bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
             {error && <p className="text-red-500">{error}</p>}
             {featuredProject ? (
               <div className="space-y-4">
-                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {featuredProject.name}
                 </h3>
-                <p className="text-lg text-gray-700 dark:text-gray-300">
+                <p className="text-md sm:text-lg text-gray-700 dark:text-gray-300">
                   {featuredProject.description}
                 </p>
                 <a
@@ -139,11 +139,11 @@ export default function Home() {
 
         {/* Recent Posts */}
         <div className="space-y-4">
-          <h2 className="text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+          <h2 className="text-2xl sm:text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
             Recent Posts
             <HiArrowTrendingUp className="w-8 h-8 ml-4 text-[var(--bronzer)] animate-pulse" />
           </h2>
-          <div className="bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-3xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
+          <div className="text-md sm:text-lg bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
             <BlogPosts
               limit={3}
               showTags={false}

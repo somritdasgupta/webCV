@@ -31,7 +31,7 @@ export default function Page() {
   return (
     <section>
       <div className="flex items-center mb-4">
-        <h1 className="bg-color font-semibold text-3xl tracking-tight">
+        <h1 className="bg-color font-black text-3xl tracking-tight">
           read my blog
         </h1>
         <FeedLinks />
