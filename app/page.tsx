@@ -60,12 +60,12 @@ export default function Home() {
             />
           </div>
           <h1 className="mt-8 text-[var(--text-p)] text-4xl sm:text-5xl font-black tracking-tight">
-            <span className="relative block overflow-hidden group h-[1em] w-[100vw]">
+            <span className="relative block overflow-hidden group h-[1.125em] w-[100vw]">
               {" "}
               <span className="block transition-all duration-300 ease-in-out group-hover:translate-y-[-200%]">
                 hey, I'm Somrit
               </span>
-              <span className="block absolute inset-0 transition-all duration-300 ease-in-out translate-y-full group-hover:translate-y-0 w-full min-w-full">
+              <span className="block absolute inset-0 transition-all duration-300 ease-in-out translate-y-full group-hover:translate-y-0">
                 @somritdasgupta
               </span>
             </span>
