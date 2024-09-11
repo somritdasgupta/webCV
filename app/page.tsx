@@ -5,8 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { BlogPosts } from "./components/posts";
 import Button from "./components/Button";
-import { HiArrowTrendingUp, HiSparkles } from "react-icons/hi2";
+import { HiArrowTrendingUp } from "react-icons/hi2";
 import { TbBrandGithub } from "react-icons/tb";
+import { RiVerifiedBadgeLine } from "react-icons/ri";
 
 export default function Home() {
   const [featuredProject, setFeaturedProject] = useState<any>(null);
@@ -61,7 +62,7 @@ export default function Home() {
           <h1 className="mt-8 text-[var(--text-p)] text-4xl sm:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
             hey, I'm Somrit
           </h1>
-          <div className="mt-8 text-lg sm:text-xl max-w-3xl">
+          <div className="mt-8 text-lg sm:text-xl max-w-5xl">
             <p className="leading-8 text-gray-700 dark:text-gray-300">
               I'm an{" "}
               <span className="font-semibold text-violet-600 dark:text-violet-400">
@@ -103,13 +104,17 @@ export default function Home() {
               </Link>
               ?
             </p>
+            <p className="mt-6 leading-8 font-semibold">
+              This is my personal website, so feel free to check it out.
+            </p>
           </div>
         </div>
 
-        {/* Featured Project */}
+        {/* Highlights */}
         <div className="space-y-4">
-          <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
-            Featured Project
+          <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-black text-center  flex items-center justify-center">
+            Highlights
+            <RiVerifiedBadgeLine className="w-6 h-6 ml-2 text-[var(--bronzer)] animate-pulse" />
           </h2>
           <div className="bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
             {error && <p className="text-red-500">{error}</p>}
@@ -139,9 +144,9 @@ export default function Home() {
 
         {/* Recent Posts */}
         <div className="space-y-4">
-          <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-black text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
+          <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-black text-center flex items-center justify-center">
             Recent Posts
-            <HiArrowTrendingUp className="w-8 h-8 ml-4 text-[var(--bronzer)] animate-pulse" />
+            <HiArrowTrendingUp className="w-6 h-6 ml-2 text-[var(--bronzer)] animate-pulse" />
           </h2>
           <div className="text-md sm:text-lg bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
             <BlogPosts
