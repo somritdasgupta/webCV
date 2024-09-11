@@ -55,23 +55,23 @@ export default function Home() {
               alt="Photo of Somrit Dasgupta"
               width={220}
               height={220}
-              className="relative rounded-full border-3 border-[var(--bronzer)]/80"
+              className="relative rounded-full border-3 border-[var(--bronzer)]/70"
               priority
             />
           </div>
           <h1 className="mt-8 text-[var(--text-p)] text-4xl sm:text-5xl font-black tracking-tight">
-            <span className="relative block overflow-hidden group h-[1.125em] w-[100vw]">
+            <span className="relative block overflow-hidden group h-[1.1em] w-[100vw]">
               {" "}
-              <span className="block transition-all duration-300 ease-in-out group-hover:translate-y-[-200%]">
+              <span className="block transition-tranform duration-500 ease group-hover:translate-y-[-120%]">
                 hey, I'm Somrit
               </span>
-              <span className="block absolute inset-0 transition-all duration-300 ease-in-out translate-y-full group-hover:translate-y-0">
+              <span className="block absolute inset-0 transition-transform duration-500 ease translate-y-full group-hover:translate-y-0">
                 @somritdasgupta
               </span>
             </span>
           </h1>
-          <div className="mt-8 text-lg sm:text-xl max-w-5xl">
-            <p className="leading-8 text-gray-700 dark:text-gray-300">
+          <div className="mt-4 text-lg sm:text-xl max-w-5xl w-full">
+            <p className="leading-relaxed text-gray-700 dark:text-gray-300 whitespace-normal break-words">
               I'm an{" "}
               <span className="font-semibold text-violet-600 dark:text-violet-400">
                 engineer
@@ -92,7 +92,7 @@ export default function Home() {
               development tasks, especially with RAG (Retrieval-Augmented
               Generation) and it seems pretty promising.
             </p>
-            <p className="mt-6 leading-8 text-gray-700 dark:text-gray-300">
+            <p className="mt-6 leading-relaxed text-gray-700 dark:text-gray-300 whitespace-normal break-words">
               Although I hold a{" "}
               <span className="font-semibold">bachelor's</span> in computer
               science & engineering, apart from all technical stuff, I'm a fan
@@ -112,8 +112,8 @@ export default function Home() {
               </Link>
               ?
             </p>
-            <p className="mt-6 leading-8 font-semibold">
-              This is my personal website, so feel free to check it out.
+            <p className="mt-6 leading-relaxed font-semibold whitespace-normal break-words">
+              This is my personal website, so feel free to check it out ⚡
             </p>
           </div>
         </div>
