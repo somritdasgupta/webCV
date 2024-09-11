@@ -76,13 +76,14 @@ export default function Home() {
               <span className="font-semibold text-violet-600 dark:text-violet-400">
                 engineer
               </span>
-              , who likes to work and{" "}
+              , and likes to{" "}
               <span className="font-semibold text-violet-600 dark:text-violet-400">
                 experiment
               </span>{" "}
-              with modern technologies. I have experiences with frontend
-              development as well as integrating backend solutions. Recently,
-              I've been exploring how generative AI can{" "}
+              with newer technologies. I initially developed an interest on
+              web-development while working on my projects, also integrating it's
+              backend solutions. But recently, I've been exploring how
+              generative AI can{" "}
               <Link
                 href="/blog/developers-copilot"
                 className="underline decoration-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
@@ -90,13 +91,16 @@ export default function Home() {
                 simplify
               </Link>{" "}
               development tasks, especially with RAG (Retrieval-Augmented
-              Generation) and it seems pretty promising.
+              Generation) and it seems pretty amazing.
             </p>
             <p className="mt-6 leading-relaxed text-gray-700 dark:text-gray-300 whitespace-normal break-words">
-              Although I hold a{" "}
-              <span className="font-semibold">bachelor's</span> in computer
-              science & engineering, apart from all technical stuff, I'm a fan
-              of football—specifically, an avid{" "}
+              I earned a{" "}
+              <span className="font-semibold text-violet-600 dark:text-violet-400">
+                b.tech
+              </span>{" "}
+              in computer science & engineering which further pushed my
+              interest. Besides, I'm a fan of football—specifically, an
+              avid{" "}
               <Link
                 href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9"
                 className="underline decoration-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
@@ -113,14 +117,14 @@ export default function Home() {
               ?
             </p>
             <p className="mt-6 leading-relaxed font-semibold whitespace-normal break-words">
-              This is my personal website, so feel free to check it out ⚡
+              Here is my personal website, so feel free to check it out ❤️
             </p>
           </div>
         </div>
 
         {/* Highlights */}
         <div className="space-y-4">
-          <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-black text-center  flex items-center justify-center">
+          <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-extrabold text-center  flex items-center justify-center">
             Highlights
             <RiVerifiedBadgeLine className="w-6 h-6 ml-2 text-[var(--bronzer)] animate-pulse" />
           </h2>
@@ -152,7 +156,7 @@ export default function Home() {
 
         {/* Recent Posts */}
         <div className="space-y-4">
-          <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-black text-center flex items-center justify-center">
+          <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-extrabold text-center flex items-center justify-center">
             Recent Posts
             <HiArrowTrendingUp className="w-6 h-6 ml-2 text-[var(--bronzer)] animate-pulse" />
           </h2>

@@ -99,7 +99,7 @@ function ClientBlogPosts({
         ? Object.entries(postsByYear)
             .map(([year, posts]) => (
               <div key={year} className="mb-8">
-                <h1 className="text-2xl font-bold mb-4 flex items-center border-dashed border-b-1 border-[var(--callout-border)]">
+                <h1 className="text-2xl font-extrabold mb-4 flex items-center border-dashed border-b-1 border-[var(--callout-border)]">
                   {year}
                 </h1>
                 {posts.map((post) => (
@@ -114,7 +114,7 @@ function ClientBlogPosts({
                   >
                     <div className="w-full flex flex-col md:flex-row hover:bg-[var(--bronzer)]/10 rounded-md transition duration-500 ease py-2 space-x-0 md:space-x-2">
                       {showPublicationYear && (
-                        <p className="font-bold !text-[var(--bronzer)] w-[150px] tabular-nums">
+                        <p className="font-extrabold !text-[var(--bronzer)] w-[150px] tabular-nums">
                           {formatDate(post.metadata.publishedAt, false)}
                         </p>
                       )}
@@ -135,7 +135,7 @@ function ClientBlogPosts({
             >
               <div className="w-full flex flex-col hover:bg-[var(--bronzer)]/10 rounded-md transition duration-500 ease md:flex-row space-x-0 md:space-x-2">
                 {showPublicationYear && (
-                  <p className="font-bold !text-[var(--bronzer)] w-[150px] tabular-nums">
+                  <p className="font-extrabold !text-[var(--bronzer)] w-[150px] tabular-nums">
                     {formatDate(post.metadata.publishedAt, false)}
                   </p>
                 )}

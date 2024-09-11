@@ -53,7 +53,7 @@ export default function ProjectsPage() {
   return (
     <div className="text-white">
       <div className="flex items-center mb-4">
-        <h1 className="bg-color font-black text-3xl tracking-tight">
+        <h1 className="bg-color font-extrabold text-3xl tracking-tight">
           my background
         </h1>
         <Resume />
