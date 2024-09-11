@@ -59,8 +59,16 @@ export default function Home() {
               priority
             />
           </div>
-          <h1 className="mt-8 text-[var(--text-p)] text-4xl sm:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
-            hey, I'm Somrit
+          <h1 className="mt-8 text-[var(--text-p)] text-4xl sm:text-5xl font-black tracking-tight">
+            <span className="relative block overflow-hidden group h-[1em] w-[100vw]">
+              {" "}
+              <span className="block transition-all duration-300 ease-in-out group-hover:translate-y-[-200%]">
+                hey, I'm Somrit
+              </span>
+              <span className="block absolute inset-0 transition-all duration-300 ease-in-out translate-y-full group-hover:translate-y-0 w-full min-w-full">
+                @somritdasgupta
+              </span>
+            </span>
           </h1>
           <div className="mt-8 text-lg sm:text-xl max-w-5xl">
             <p className="leading-8 text-gray-700 dark:text-gray-300">
