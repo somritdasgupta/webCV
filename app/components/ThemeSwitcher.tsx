@@ -71,16 +71,16 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         }}
       >
         <FiSun
-          className={`absolute text-xl text-violet-400 transition-all duration-300 ease-in-out ${
+          className={`absolute text-xl text-violet-400 transition-all duration-900 ease ${
             isDarkMode
               ? "opacity-100 rotate-0 scale-100"
-              : "opacity-0 rotate-90 scale-75"
+              : "opacity-0 rotate-90 scale-0"
           }`}
         />
         <FiMoon
-          className={`absolute text-xl text-violet-400 transition-all duration-300 ease-in-out ${
+          className={`absolute text-xl text-violet-400 transition-all duration-900 ease ${
             isDarkMode
-              ? "opacity-0 -rotate-90 scale-75"
+              ? "opacity-0 -rotate-90 scale-0"
               : "opacity-100 rotate-0 scale-100"
           }`}
         />
