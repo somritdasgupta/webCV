@@ -60,7 +60,7 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     return (
       <span
         onClick={toggleTheme}
-        className={`py-2.5 px-1 cursor-pointer text-xl ${className}`}
+        className={`relative inline-flex items-center justify-center w-6 h-10 cursor-pointer ${className}`}
         role="button"
         tabIndex={0}
         aria-label="Toggle theme"
@@ -70,11 +70,20 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
           }
         }}
       >
-        {isDarkMode ? (
-          <FiSun className="text-xl text-violet-400 transition-all ease-out duration-600" />
-        ) : (
-          <FiMoon className="text-xl text-violet-400 transition-all ease-out duration-600" />
-        )}
+        <FiSun
+          className={`absolute text-xl text-violet-400 transition-all duration-300 ease-in-out ${
+            isDarkMode
+              ? "opacity-100 rotate-0 scale-100"
+              : "opacity-0 rotate-90 scale-75"
+          }`}
+        />
+        <FiMoon
+          className={`absolute text-xl text-violet-400 transition-all duration-300 ease-in-out ${
+            isDarkMode
+              ? "opacity-0 -rotate-90 scale-75"
+              : "opacity-100 rotate-0 scale-100"
+          }`}
+        />
       </span>
     );
   }
