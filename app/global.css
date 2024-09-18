@@ -18,7 +18,7 @@
   --code-border: #cccccc;
   --cons-card-border: #f97c7c99;
   --header-bg-color: #f1e8e8aa;
-  --nav-pill: #f7eeee;
+  --nav-pill: #f6f8ff;
   --pill-color: #e0e0e0;
   --post-title-bg: #f5f5f5e6;
   --post-title-border: #c8c8c8b3;
@@ -52,7 +52,7 @@
   --card-bg: #1f293493;
   --code-border: #1c2c45;
   --header-bg-color: #171324;
-  --nav-pill: #1f1628;
+  --nav-pill: #181120;
   --pill-color: #1f1628;
   --post-title-bg: #0b1117;
   --post-title-border: #3c3c3cb3;
@@ -78,9 +78,19 @@
 html,
 body {
   @apply transition-all duration-1500 ease-out bg-[var(--bg-color)] text-[var(--text-color)] min-w-[300px];
-  font-family: var(--font-geist-sans), system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
-    "Open Sans", "Helvetica Neue", sans-serif;
+  font-family:
+    var(--font-geist-sans),
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
 }
 
 ::selection {

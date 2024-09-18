@@ -128,7 +128,7 @@ export default function Home() {
             Highlights
             <RiVerifiedBadgeLine className="w-6 h-6 ml-2 text-[var(--bronzer)] animate-pulse" />
           </h2>
-          <div className="bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
+          <div className="bg-white/10 dark:bg-cyan-400/5 backdrop-blur-xs rounded-xl p-8 shadow-xs border border-gray-200/20 dark:border-gray-700/20">
             {error && <p className="text-red-500">{error}</p>}
             {featuredProject ? (
               <div className="space-y-4">
@@ -160,7 +160,7 @@ export default function Home() {
             Recent Posts
             <HiArrowTrendingUp className="w-6 h-6 ml-2 text-[var(--bronzer)] animate-pulse" />
           </h2>
-          <div className="text-md sm:text-lg bg-white/10 dark:bg-gray-500/5 backdrop-blur-lg rounded-xl p-8 shadow-lg border border-gray-200/20 dark:border-gray-700/20">
+          <div className="text-md sm:text-lg bg-white/10 dark:bg-cyan-400/5 backdrop-blur-xs rounded-xl p-8 shadow-xs border border-gray-200/20 dark:border-gray-700/20">
             <BlogPosts
               limit={3}
               showTags={false}
