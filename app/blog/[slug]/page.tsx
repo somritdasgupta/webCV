@@ -112,7 +112,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
             <Link
               key={tag}
               href={`/blog?tag=${encodeURIComponent(tag)}`}
-              className="bg-[var(--pill-color)] hover:!bg-[var(--bronzer)]/25 custom-topic-pill text-sm transition-colors duration-300"
+              className="bg-[var(--pill-color)] hover:scale-105 custom-topic-pill text-sm transition-colors duration-300"
             >
               {tag}
             </Link>

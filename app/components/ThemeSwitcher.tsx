@@ -60,7 +60,7 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     return (
       <span
         onClick={toggleTheme}
-        className={`relative inline-flex items-center justify-center w-6 h-10 cursor-pointer ${className}`}
+        className={`relative inline-flex items-center justify-center w-6 h-10 cursor-pointer hover:scale-110 ease duration-300 ${className}`}
         role="button"
         tabIndex={0}
         aria-label="Toggle theme"

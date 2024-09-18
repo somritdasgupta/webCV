@@ -37,7 +37,7 @@ export function Navbar() {
     <aside
       className={`sticky top-2 left-0 z-100 rounded-xl h-12 w-fit transition-all duration-300 ${
         isScrolled
-          ? "mb-6 px-2 bg-[var(--nav-pill)]/85 backdrop-blur-sm border-3 border-[var(--code-border)] shadow-[0_0_5px_rgba(0,0,10,0.1)] dark:shadow-[0_0_5px_rgba(255,0,255,0.1)] transform hover:-translate-y-0.2 hover:shadow-[0_0_8px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_0_12px_rgba(255,255,255,0.2)]"
+          ? "mb-6 px-2 bg-[var(--nav-pill)]/85 backdrop-blur-sm border-3 border-[var(--code-border)] transform hover:-translate-y-0.2"
           : "bg-transparent border-transparent mb-6"
       }`}
     >
@@ -56,8 +56,8 @@ export function Navbar() {
                   isActive ? "font-black" : ""
                 } ${
                   isScrolled
-                    ? "hover:text-[var(--text-p)]/80 active:transform active:translate-y-0.5"
-                    : ""
+                    ? "hover:text-[var(--text-p)]/80 hover:font-semibold active:transform active:translate-y-0.5 ease duration-300"
+                    : "hover:text-[var(--text-p)]/80 hover:font-semibold active:transform active:translate-y-0 ease duration-300"
                 }`}
               >
                 {name}

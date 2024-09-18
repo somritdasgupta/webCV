@@ -57,21 +57,27 @@ function ClientBlogPosts({
 
   const postsByYear = useMemo(() => {
     if (!groupByYear) return sortedPosts;
-    return sortedPosts.reduce((acc, post) => {
-      const year = new Date(post.metadata.publishedAt).getFullYear();
-      if (!acc[year]) acc[year] = [];
-      acc[year].push(post);
-      return acc;
-    }, {} as { [key: number]: BlogPost[] });
+    return sortedPosts.reduce(
+      (acc, post) => {
+        const year = new Date(post.metadata.publishedAt).getFullYear();
+        if (!acc[year]) acc[year] = [];
+        acc[year].push(post);
+        return acc;
+      },
+      {} as { [key: number]: BlogPost[] }
+    );
   }, [sortedPosts, groupByYear]);
 
   const tagCounts = useMemo(() => {
-    return allTags.reduce((acc, tag) => {
-      acc[tag] = allPosts.filter((post) =>
-        post.metadata.tags?.includes(tag)
-      ).length;
-      return acc;
-    }, {} as { [key: string]: number });
+    return allTags.reduce(
+      (acc, tag) => {
+        acc[tag] = allPosts.filter((post) =>
+          post.metadata.tags?.includes(tag)
+        ).length;
+        return acc;
+      },
+      {} as { [key: string]: number }
+    );
   }, [allTags, allPosts]);
 
   return (
@@ -112,7 +118,7 @@ function ClientBlogPosts({
                     }`}
                     href={`/blog/${post.slug}`}
                   >
-                    <div className="w-full flex flex-col md:flex-row hover:bg-[var(--bronzer)]/10 rounded-md transition duration-500 ease py-2 space-x-0 md:space-x-2">
+                    <div className="w-full flex flex-col md:flex-row hover:scale-x-100.5 rounded-md py-2 space-x-0 md:space-x-2">
                       {showPublicationYear && (
                         <p className="font-extrabold !text-[var(--bronzer)] w-[150px] tabular-nums">
                           {formatDate(post.metadata.publishedAt, false)}
@@ -129,11 +135,13 @@ function ClientBlogPosts({
             <Link
               key={post.slug}
               className={`flex flex-col space-y-1 mb-4 ${
-                showBorders ? "border-dashed border-[var(--bronzer)]/50 border-b pb-4" : ""
+                showBorders
+                  ? "border-dashed border-[var(--bronzer)]/50 border-b pb-4"
+                  : ""
               }`}
               href={`/blog/${post.slug}`}
             >
-              <div className="w-full flex flex-col hover:bg-[var(--bronzer)]/10 rounded-md transition duration-500 ease md:flex-row space-x-0 md:space-x-2">
+              <div className="w-full flex flex-col hover:scale-x-100.5 rounded-md md:flex-row space-x-0 md:space-x-2">
                 {showPublicationYear && (
                   <p className="font-extrabold !text-[var(--bronzer)] w-[150px] tabular-nums">
                     {formatDate(post.metadata.publishedAt, false)}
@@ -147,7 +155,9 @@ function ClientBlogPosts({
   );
 }
 
-export function BlogPosts(props: Omit<BlogPostsProps, 'initialPosts' | 'initialTags'>) {
+export function BlogPosts(
+  props: Omit<BlogPostsProps, "initialPosts" | "initialTags">
+) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [tags, setTags] = useState<string[]>([]);
 

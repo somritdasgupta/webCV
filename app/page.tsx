@@ -65,7 +65,7 @@ export default function Home() {
               <span className="block transition-tranform duration-500 ease group-hover:translate-y-[-120%]">
                 hey, I'm Somrit
               </span>
-              <span className="block absolute inset-0 transition-transform duration-500 ease translate-y-full group-hover:translate-y-0">
+              <span className="block absolute inset-0 transition-transform duration-400 ease translate-y-full group-hover:translate-y-0">
                 @somritdasgupta
               </span>
             </span>
@@ -81,8 +81,8 @@ export default function Home() {
                 experiment
               </span>{" "}
               with newer technologies. I initially developed an interest on
-              web-development while working on my projects, also integrating it's
-              backend solutions. But recently, I've been exploring how
+              web-development while working on my projects, also integrating
+              it's backend solutions. But recently, I've been exploring how
               generative AI can{" "}
               <Link
                 href="/blog/developers-copilot"
@@ -99,8 +99,7 @@ export default function Home() {
                 b.tech
               </span>{" "}
               in computer science & engineering which further pushed my
-              interest. Besides, I'm a fan of football—specifically, an
-              avid{" "}
+              interest. Besides, I'm a fan of football—specifically, an avid{" "}
               <Link
                 href="https://youtu.be/Yc-7IQqcqeM?si=NlGyQFjCBYPeMnUU&t=9"
                 className="underline decoration-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
