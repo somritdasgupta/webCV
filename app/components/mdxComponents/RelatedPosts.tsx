@@ -61,7 +61,7 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
           </h2>
           <Link
             href={`/blog/${randomPost.slug}`}
-            className="block mb-0 text-[var(--text-color)] hover:bg-[var(--bronzer)]/10 rounded-lg transition-colors duration-300"
+            className="block mb-0 text-[var(--text-color)] hover:scale-102 rounded-lg transition-colors duration-300"
           >
             <div className="bg-[var(--post-title-bg)] border border-[var(--post-title-border)] text-[var(--post-title-color)] backdrop-blur-md rounded-lg p-3 text-base flex justify-between items-center">
               {randomPost.metadata.title}
@@ -85,7 +85,7 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
-            className="block mb-0 text-[var(--text-color)] hover:bg-[var(--bronzer)]/10 rounded-lg transition-colors duration-300"
+            className="block mb-0 text-[var(--text-color)] hover:scale-x-100.5 rounded-lg transition-colors duration-300"
           >
             <div className="bg-[var(--post-title-bg)] border border-[var(--post-title-border)] text-[var(--post-title-color)] backdrop-blur-md rounded-lg p-3 text-base flex justify-between items-center">
               {post.metadata.title}

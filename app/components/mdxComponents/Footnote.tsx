@@ -85,7 +85,7 @@ export function Footnote({ id, text, link }: FootnoteProps) {
   return (
     <a
       id={`footnote-${id}`}
-      className="!text-violet-400 hover:!text-red-500 font-medium animate-pulse text-xs"
+      className="text-violet-400 hover:scale-110 font-medium text-xs animate-pulse"
       href={`#footnote-list`}
     >
       [{id}]
@@ -103,7 +103,7 @@ export function FootnoteList() {
       <li key={id} className="flex align-text-top space-x-1 mb-2">
         <a
           id={`footnote-${id}`}
-          className="!text-violet-400 hover:!text-red-500 font-medium text-sm"
+          className="text-violet-400 hover:scale-110 font-medium text-sm"
           href={`#footnote-${id}`}
         >
           [{id}]
@@ -118,7 +118,7 @@ export function FootnoteList() {
               aria-label="Resource External link"
               className="ml-1 inline-flex items-center"
             >
-              <FaExternalLinkAlt className="h-3 w-3 !text-violet-400 hover:!text-red-500" />
+              <FaExternalLinkAlt className="h-3 w-3 text-violet-400 hover:scale-110" />
             </a>
           )}
         </span>

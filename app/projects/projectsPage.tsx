@@ -9,7 +9,7 @@ const Resume = () => (
       href="/Resume.pdf"
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center text-violet-400 font-medium hover:text-red-500 transition-all duration-300 ease"
+      className="flex items-center text-violet-400 font-medium hover:scale-105 transition-all duration-300 ease"
     >
       <RiArrowRightUpLine className="animate-pulse" />
       <span>RESUME</span>
@@ -95,7 +95,7 @@ export default function ProjectsPage() {
                     {repo.name}
                     <a
                       href={repo.html_url}
-                      className="ml-2 text-xs !font-medium text-violet-400 hover:text-red-500 flex items-center mt-2"
+                      className="ml-2 text-xs !font-medium text-violet-400 hover:scale-105 flex items-center mt-2 transition-all duration-300 ease"
                       target="_blank"
                       rel="noopener noreferrer"
                     >

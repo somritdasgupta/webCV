@@ -139,7 +139,7 @@ export default function Home() {
                 </p>
                 <a
                   href={featuredProject.html_url}
-                  className="font-black hover:text-[var(--bronzer)] inline-flex items-center"
+                  className="font-black hover:scale-x-105 transition-all duration-300 ease inline-flex items-center"
                 >
                   <TbBrandGithub className="w-4 h-4 mr-1" />
                   Github

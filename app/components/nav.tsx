@@ -35,9 +35,9 @@ export function Navbar() {
 
   return (
     <aside
-      className={`sticky top-2 left-0 z-100 rounded-xl h-12 w-fit transition-all duration-300 ${
+      className={`sticky top-2 left-0 z-100 rounded-xl h-12 w-fit transition-all ease duration-300 ${
         isScrolled
-          ? "mb-6 px-2 bg-[var(--nav-pill)]/85 backdrop-blur-sm border-3 border-[var(--code-border)] transform hover:-translate-y-0.2"
+          ? "mb-6 px-2 bg-[var(--nav-pill)]/85 backdrop-blur-sm border-3 border-[var(--bronzer)]/50 transform hover:-translate-y-0.2"
           : "bg-transparent border-transparent mb-6"
       }`}
     >

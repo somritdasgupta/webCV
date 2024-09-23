@@ -12,14 +12,14 @@ const FeedLinks = () => (
   <div className="flex space-x-2 ml-4 mt-2 text-xs">
     <a
       href="/rss"
-      className="flex items-center font-medium text-violet-400 hover:text-red-500 transition-all duration-300 ease"
+      className="flex items-center font-medium text-violet-400 hover:scale-105 transition-all duration-300 ease"
     >
       <RiArrowRightUpLine className="animate-pulse" />
       <span>RSS</span>
     </a>
     <a
       href="/json"
-      className="flex items-center font-medium text-violet-400 hover:text-red-500 transition-all duration-300 ease"
+      className="flex items-center font-medium text-violet-400 hover:scale-105 transition-all duration-300 ease"
     >
       <RiArrowRightUpLine className="animate-pulse" />
       <span>JSON</span>
