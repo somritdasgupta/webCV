@@ -143,7 +143,7 @@ function ClientBlogPosts({
             >
               <div className="w-full flex flex-col hover:scale-x-100.5 rounded-md md:flex-row space-x-0 md:space-x-2">
                 {showPublicationYear && (
-                  <p className="font-extrabold !text-[var(--bronzer)] w-[150px] tabular-nums">
+                  <p className="font-extrabold !text-[var(--bronzer)] w-[180px] tabular-nums">
                     {formatDate(post.metadata.publishedAt, false)}
                   </p>
                 )}

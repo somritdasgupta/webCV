@@ -2,7 +2,7 @@ import Link from "next/link";
 import { RiArrowRightUpLine } from "react-icons/ri";
 
 const links = [
-  { href: "mailto:somritdasgupta@outlook.com", label: "mail" },
+  { href: "mailto:thesomritdasgupta@gmail.com", label: "mail" },
   { href: "https://github.com/somritdasgupta", label: "github" },
   { href: "https://linkedin.com/in/somritdasgupta", label: "linkedIn" },
 ];
