@@ -1,5 +1,9 @@
 import { getBlogPosts } from "app/blog/getBlogPosts";
 import { baseUrl } from "app/sitemap";
+import MarkdownIt from "markdown-it"; // Added Markdown parser
+
+// Initialize Markdown parser
+const markdownParser = new MarkdownIt();
 
 interface Metadata {
   publishedAt: string;
@@ -13,7 +17,7 @@ interface Metadata {
     length: number;
     type: string;
   };
-  tags?: string[]; // Added tags
+  tags?: string[];
 }
 
 interface Post {
@@ -58,10 +62,8 @@ export async function GET() {
             ? `<dc:creator>${escapeXml(post.metadata.author)}</dc:creator>`
             : "";
           const content = post.content
-            ? `<content:encoded><![CDATA[${escapeXml(
-                post.content
-              )}]]></content:encoded>`
-            : "";
+            ? `<content:encoded><![CDATA[${markdownParser.render(post.content)}]]></content:encoded>`
+            : ""; // Convert Markdown to HTML
           const image = post.metadata.image
             ? `<media:thumbnail url="${escapeXml(post.metadata.image)}" />`
             : "";
@@ -73,8 +75,10 @@ export async function GET() {
               )}" />`
             : "";
           const tags = post.metadata.tags
-            ? `<category>${post.metadata.tags.join(", ")}</category>` // Tags in RSS feed
-            : "";
+            ? post.metadata.tags
+                .map((tag) => `<category>${escapeXml(tag)}</category>`)
+                .join("")
+            : ""; // Tags
 
           return `<item>
             <title>${title}</title>
@@ -93,46 +97,6 @@ export async function GET() {
         .join("")}
     </channel>
   </rss>`;
-
-  // Generate Atom Feed
-  const atomFeed = `<?xml version="1.0" encoding="UTF-8"?>
-  <feed xmlns="http://www.w3.org/2005/Atom">
-    <title>Somrit Dasgupta</title>
-    <link href="${baseUrl}/atom" rel="self" />
-    <link href="${baseUrl}" />
-    <updated>${new Date().toISOString()}</updated>
-    <author><name>Somrit Dasgupta</name></author>
-    <rights>© ${new Date().getFullYear()} Somrit Dasgupta</rights>
-    ${allBlogs
-      .sort(
-        (a, b) =>
-          new Date(b.metadata.publishedAt).getTime() -
-          new Date(a.metadata.publishedAt).getTime()
-      )
-      .map((post) => {
-        const title = escapeXml(post.metadata.title);
-        const link = `${baseUrl}/blog/${post.slug}`;
-        const updated = new Date(post.metadata.publishedAt).toISOString();
-        const summary = escapeXml(post.metadata.summary || "");
-        const content = escapeXml(post.content || "");
-        const tags = post.metadata.tags
-          ? post.metadata.tags
-              .map((tag) => `<category>${escapeXml(tag)}</category>`)
-              .join("") // Tags in Atom feed
-          : "";
-
-        return `<entry>
-          <title>${title}</title>
-          <link href="${link}" />
-          <id>${link}</id>
-          <updated>${updated}</updated>
-          <summary>${summary}</summary>
-          <content type="html">${content}</content>
-          ${tags}
-        </entry>`;
-      })
-      .join("")}
-  </feed>`;
 
   return new Response(rssFeed, {
     headers: {
