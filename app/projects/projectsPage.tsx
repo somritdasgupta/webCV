@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { RiArrowRightUpLine } from "react-icons/ri";
+import { FiExternalLink } from "react-icons/fi";
+import { MdRocketLaunch } from "react-icons/md";
 
 const Resume = () => (
   <div className="flex ml-4 mt-2 text-xs">
@@ -34,11 +36,20 @@ export default function ProjectsPage() {
             includeTopics: true,
             includeName: true,
             includeHtmlUrl: true,
+            includeHomepage: true,
+            includeCreatedAt: true, // Add this to get creation date
           }),
         });
         const data = await response.json();
         if (response.ok) {
-          setRepos(data);
+          // Sort locally as well (as backup)
+          const sortedRepos = data.sort((a: any, b: any) => {
+            return (
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+            );
+          });
+          setRepos(sortedRepos);
         } else {
           setError(data.error || "Failed to fetch repositories");
         }
@@ -91,17 +102,33 @@ export default function ProjectsPage() {
             repos.map((repo: any) => (
               <div key={repo.id} className="flex items-start lg:items-center">
                 <div className="flex-1">
-                  <h3 className="text-2xl font-semibold flex items-center">
+                  <h3 className="text-2xl font-semibold flex items-center flex-wrap gap-2">
                     {repo.name}
-                    <a
-                      href={repo.html_url}
-                      className="ml-2 text-xs !font-medium text-violet-400 hover:scale-105 flex items-center mt-2 transition-all duration-300 ease"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <RiArrowRightUpLine className="text-xs animate-pulse" />
-                      <span>GITHUB</span>
-                    </a>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={repo.html_url}
+                        className="text-xs !font-medium text-violet-400 hover:scale-105 flex items-center transition-all duration-300 ease"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <RiArrowRightUpLine className="text-xs animate-pulse" />
+                        <span>GITHUB</span>
+                      </a>
+                      {repo.homepage && (
+                        <a
+                          href={repo.homepage}
+                          className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full
+                            bg-emerald-400/10 text-emerald-400 border border-emerald-400/20
+                            hover:bg-emerald-400/20 transition-all duration-300 ease-in-out transform hover:scale-105"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span className="flex items-center gap-1">
+                            <MdRocketLaunch size={12} />
+                          </span>
+                        </a>
+                      )}
+                    </div>
                   </h3>
                   {repo.description && (
                     <p className="!text-[var(--text-p)]/80 mb-2">

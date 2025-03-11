@@ -6,6 +6,7 @@ import { getBlogPosts } from "../getBlogPosts";
 import RelatedPosts from "app/components/mdxComponents/RelatedPosts";
 import Link from "next/link";
 import Signature from "app/components/mdxComponents/Signature";
+import { BlogHeader } from "app/components/mdxComponents/BlogHeader";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://somrit.vercel.app";
 
@@ -98,36 +99,39 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         }}
       />
       <Button href="/blog" text="Back to posts" icon="left" />
-      <h1 className="text-2xl font-semibold mb-2 lg:text-3xl">
-        {post.metadata.title}
-      </h1>
-      <div className="flex justify-between items-center mt-2 mb-4 text-sm font-medium">
-        <p className="!text-[var(--bronzer)]">
-          {formatDate(post.metadata.publishedAt)}
-        </p>
-      </div>
-      {post.metadata.tags && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {post.metadata.tags.map((tag) => (
-            <Link
-              key={tag}
-              href={`/blog?tag=${encodeURIComponent(tag)}`}
-              className="bg-[var(--pill-color)] hover:scale-105 custom-topic-pill text-sm transition-colors duration-300"
-            >
-              {tag}
-            </Link>
-          ))}
+      <div>
+        <h1 className="text-2xl font-semibold mb-2 lg:text-3xl">
+          {post.metadata.title}
+        </h1>
+        <div className="flex justify-between items-center mt-2 mb-4 text-sm font-medium">
+          <p className="!text-[var(--bronzer)]">
+            {formatDate(post.metadata.publishedAt)}
+          </p>
         </div>
-      )}
-      <article className="prose max-w-none">
-        <CustomMDX source={post.content} />
-      </article>
-      <RelatedPosts
-        currentPostTags={post.metadata.tags || []}
-        allPosts={posts}
-        currentPostSlug={post.slug}
-      />
-      <Signature />
+        {post.metadata.tags && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {post.metadata.tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/blog?tag=${encodeURIComponent(tag)}`}
+                className="bg-[var(--pill-color)] hover:scale-105 custom-topic-pill text-sm transition-colors duration-300"
+              >
+                {tag}
+              </Link>
+            ))}
+          </div>
+        )}
+        <BlogHeader />
+        <article className="prose max-w-none">
+          <CustomMDX source={post.content} />
+        </article>
+        <RelatedPosts
+          currentPostTags={post.metadata.tags || []}
+          allPosts={posts}
+          currentPostSlug={post.slug}
+        />
+        <Signature />
+      </div>
     </section>
   );
 }

@@ -8,6 +8,7 @@ import Button from "./components/Button";
 import { HiArrowTrendingUp } from "react-icons/hi2";
 import { TbBrandGithub } from "react-icons/tb";
 import { RiVerifiedBadgeLine } from "react-icons/ri";
+import { MdRocketLaunch } from "react-icons/md";
 
 export default function Home() {
   const [featuredProject, setFeaturedProject] = useState<any>(null);
@@ -27,6 +28,7 @@ export default function Home() {
             includeTopics: false,
             includeName: true,
             includeHtmlUrl: true,
+            includeHomepage: true,
           }),
         });
         const data = await response.json();
@@ -137,13 +139,29 @@ export default function Home() {
                 <p className="text-md sm:text-lg text-gray-700 dark:text-gray-300">
                   {featuredProject.description}
                 </p>
-                <a
-                  href={featuredProject.html_url}
-                  className="font-black hover:scale-x-105 transition-all duration-300 ease inline-flex items-center"
-                >
-                  <TbBrandGithub className="w-4 h-4 mr-1" />
-                  Github
-                </a>
+                <div className="flex items-center gap-3">
+                  <a
+                    href={featuredProject.html_url}
+                    className="font-black hover:scale-105 transition-all duration-300 ease inline-flex items-center"
+                  >
+                    <TbBrandGithub className="w-4 h-4 mr-1" />
+                    Github
+                  </a>
+                  {featuredProject.homepage && (
+                    <a
+                      href={featuredProject.homepage}
+                      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full
+                        bg-emerald-400/10 text-emerald-400 border border-emerald-400/20
+                        hover:bg-emerald-400/20 transition-all duration-300 ease-in-out transform hover:scale-105"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className="flex items-center gap-1">
+                        <MdRocketLaunch size={12} />
+                      </span>
+                    </a>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-32">

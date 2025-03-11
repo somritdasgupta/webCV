@@ -176,3 +176,22 @@ html,
   overflow: -moz-scrollbars-none;
   -ms-overflow-style: none; /* IE and Edge */
 }
+
+/* Custom scrollbar for the table of contents */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bronzer) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--bronzer);
+  border-radius: 20px;
+}
