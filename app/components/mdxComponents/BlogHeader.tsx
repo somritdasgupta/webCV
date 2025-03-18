@@ -33,26 +33,74 @@ export function BlogHeader() {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [readingTime, setReadingTime] = useState("");
 
+  // More specific voice selection
   useEffect(() => {
-    const handleVoicesChanged = () => {
+    const initVoices = () => {
       const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(
-        (v) =>
-          v.name.includes("Natural") ||
-          v.name.includes("Neural") ||
-          v.name.includes("Enhanced")
-      );
+
+      // First try to get Daniel (male) or Samantha (female) for consistency
+      const preferredVoice =
+        voices.find(
+          (v) =>
+            v.lang === "en-US" &&
+            (v.name.includes("Daniel") || v.name.includes("Samantha"))
+        ) ||
+        // Fallback to any English voice with these keywords
+        voices.find(
+          (v) =>
+            v.lang === "en-US" &&
+            (v.name.includes("Premium") ||
+              v.name.includes("Enhanced") ||
+              v.name.includes("Natural"))
+        ) ||
+        // Final fallback to any English voice
+        voices.find((v) => v.lang === "en-US");
+
       setVoice(preferredVoice || voices[0]);
     };
 
-    speechSynthesis.addEventListener("voiceschanged", handleVoicesChanged);
-    handleVoicesChanged();
+    if (typeof speechSynthesis !== "undefined") {
+      initVoices();
+      speechSynthesis.onvoiceschanged = initVoices;
+    }
 
     return () => {
-      speechSynthesis.removeEventListener("voiceschanged", handleVoicesChanged);
+      if (typeof speechSynthesis !== "undefined") {
+        speechSynthesis.cancel();
+      }
     };
   }, []);
 
+  // Simplified text processing without SSML tags
+  const processTextForSpeech = (text: string): string => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // Clean text and add basic punctuation spacing
+    let processed = text
+      // Remove code blocks and special characters
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/`.*?`/g, "")
+      .replace(/\[.*?\]/g, "")
+      .replace(/\(.*?\)/g, "")
+      .replace(/[#*`~|<>{}\[\]\\\/]/g, "")
+      .replace(/&[^;]+;/g, "")
+
+      // Add basic punctuation spacing
+      .replace(/([.!?])\s+/g, "$1 ")
+      .replace(/([,;:])\s+/g, "$1 ")
+      .replace(/(\n\n|\r\n\r\n)/g, " ")
+      .replace(/(-|\u2014|\u2013)\s+/g, " ")
+      .replace(/\s+\(\s*/g, " ")
+      .replace(/\s*\)\s+/g, " ")
+
+      // Clean up excessive whitespace
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return processed;
+  };
+
+  // Enhanced speech configuration
   useEffect(() => {
     const article = document.querySelector("article");
     if (!article) return;
@@ -86,49 +134,59 @@ export function BlogHeader() {
 
     elements.forEach((elem) => observer.observe(elem));
 
-    const processTextForSpeech = (text: string) => {
-      text = text.replace(/([.!?])\s+/g, "$1... ");
-      text = text.replace(/"([^"]*)"/g, "... $1 ...");
-      return text;
-    };
-
     const text = processTextForSpeech(article.textContent || "");
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = speed;
-    utterance.pitch = pitch;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // Base configuration
+    utterance.rate = isMobile ? speed * 0.75 : speed * 0.85; // Slightly slower for more natural speech
+    utterance.pitch = 1.0;
+    utterance.volume = 1;
+    utterance.lang = "en-US";
     if (voice) utterance.voice = voice;
-    utterance.onend = () => setIsPlaying(false);
+
+    // Dynamic speech adjustments with breathing patterns
     utterance.onboundary = (event) => {
       if (event.name === "sentence") {
-        if (
-          event.utterance.text.slice(event.charIndex).match(/^\s*[^.!?]*\?/)
-        ) {
-          event.utterance.pitch = pitch * 1.1;
-        } else if (
-          event.utterance.text.slice(event.charIndex).match(/^\s*[^.!?]*\./)
-        ) {
-          event.utterance.pitch = pitch * 0.9;
+        const nextSentence = utterance.text.slice(event.charIndex);
+
+        // Pattern-based rate and pitch adjustments
+        if (nextSentence.match(/^[^.!?]*\?/)) {
+          utterance.pitch = isMobile ? 1.15 : 1.2; // Questions
+          utterance.rate = speed * 0.8;
+        } else if (nextSentence.match(/^[^.!?]*!/)) {
+          utterance.pitch = isMobile ? 1.2 : 1.25; // Excitement
+          utterance.rate = speed * 0.9;
+        } else if (nextSentence.match(/^[A-Z][A-Z\s]+/)) {
+          utterance.pitch = 1.1; // Emphasis
+          utterance.rate = speed * 0.85;
+        } else if (nextSentence.length > 100) {
+          utterance.rate = speed * 0.8; // Slow down for long sentences
+        } else {
+          utterance.pitch = 1.0;
+          utterance.rate = isMobile ? speed * 0.75 : speed * 0.85;
+        }
+
+        // Add micro-pauses for breathing
+        if (Math.random() < 0.3) {
+          // 30% chance of a subtle breath
+          speechSynthesis.pause();
+          setTimeout(() => speechSynthesis.resume(), 200);
         }
       }
-      setCurrentPosition(event.charIndex);
     };
+
     utteranceRef.current = {
       utterance,
       text,
-      position: currentPosition,
+      position: 0,
     };
-
-    if (isPlaying) {
-      speechSynthesis.cancel();
-      utterance.text = text.slice(currentPosition);
-      speechSynthesis.speak(utterance);
-    }
 
     return () => {
       observer.disconnect();
       speechSynthesis.cancel();
     };
-  }, [speed, isPlaying, voice, pitch]);
+  }, [speed, voice]);
 
   useEffect(() => {
     // Calculate reading time
@@ -140,61 +198,69 @@ export function BlogHeader() {
     }
   }, []);
 
+  // Modified play/pause handler with adjusted mobile speech
   const handlePlayPause = (e: React.MouseEvent) => {
     e.stopPropagation();
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     if (isPlaying) {
       speechSynthesis.cancel();
       setIsPlaying(false);
-    } else {
-      if (utteranceRef.current) {
-        utteranceRef.current.utterance.rate = speed;
-        speechSynthesis.speak(utteranceRef.current.utterance);
+      return;
+    }
+
+    if (utteranceRef.current && voice) {
+      try {
+        speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(
+          utteranceRef.current.text
+        );
+
+        // Unified configuration with mobile adjustments
+        utterance.rate = isMobile ? speed * 0.8 : speed;
+        utterance.pitch = 1.0;
+        utterance.voice = voice;
+        utterance.volume = 1;
+        utterance.lang = "en-US";
+
+        // Keep-alive mechanism (important for iOS)
+        const keepAlive = setInterval(() => {
+          if (speechSynthesis.speaking) {
+            speechSynthesis.pause();
+            speechSynthesis.resume();
+          } else {
+            clearInterval(keepAlive);
+          }
+        }, 14000);
+
+        utterance.onend = () => {
+          clearInterval(keepAlive);
+          setIsPlaying(false);
+        };
+
+        utterance.onerror = () => {
+          clearInterval(keepAlive);
+          setIsPlaying(false);
+        };
+
+        speechSynthesis.speak(utterance);
         setIsPlaying(true);
+      } catch (error) {
+        console.error("Speech synthesis failed:", error);
+        setIsPlaying(false);
       }
     }
   };
 
+  // Simplified speed change handler
   const handleSpeedChange = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const speeds = [0.5, 1, 1.5, 2];
+    const speeds = [0.75, 1, 1.25, 1.5];
     const nextSpeed = speeds[(speeds.indexOf(speed) + 1) % speeds.length];
+    setSpeed(nextSpeed);
 
-    if (utteranceRef.current) {
-      const currentText = utteranceRef.current.text;
-      const currentPos = utteranceRef.current.position;
-
-      setSpeed(nextSpeed);
-
-      if (isPlaying) {
-        speechSynthesis.cancel();
-        const newUtterance = new SpeechSynthesisUtterance(
-          currentText.slice(currentPos)
-        );
-        newUtterance.rate = nextSpeed;
-        newUtterance.onend = () => setIsPlaying(false);
-        newUtterance.onboundary = (event) => {
-          setCurrentPosition(currentPos + event.charIndex);
-        };
-        speechSynthesis.speak(newUtterance);
-      }
-    }
-  };
-
-  const handleSeek = (
-    e: React.MouseEvent,
-    direction: "forward" | "backward"
-  ) => {
-    e.stopPropagation();
-    const offset = direction === "forward" ? 100 : -100;
-    if (utteranceRef.current) {
-      const newPosition = Math.max(0, currentPosition + offset);
-      setCurrentPosition(newPosition);
-      if (isPlaying) {
-        speechSynthesis.cancel();
-        utteranceRef.current.utterance.text =
-          utteranceRef.current.text.slice(newPosition);
-        speechSynthesis.speak(utteranceRef.current.utterance);
-      }
+    if (isPlaying) {
+      handlePlayPause(e); // Restart with new speed
     }
   };
 
