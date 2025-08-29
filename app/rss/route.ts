@@ -1,5 +1,5 @@
 import { getBlogPosts } from "app/blog/getBlogPosts";
-import { baseUrl } from "app/sitemap";
+import { baseUrl } from "app/lib/constants";
 import MarkdownIt from "markdown-it"; // Added Markdown parser
 
 // Initialize Markdown parser

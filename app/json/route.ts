@@ -1,6 +1,6 @@
 // app/json/routes.ts
 import { NextResponse } from "next/server";
-import { baseUrl } from "app/sitemap";
+import { baseUrl } from "app/lib/constants";
 import { getBlogPosts } from "app/blog/getBlogPosts";
 
 interface Metadata {
