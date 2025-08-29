@@ -1,0 +1,5 @@
+# Deployment trigger
+
+This file is used to trigger Vercel deployments when auto-deployment isn't working.
+
+Last updated: August 30, 2025

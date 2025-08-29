@@ -82,6 +82,18 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/favicon.png" />
         <meta name="theme-color" content="#fffbfb" />
 
+        {/* Preload and load Google Fonts optimally */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap"
+        />
+
         <SandpackCSS />
 
         <Script

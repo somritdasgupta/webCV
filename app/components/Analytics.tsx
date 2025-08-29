@@ -15,7 +15,7 @@ function AnalyticsComponent() {
 
   useEffect(() => {
     if (typeof window.gtag !== "undefined") {
-      window.gtag("config", process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!, {
+      window.gtag("config", "G-4EM6ML5G79", {
         page_path: pathname + searchParams.toString(),
       });
     }

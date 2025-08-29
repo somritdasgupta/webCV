@@ -4,8 +4,8 @@ import { getGravatarUrl } from "../lib/gravatar";
 export default function ProfileImage() {
   const email = process.env.GRAVATAR_EMAIL || "fallback@example.com";
 
-  // Generate high-resolution Gravatar URL (512px for crisp quality)
-  const gravatarUrl = getGravatarUrl(email, 512, "mp");
+  // Generate appropriately sized Gravatar URL (256px for retina displays)
+  const gravatarUrl = getGravatarUrl(email, 256, "mp");
 
   return (
     <div className="relative group">
