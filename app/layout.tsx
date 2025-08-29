@@ -5,10 +5,13 @@ import { GeistMono } from "geist/font/mono";
 import { Navbar } from "./components/nav";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics as GAAnalytics } from "./components/Analytics";
 import Footer from "./components/footer";
-import { baseUrl } from "./sitemap";
+import { baseUrl } from "./lib/constants";
 import { SandpackCSS } from "./blog/[slug]/sandpack";
 import Script from "next/script";
+
+export const revalidate = 43200;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -80,6 +83,23 @@ export default function RootLayout({
         <meta name="theme-color" content="#fffbfb" />
 
         <SandpackCSS />
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-4EM6ML5G79"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-4EM6ML5G79', {
+              page_title: document.title,
+              page_location: window.location.href,
+              send_page_view: true
+            });
+          `}
+        </Script>
 
         <script
           dangerouslySetInnerHTML={{
@@ -165,7 +185,7 @@ export default function RootLayout({
         />
 
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-4EM6ML5G79"
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
           strategy="afterInteractive"
         />
         <Script id="google-analytics" strategy="afterInteractive">
@@ -173,13 +193,20 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-4EM6ML5G79');
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+              page_title: document.title,
+              page_location: window.location.href,
+              debug_mode: ${process.env.NODE_ENV === "development"},
+              send_page_view: true
+            });
+            console.log('GA4 initialized with ID: ${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
           `}
         </Script>
       </head>
       <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans">
         <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">
           <Navbar />
+          <GAAnalytics />
           {children}
           <Footer />
           <Analytics />

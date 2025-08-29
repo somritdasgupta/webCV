@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { BlogPosts } from "./components/posts";
 import Button from "./components/Button";
+import ProfileImage from "./components/ProfileImage";
 import { HiArrowTrendingUp } from "react-icons/hi2";
 import { TbBrandGithub } from "react-icons/tb";
 import { RiVerifiedBadgeLine } from "react-icons/ri";
@@ -50,17 +50,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Profile Section */}
         <div className="flex flex-col items-center text-center">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-400 to-purple-500 blur-3xl rounded-full opacity-25 transition-colors duration-1000 animate-tilt"></div>
-            <Image
-              src="/somritdasgupta.jpg"
-              alt="Photo of Somrit Dasgupta"
-              width={220}
-              height={220}
-              className="relative rounded-full border-3 border-[var(--bronzer)]/70"
-              priority
-            />
-          </div>
+          <ProfileImage />
           <h1 className="mt-8 text-[var(--text-p)] text-4xl sm:text-5xl font-black tracking-tight">
             <span className="relative block overflow-hidden group h-[1.1em] w-[100vw]">
               {" "}
