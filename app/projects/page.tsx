@@ -1,6 +1,8 @@
 import React from "react";
 import ProjectsPage from "./projectsPage";
 
+export const revalidate = 7200;
+
 export const metadata = {
   title: "Projects",
   description:

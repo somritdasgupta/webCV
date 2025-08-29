@@ -1,8 +1,9 @@
-import { baseUrl } from "app/sitemap";
+import { baseUrl } from "app/lib/constants";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
 export const runtime = "edge";
+export const revalidate = 86400;
 
 export async function GET(req: NextRequest) {
   try {

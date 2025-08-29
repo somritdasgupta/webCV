@@ -2,6 +2,8 @@ import React, { Suspense } from "react";
 import { BlogPosts } from "app/components/posts";
 import { RiArrowRightUpLine } from "react-icons/ri";
 
+export const revalidate = 3600;
+
 export const metadata = {
   title: "Blog",
   description:

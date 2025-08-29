@@ -8,6 +8,8 @@ import Link from "next/link";
 import Signature from "app/components/mdxComponents/Signature";
 import { BlogHeader } from "app/components/mdxComponents/BlogHeader";
 
+export const revalidate = 3600;
+
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://somrit.vercel.app";
 
 export async function generateStaticParams() {
