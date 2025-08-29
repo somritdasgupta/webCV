@@ -49,9 +49,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: "gv-aymi4k24u76uxs.dv.googlehosted.com",
-  },
 };
 
 const cx = (...classes: string[]) => classes.filter(Boolean).join(" ");
@@ -166,9 +163,22 @@ export default function RootLayout({
             }),
           }}
         />
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-4EM6ML5G79"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-4EM6ML5G79');
+          `}
+        </Script>
       </head>
       <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans">
-        <main className="max-w-4xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">
+        <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">
           <Navbar />
           {children}
           <Footer />

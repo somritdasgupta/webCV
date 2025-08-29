@@ -1,5 +1,6 @@
 export const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/+$/, "") || "";
+  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/+$/, "") ||
+  "http://localhost:3000";
 
 export default async function sitemap() {
   try {
