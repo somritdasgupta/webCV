@@ -1,4 +1,3 @@
-// app/api/code-snippets/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
@@ -14,7 +13,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const fileNames = filesParam.split(","); // Comma-separated file names
+  const fileNames = filesParam.split(",");
 
   try {
     const fileContents = await Promise.all(
@@ -24,7 +23,7 @@ export async function GET(request: NextRequest) {
           const fileContent = fs.readFileSync(filePath, "utf8");
           return { [fileName]: fileContent };
         } catch (error) {
-          return { [fileName]: "// Error loading file" }; // Provide a default error message
+          return { [fileName]: "Error loading file" };
         }
       })
     );

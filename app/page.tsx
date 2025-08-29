@@ -48,7 +48,6 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full py-8">
       <div className="max-w-7xl mx-auto space-y-12">
-        {/* Profile Section */}
         <div className="flex flex-col items-center text-center">
           <ProfileImage />
           <h1 className="mt-8 text-[var(--text-p)] text-4xl sm:text-5xl font-black tracking-tight">
@@ -113,7 +112,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Highlights */}
         <div className="space-y-4">
           <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-extrabold text-center  flex items-center justify-center">
             Highlights
@@ -161,7 +159,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Recent Posts */}
         <div className="space-y-4">
           <h2 className="text-2xl text-[var(--text-p)] sm:text-3xl font-extrabold text-center flex items-center justify-center">
             Recent Posts

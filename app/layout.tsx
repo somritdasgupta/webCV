@@ -81,8 +81,6 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
         <link rel="apple-touch-icon" href="/favicon.png" />
         <meta name="theme-color" content="#fffbfb" />
-
-        {/* Preload and load Google Fonts optimally */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -93,13 +91,23 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap"
         />
-
         <SandpackCSS />
-
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-4EM6ML5G79"
           strategy="afterInteractive"
         />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-4EM6ML5G79', {
+              page_title: document.title,
+              page_location: window.location.href,
+              send_page_view: true
+            });
+          `}
+        </Script>
         <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
@@ -136,7 +144,6 @@ export default function RootLayout({
                   document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
                 }
 
-                // Listen for changes in color scheme
                 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                   const newColorMode = e.matches ? 'dark' : 'light';
                   document.documentElement.setAttribute('data-theme', newColorMode);
@@ -154,7 +161,6 @@ export default function RootLayout({
           }}
         />
 
-        {/* Person schema (Somrit) */}
         <Script
           id="person-schema"
           type="application/ld+json"
@@ -176,7 +182,6 @@ export default function RootLayout({
           }}
         />
 
-        {/* WebSite schema */}
         <Script
           id="website-schema"
           type="application/ld+json"
@@ -195,25 +200,6 @@ export default function RootLayout({
             }),
           }}
         />
-
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
-              page_title: document.title,
-              page_location: window.location.href,
-              debug_mode: ${process.env.NODE_ENV === "development"},
-              send_page_view: true
-            });
-            console.log('GA4 initialized with ID: ${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
-          `}
-        </Script>
       </head>
       <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans">
         <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">

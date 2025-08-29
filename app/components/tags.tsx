@@ -20,7 +20,6 @@ const Tags: React.FC<TagsProps> = ({
       onTagsSelect(tag);
     };
 
-  // Determine if "All" should be selected
   const isAllSelected = selectedTags === null || selectedTags === "";
 
   return (

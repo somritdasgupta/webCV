@@ -3,10 +3,8 @@ import { baseUrl } from "./lib/constants";
 
 export default async function sitemap() {
   try {
-    // Get blog posts directly instead of fetching from API
     const blogPosts = await getBlogPosts();
 
-    // Generate sitemap URLs for blog posts
     const blogs = blogPosts.map(
       (post: { slug: string; metadata: { publishedAt: string } }) => ({
         url: `${baseUrl}/blog/${post.slug}`,
@@ -16,7 +14,6 @@ export default async function sitemap() {
       })
     );
 
-    // Generate sitemap URLs for static routes
     const routes = ["/", "/blog", "/projects"].map((route) => ({
       url: `${baseUrl}${route}`,
       lastModified: new Date().toISOString().split("T")[0],
@@ -26,7 +23,6 @@ export default async function sitemap() {
 
     return [...routes, ...blogs];
   } catch (error) {
-    console.error("Error generating sitemap:", error);
     return [];
   }
 }

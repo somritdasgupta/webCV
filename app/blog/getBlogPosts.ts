@@ -52,7 +52,6 @@ async function getMDXFiles(dir: string): Promise<string[]> {
       (file) => path.extname(file) === ".mdx"
     );
   } catch (error) {
-    console.error(`Error reading directory ${dir}:`, error);
     return [];
   }
 }
@@ -64,7 +63,6 @@ async function readMDXFile(
     const rawContent = await fs.readFile(filePath, "utf-8");
     return parseFrontmatter(rawContent);
   } catch (error) {
-    console.error(`Error reading file ${filePath}:`, error);
     return { metadata: {} as Metadata, content: "" };
   }
 }

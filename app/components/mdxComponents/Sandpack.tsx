@@ -19,7 +19,6 @@ async function fetchFiles(
     if (!response.ok) throw new Error("Failed to fetch files");
     return await response.json();
   } catch (error) {
-    console.error("Error loading files", error);
     return {};
   }
 }
@@ -42,13 +41,16 @@ export function LiveCode({ mode, fileNames, template }: LiveCodeProps) {
 
   useEffect(() => {
     fetchFiles(fileNames).then((fileContents) => {
-      const filesConfig = Object.keys(fileContents).reduce((acc, fileName) => {
-        acc[fileName] = {
-          code: fileContents[fileName],
-          active: fileName === fileNames[0],
-        };
-        return acc;
-      }, {} as { [key: string]: { code: string; active?: boolean } });
+      const filesConfig = Object.keys(fileContents).reduce(
+        (acc, fileName) => {
+          acc[fileName] = {
+            code: fileContents[fileName],
+            active: fileName === fileNames[0],
+          };
+          return acc;
+        },
+        {} as { [key: string]: { code: string; active?: boolean } }
+      );
       setFiles(filesConfig);
     });
   }, [fileNames]);

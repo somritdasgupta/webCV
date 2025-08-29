@@ -168,9 +168,7 @@ export function BlogPosts(
         const data = await response.json();
         setPosts(data.posts);
         setTags(data.tags);
-      } catch (error) {
-        console.error("Failed to fetch posts:", error);
-      }
+      } catch (error) {}
     };
 
     fetchPosts();

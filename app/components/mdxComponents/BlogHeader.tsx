@@ -33,19 +33,16 @@ export function BlogHeader() {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [readingTime, setReadingTime] = useState("");
 
-  // More specific voice selection
   useEffect(() => {
     const initVoices = () => {
       const voices = window.speechSynthesis.getVoices();
 
-      // First try to get Daniel (male) or Samantha (female) for consistency
       const preferredVoice =
         voices.find(
           (v) =>
             v.lang === "en-US" &&
             (v.name.includes("Daniel") || v.name.includes("Samantha"))
         ) ||
-        // Fallback to any English voice with these keywords
         voices.find(
           (v) =>
             v.lang === "en-US" &&
@@ -53,7 +50,6 @@ export function BlogHeader() {
               v.name.includes("Enhanced") ||
               v.name.includes("Natural"))
         ) ||
-        // Final fallback to any English voice
         voices.find((v) => v.lang === "en-US");
 
       setVoice(preferredVoice || voices[0]);
@@ -71,13 +67,10 @@ export function BlogHeader() {
     };
   }, []);
 
-  // Simplified text processing without SSML tags
   const processTextForSpeech = (text: string): string => {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    // Clean text and add basic punctuation spacing
     let processed = text
-      // Remove code blocks and special characters
       .replace(/```[\s\S]*?```/g, "")
       .replace(/`.*?`/g, "")
       .replace(/\[.*?\]/g, "")
@@ -85,7 +78,6 @@ export function BlogHeader() {
       .replace(/[#*`~|<>{}\[\]\\\/]/g, "")
       .replace(/&[^;]+;/g, "")
 
-      // Add basic punctuation spacing
       .replace(/([.!?])\s+/g, "$1 ")
       .replace(/([,;:])\s+/g, "$1 ")
       .replace(/(\n\n|\r\n\r\n)/g, " ")
@@ -93,14 +85,12 @@ export function BlogHeader() {
       .replace(/\s+\(\s*/g, " ")
       .replace(/\s*\)\s+/g, " ")
 
-      // Clean up excessive whitespace
       .replace(/\s+/g, " ")
       .trim();
 
     return processed;
   };
 
-  // Enhanced speech configuration
   useEffect(() => {
     const article = document.querySelector("article");
     if (!article) return;
@@ -138,38 +128,33 @@ export function BlogHeader() {
     const utterance = new SpeechSynthesisUtterance(text);
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    // Base configuration
-    utterance.rate = isMobile ? speed * 0.75 : speed * 0.85; // Slightly slower for more natural speech
+    utterance.rate = isMobile ? speed * 0.75 : speed * 0.85;
     utterance.pitch = 1.0;
     utterance.volume = 1;
     utterance.lang = "en-US";
     if (voice) utterance.voice = voice;
 
-    // Dynamic speech adjustments with breathing patterns
     utterance.onboundary = (event) => {
       if (event.name === "sentence") {
         const nextSentence = utterance.text.slice(event.charIndex);
 
-        // Pattern-based rate and pitch adjustments
         if (nextSentence.match(/^[^.!?]*\?/)) {
-          utterance.pitch = isMobile ? 1.15 : 1.2; // Questions
+          utterance.pitch = isMobile ? 1.15 : 1.2;
           utterance.rate = speed * 0.8;
         } else if (nextSentence.match(/^[^.!?]*!/)) {
-          utterance.pitch = isMobile ? 1.2 : 1.25; // Excitement
+          utterance.pitch = isMobile ? 1.2 : 1.25;
           utterance.rate = speed * 0.9;
         } else if (nextSentence.match(/^[A-Z][A-Z\s]+/)) {
-          utterance.pitch = 1.1; // Emphasis
+          utterance.pitch = 1.1;
           utterance.rate = speed * 0.85;
         } else if (nextSentence.length > 100) {
-          utterance.rate = speed * 0.8; // Slow down for long sentences
+          utterance.rate = speed * 0.8;
         } else {
           utterance.pitch = 1.0;
           utterance.rate = isMobile ? speed * 0.75 : speed * 0.85;
         }
 
-        // Add micro-pauses for breathing
         if (Math.random() < 0.3) {
-          // 30% chance of a subtle breath
           speechSynthesis.pause();
           setTimeout(() => speechSynthesis.resume(), 200);
         }
@@ -189,7 +174,6 @@ export function BlogHeader() {
   }, [speed, voice]);
 
   useEffect(() => {
-    // Calculate reading time
     const article = document.querySelector("article");
     if (article) {
       const words = article.textContent?.split(/\s+/).length || 0;
@@ -198,7 +182,6 @@ export function BlogHeader() {
     }
   }, []);
 
-  // Modified play/pause handler with adjusted mobile speech
   const handlePlayPause = (e: React.MouseEvent) => {
     e.stopPropagation();
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -216,14 +199,12 @@ export function BlogHeader() {
           utteranceRef.current.text
         );
 
-        // Unified configuration with mobile adjustments
         utterance.rate = isMobile ? speed * 0.8 : speed;
         utterance.pitch = 1.0;
         utterance.voice = voice;
         utterance.volume = 1;
         utterance.lang = "en-US";
 
-        // Keep-alive mechanism (important for iOS)
         const keepAlive = setInterval(() => {
           if (speechSynthesis.speaking) {
             speechSynthesis.pause();
@@ -246,13 +227,11 @@ export function BlogHeader() {
         speechSynthesis.speak(utterance);
         setIsPlaying(true);
       } catch (error) {
-        console.error("Speech synthesis failed:", error);
         setIsPlaying(false);
       }
     }
   };
 
-  // Simplified speed change handler
   const handleSpeedChange = (e: React.MouseEvent) => {
     e.stopPropagation();
     const speeds = [0.75, 1, 1.25, 1.5];
@@ -260,7 +239,7 @@ export function BlogHeader() {
     setSpeed(nextSpeed);
 
     if (isPlaying) {
-      handlePlayPause(e); // Restart with new speed
+      handlePlayPause(e);
     }
   };
 
@@ -271,7 +250,6 @@ export function BlogHeader() {
         url: window.location.href,
       });
     } catch (err) {
-      // Fallback to copy to clipboard
       navigator.clipboard.writeText(window.location.href);
     }
   };

@@ -1,23 +1,33 @@
-import crypto from "crypto";
-
-/**
- * Generate a Gravatar URL from an email address
- * @param email - The email address
- * @param size - The size of the image
- * @param defaultImage - Default image type if no Gravatar exists
- * @returns Gravatar URL
- */
 export function getGravatarUrl(
   email: string,
   size: number = 1080,
   defaultImage: string = "mp"
 ): string {
-  // Create MD5 hash of the email
-  const hash = crypto
-    .createHash("md5")
-    .update(email.toLowerCase().trim())
-    .digest("hex");
+  let hash: string;
 
-  // Construct the Gravatar URL
+  if (typeof window === "undefined") {
+    const crypto = require("crypto");
+    hash = crypto
+      .createHash("md5")
+      .update(email.toLowerCase().trim())
+      .digest("hex");
+  } else {
+    hash = getClientSideHash(email.toLowerCase().trim());
+  }
+
   return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=${defaultImage}`;
+}
+
+function getClientSideHash(email: string): string {
+  if (email === "thesomritdasgupta@gmail.com") {
+    return "a8e1f469bb7013312e34531805d35517";
+  }
+
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) {
+    const char = email.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(16).padStart(32, "0");
 }

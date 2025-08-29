@@ -14,7 +14,6 @@ const TweetContent = async ({ id, components, onError }: TweetProps) => {
         if (onError) {
           error = onError(err);
         } else {
-          console.error(err);
           error = err;
         }
       })
