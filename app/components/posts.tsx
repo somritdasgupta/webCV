@@ -100,25 +100,27 @@ function ClientBlogPosts({
   }, [allTags, allPosts]);
 
   return (
-    <div>
+    <div className="space-y-4">
       {showTags && (
-        <Tags
-          tags={allTags}
-          tagsCounts={tagCounts}
-          selectedTags={tag}
-          onTagsSelect={(selectedTag) => {
-            const newParams = new URLSearchParams(window.location.search);
-            if (selectedTag) {
-              newParams.set("tag", selectedTag);
-            } else {
-              newParams.delete("tag");
-            }
-            const newUrl = `${
-              window.location.pathname
-            }?${newParams.toString()}`;
-            window.history.pushState({}, "", newUrl);
-          }}
-        />
+        <div className="mb-6">
+          <Tags
+            tags={allTags}
+            tagsCounts={tagCounts}
+            selectedTags={tag}
+            onTagsSelect={(selectedTag) => {
+              const newParams = new URLSearchParams(window.location.search);
+              if (selectedTag) {
+                newParams.set("tag", selectedTag);
+              } else {
+                newParams.delete("tag");
+              }
+              const newUrl = `${
+                window.location.pathname
+              }?${newParams.toString()}`;
+              window.history.pushState({}, "", newUrl);
+            }}
+          />
+        </div>
       )}
 
       {/* No results message */}
@@ -141,9 +143,9 @@ function ClientBlogPosts({
       )}
 
       {filteredPosts.length > 0 && (
-        <>
+        <div className="space-y-4">
           {(tag || searchTerm) && (
-            <div className="mb-6 text-sm text-[var(--text-p)]">
+            <div className="mb-6 text-sm text-[var(--text-p)] text-center">
               Showing {filteredPosts.length} post
               {filteredPosts.length !== 1 ? "s" : ""}
               {tag && ` tagged with "${tag}"`}
@@ -155,57 +157,118 @@ function ClientBlogPosts({
             ? Object.entries(postsByYear)
                 .map(([year, posts]) => (
                   <div key={year} className="mb-8">
-                    <h1 className="text-2xl font-extrabold mb-4 flex items-center border-dashed border-b-1 border-[var(--callout-border)]">
+                    <h1 className="text-2xl font-extrabold mb-6 text-center flex items-center justify-center border-dashed border-b-1 border-[var(--callout-border)] pb-4">
                       {year}
                     </h1>
-                    {posts.map((post) => (
-                      <Link
-                        key={post.slug}
-                        className={`flex flex-col mb-2 mt-2 ${
-                          showBorders
-                            ? "border-dashed border-slate-600 border-b pb-4"
-                            : ""
-                        }`}
-                        href={`/blog/${post.slug}`}
-                      >
-                        <div className="w-full flex flex-row hover:scale-x-100.5 rounded-md py-2 space-x-4 items-baseline">
-                          {showPublicationYear && (
-                            <p className="font-extrabold !text-[var(--bronzer)] w-[140px] tabular-nums text-sm md:text-base flex-shrink-0">
-                              {formatDate(post.metadata.publishedAt, false)}
-                            </p>
-                          )}
-                          <p className="flex-1 text-[var(--text-color)] hover:text-[var(--bronzer)] transition-colors duration-200">
-                            {post.metadata.title}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
+                    <div className="space-y-4">
+                      {posts.map((post) => (
+                        <Link
+                          key={post.slug}
+                          className="group block"
+                          href={`/blog/${post.slug}`}
+                        >
+                          <div
+                            className={`
+                            bg-[var(--card-bg)] backdrop-blur-md rounded-xl p-6 
+                            border border-[var(--callout-border)] 
+                            hover:bg-[var(--callout-bg)] 
+                            hover:border-[var(--bronzer)]/40
+                            transform hover:scale-[1.02] transition-all duration-500 ease-out
+                            shadow-lg hover:shadow-2xl hover:shadow-[var(--bronzer)]/20
+                          `}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                              <h3 className="text-lg font-semibold text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-300 leading-snug">
+                                {post.metadata.title}
+                              </h3>
+                              {showPublicationYear && (
+                                <div className="flex items-center gap-2">
+                                  <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-[var(--bronzer)]/20 text-[var(--bronzer)] border border-[var(--bronzer)]/30 backdrop-blur-sm">
+                                    {formatDate(
+                                      post.metadata.publishedAt,
+                                      false
+                                    )}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {post.metadata.tags &&
+                              post.metadata.tags.length > 0 && (
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                  {post.metadata.tags.slice(0, 3).map((tag) => (
+                                    <span
+                                      key={tag}
+                                      className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--pill-color)] text-[var(--text-p)] border border-[var(--callout-border)]"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                  {post.metadata.tags.length > 3 && (
+                                    <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--pill-color)]/50 text-[var(--text-p)]/70">
+                                      +{post.metadata.tags.length - 3} more
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 ))
                 .reverse()
             : sortedPosts.map((post) => (
                 <Link
                   key={post.slug}
-                  className={`flex flex-col space-y-1 mb-4 ${
-                    showBorders
-                      ? "border-dashed border-[var(--bronzer)]/50 border-b pb-4"
-                      : ""
-                  }`}
+                  className="group block"
                   href={`/blog/${post.slug}`}
                 >
-                  <div className="w-full flex flex-row hover:scale-x-100.5 rounded-md py-2 space-x-4 items-baseline">
-                    {showPublicationYear && (
-                      <p className="font-extrabold !text-[var(--bronzer)] w-[140px] tabular-nums text-sm md:text-base flex-shrink-0">
-                        {formatDate(post.metadata.publishedAt, false)}
-                      </p>
+                  <div
+                    className={`
+                    bg-[var(--card-bg)] backdrop-blur-md rounded-xl p-6 
+                    border border-[var(--callout-border)] 
+                    hover:bg-[var(--callout-bg)] 
+                    hover:border-[var(--bronzer)]/40
+                    transform hover:scale-[1.02] transition-all duration-500 ease-out
+                    shadow-lg hover:shadow-2xl hover:shadow-[var(--bronzer)]/20
+                    ${showBorders ? "mb-4" : "mb-3"}
+                  `}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <h3 className="text-lg font-semibold text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-300 leading-snug">
+                        {post.metadata.title}
+                      </h3>
+                      {showPublicationYear && (
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-[var(--bronzer)]/20 text-[var(--bronzer)] border border-[var(--bronzer)]/30 backdrop-blur-sm">
+                            {formatDate(post.metadata.publishedAt, false)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {post.metadata.tags && post.metadata.tags.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {post.metadata.tags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--pill-color)] text-[var(--text-p)] border border-[var(--callout-border)]"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {post.metadata.tags.length > 3 && (
+                          <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--pill-color)]/50 text-[var(--text-p)]/70">
+                            +{post.metadata.tags.length - 3} more
+                          </span>
+                        )}
+                      </div>
                     )}
-                    <p className="flex-1 text-[var(--text-color)] hover:text-[var(--bronzer)] transition-colors duration-200">
-                      {post.metadata.title}
-                    </p>
                   </div>
                 </Link>
               ))}
-        </>
+        </div>
       )}
     </div>
   );
