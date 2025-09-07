@@ -7,6 +7,9 @@ import RelatedPosts from "app/components/mdxComponents/RelatedPosts";
 import Link from "next/link";
 import Signature from "app/components/mdxComponents/Signature";
 import { BlogHeader } from "app/components/mdxComponents/BlogHeader";
+import { ReadingProgress } from "app/components/ReadingProgress";
+import { ShareButtons } from "app/components/ShareButtons";
+import { AuthorInfo } from "app/components/AuthorInfo";
 
 export const revalidate = 3600;
 
@@ -74,8 +77,11 @@ export default async function Blog({ params }: { params: { slug: string } }) {
     notFound();
   }
 
+  const currentUrl = `${baseUrl}/blog/${post.slug}`;
+
   return (
     <section className="py-2">
+      <ReadingProgress />
       <script
         type="application/ld+json"
         suppressHydrationWarning
@@ -92,7 +98,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
               : `${baseUrl}/og?title=${encodeURIComponent(
                   post.metadata.title
                 )}`,
-            url: `${baseUrl}/blog/${post.slug}`,
+            url: currentUrl,
             author: {
               "@type": "Person",
               name: "Somrit Dasgupta",
@@ -102,31 +108,72 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       />
       <Button href="/blog" text="Back to posts" icon="left" />
       <div>
-        <h1 className="text-2xl font-semibold mb-2 lg:text-3xl">
-          {post.metadata.title}
-        </h1>
-        <div className="flex justify-between items-center mt-2 mb-4 text-sm font-medium">
-          <p className="!text-[var(--bronzer)]">
-            {formatDate(post.metadata.publishedAt)}
-          </p>
+        <div className="mb-2">
+          <h1 className="text-2xl font-semibold lg:text-3xl mb-3">
+            {post.metadata.title}
+          </h1>
+          {post.metadata.tags && (
+            <div className="flex flex-wrap gap-2 mb-4 md:hidden">
+              {post.metadata.tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/blog?tag=${encodeURIComponent(tag)}`}
+                  className="bg-[var(--pill-color)] hover:scale-105 custom-topic-pill text-sm transition-colors duration-300"
+                >
+                  {tag}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
-        {post.metadata.tags && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {post.metadata.tags.map((tag) => (
-              <Link
-                key={tag}
-                href={`/blog?tag=${encodeURIComponent(tag)}`}
-                className="bg-[var(--pill-color)] hover:scale-105 custom-topic-pill text-sm transition-colors duration-300"
-              >
-                {tag}
-              </Link>
-            ))}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 mb-4 gap-4">
+          <div className="flex items-center justify-between sm:justify-start gap-4 text-sm font-medium">
+            <p className="!text-[var(--bronzer)]">
+              {formatDate(post.metadata.publishedAt)}
+            </p>
+            <div className="hidden sm:block">
+              <ShareButtons
+                title={post.metadata.title}
+                url={currentUrl}
+                slug={post.slug}
+              />
+            </div>
+            <div className="block sm:hidden">
+              <AuthorInfo />
+            </div>
           </div>
-        )}
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:block">
+              <AuthorInfo />
+            </div>
+            {post.metadata.tags && (
+              <div className="hidden md:flex flex-wrap gap-2">
+                {post.metadata.tags.map((tag) => (
+                  <Link
+                    key={tag}
+                    href={`/blog?tag=${encodeURIComponent(tag)}`}
+                    className="bg-[var(--pill-color)] hover:scale-105 custom-topic-pill text-sm transition-colors duration-300"
+                  >
+                    {tag}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
         <BlogHeader />
         <article className="prose max-w-none">
           <CustomMDX source={post.content} />
         </article>
+
+        <div className="mt-8 pt-4 border-t border-[var(--callout-border)]">
+          <ShareButtons
+            title={post.metadata.title}
+            url={currentUrl}
+            slug={post.slug}
+          />
+        </div>
+
         <RelatedPosts
           currentPostTags={post.metadata.tags || []}
           allPosts={posts}

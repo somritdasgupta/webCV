@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import { BlogPosts } from "app/components/posts";
 import { RiArrowRightUpLine } from "react-icons/ri";
+import { SearchFilter } from "../components/SearchFilter";
 
 export const revalidate = 3600;
 
@@ -38,12 +39,18 @@ export default function Page() {
         </h1>
         <FeedLinks />
       </div>
+
       <p className="mt-4 !text-[var(--text-p)]/80 mb-4">
         This is the place where I share my insights and opinions on software
         technology, technical events, analysis and more. Grab your coffee and
         explore the posts that I've written over time and I hope you find them
         interesting.{" "}
       </p>
+
+      <div className="mb-6">
+        <SearchFilter />
+      </div>
+
       <Suspense
         fallback={
           <div className="flex items-center justify-center h-32">

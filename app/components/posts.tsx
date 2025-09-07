@@ -39,11 +39,30 @@ function ClientBlogPosts({
 
   const searchParams = useSearchParams();
   const tag = searchParams.get("tag") || "";
+  const searchTerm = searchParams.get("search") || "";
 
   const filteredPosts = useMemo(() => {
-    if (!tag) return allPosts;
-    return allPosts.filter((post) => post.metadata.tags?.includes(tag));
-  }, [allPosts, tag]);
+    let filtered = allPosts;
+
+    // Filter by tag
+    if (tag) {
+      filtered = filtered.filter((post) => post.metadata.tags?.includes(tag));
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      const lowercaseSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (post) =>
+          post.metadata.title.toLowerCase().includes(lowercaseSearch) ||
+          post.metadata.tags?.some((tag) =>
+            tag.toLowerCase().includes(lowercaseSearch)
+          )
+      );
+    }
+
+    return filtered;
+  }, [allPosts, tag, searchTerm]);
 
   const sortedPosts = useMemo(() => {
     return filteredPosts
@@ -101,56 +120,93 @@ function ClientBlogPosts({
           }}
         />
       )}
-      {groupByYear
-        ? Object.entries(postsByYear)
-            .map(([year, posts]) => (
-              <div key={year} className="mb-8">
-                <h1 className="text-2xl font-extrabold mb-4 flex items-center border-dashed border-b-1 border-[var(--callout-border)]">
-                  {year}
-                </h1>
-                {posts.map((post) => (
-                  <Link
-                    key={post.slug}
-                    className={`flex flex-col mb-2 mt-2 ${
-                      showBorders
-                        ? "border-dashed border-slate-600 border-b pb-4"
-                        : ""
-                    }`}
-                    href={`/blog/${post.slug}`}
-                  >
-                    <div className="w-full flex flex-col md:flex-row hover:scale-x-100.5 rounded-md py-2 space-x-0 md:space-x-2">
-                      {showPublicationYear && (
-                        <p className="font-extrabold !text-[var(--bronzer)] w-[150px] tabular-nums">
-                          {formatDate(post.metadata.publishedAt, false)}
-                        </p>
-                      )}
-                      <p>{post.metadata.title}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ))
-            .reverse()
-        : sortedPosts.map((post) => (
-            <Link
-              key={post.slug}
-              className={`flex flex-col space-y-1 mb-4 ${
-                showBorders
-                  ? "border-dashed border-[var(--bronzer)]/50 border-b pb-4"
-                  : ""
-              }`}
-              href={`/blog/${post.slug}`}
-            >
-              <div className="w-full flex flex-col hover:scale-x-100.5 rounded-md md:flex-row space-x-0 md:space-x-2">
-                {showPublicationYear && (
-                  <p className="font-extrabold !text-[var(--bronzer)] w-[180px] tabular-nums">
-                    {formatDate(post.metadata.publishedAt, false)}
-                  </p>
-                )}
-                <p>{post.metadata.title}</p>
-              </div>
-            </Link>
-          ))}
+
+      {/* No results message */}
+      {filteredPosts.length === 0 && (tag || searchTerm) && (
+        <div className="text-center py-12">
+          <div className="text-[var(--text-p)] text-lg mb-4">
+            No posts found {tag && `for tag "${tag}"`}{" "}
+            {searchTerm && `matching "${searchTerm}"`}
+          </div>
+          <button
+            onClick={() => {
+              const newParams = new URLSearchParams();
+              window.history.pushState({}, "", window.location.pathname);
+            }}
+            className="text-[var(--bronzer)] hover:underline font-medium"
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
+
+      {filteredPosts.length > 0 && (
+        <>
+          {(tag || searchTerm) && (
+            <div className="mb-6 text-sm text-[var(--text-p)]">
+              Showing {filteredPosts.length} post
+              {filteredPosts.length !== 1 ? "s" : ""}
+              {tag && ` tagged with "${tag}"`}
+              {searchTerm && ` matching "${searchTerm}"`}
+            </div>
+          )}
+
+          {groupByYear
+            ? Object.entries(postsByYear)
+                .map(([year, posts]) => (
+                  <div key={year} className="mb-8">
+                    <h1 className="text-2xl font-extrabold mb-4 flex items-center border-dashed border-b-1 border-[var(--callout-border)]">
+                      {year}
+                    </h1>
+                    {posts.map((post) => (
+                      <Link
+                        key={post.slug}
+                        className={`flex flex-col mb-2 mt-2 ${
+                          showBorders
+                            ? "border-dashed border-slate-600 border-b pb-4"
+                            : ""
+                        }`}
+                        href={`/blog/${post.slug}`}
+                      >
+                        <div className="w-full flex flex-row hover:scale-x-100.5 rounded-md py-2 space-x-4 items-baseline">
+                          {showPublicationYear && (
+                            <p className="font-extrabold !text-[var(--bronzer)] w-[140px] tabular-nums text-sm md:text-base flex-shrink-0">
+                              {formatDate(post.metadata.publishedAt, false)}
+                            </p>
+                          )}
+                          <p className="flex-1 text-[var(--text-color)] hover:text-[var(--bronzer)] transition-colors duration-200">
+                            {post.metadata.title}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ))
+                .reverse()
+            : sortedPosts.map((post) => (
+                <Link
+                  key={post.slug}
+                  className={`flex flex-col space-y-1 mb-4 ${
+                    showBorders
+                      ? "border-dashed border-[var(--bronzer)]/50 border-b pb-4"
+                      : ""
+                  }`}
+                  href={`/blog/${post.slug}`}
+                >
+                  <div className="w-full flex flex-row hover:scale-x-100.5 rounded-md py-2 space-x-4 items-baseline">
+                    {showPublicationYear && (
+                      <p className="font-extrabold !text-[var(--bronzer)] w-[140px] tabular-nums text-sm md:text-base flex-shrink-0">
+                        {formatDate(post.metadata.publishedAt, false)}
+                      </p>
+                    )}
+                    <p className="flex-1 text-[var(--text-color)] hover:text-[var(--bronzer)] transition-colors duration-200">
+                      {post.metadata.title}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+        </>
+      )}
     </div>
   );
 }
