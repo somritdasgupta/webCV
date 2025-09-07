@@ -48,7 +48,13 @@ export default function Page() {
       </p>
 
       <div className="mb-6">
-        <SearchFilter />
+        <Suspense
+          fallback={
+            <div className="w-full h-12 bg-[var(--card-bg)] border border-[var(--callout-border)] rounded-lg animate-pulse"></div>
+          }
+        >
+          <SearchFilter />
+        </Suspense>
       </div>
 
       <Suspense
