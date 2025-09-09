@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { RiArrowRightUpLine } from "react-icons/ri";
 import { FiExternalLink } from "react-icons/fi";
 import { MdRocketLaunch } from "react-icons/md";
+import BoxLoader from "../components/BoxLoader";
 
 const Resume = () => (
   <div className="flex ml-4 mt-2 text-xs">
@@ -149,7 +150,7 @@ export default function ProjectsPage() {
             ))
           ) : (
             <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+              <BoxLoader />
             </div>
           )}
         </div>

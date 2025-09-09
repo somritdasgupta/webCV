@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { SandpackTemplate } from "./types/sandpack";
+import BoxLoader from "../BoxLoader";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Sandpack = dynamic(
   () => import("@codesandbox/sandpack-react").then((mod) => mod.Sandpack),
@@ -273,6 +275,33 @@ export function LiveCode({
   }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Handle fullscreen toggle
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // Handle escape key to exit fullscreen
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    if (isFullscreen) {
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
+    };
+  }, [isFullscreen]);
 
   useEffect(() => {
     // Early return if no fileNames provided
@@ -414,22 +443,20 @@ export function LiveCode({
     return (
       <div className="my-8 rounded-xl border border-[var(--code-border)] bg-[var(--card-bg)] backdrop-blur-sm">
         <div className="flex items-center justify-center p-8">
-          <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--bronzer)]"></div>
-            <div className="text-[var(--text-p)]">Loading sandbox...</div>
-            <div className="text-xs text-[var(--text-p)] opacity-60">
-              Template: {template}
-            </div>
-          </div>
+          <BoxLoader size="md" />
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="my-8 rounded-xl border border-[var(--code-border)] bg-[var(--card-bg)] backdrop-blur-sm transition-all duration-300 hover:border-[var(--bronzer)] hover:shadow-lg">
+  const sandpackContent = (
+    <div
+      className={`${isFullscreen ? "h-full bg-[var(--bg-color)]" : "rounded-xl border border-[var(--code-border)] bg-[var(--card-bg)] backdrop-blur-sm transition-all duration-300 hover:border-[var(--bronzer)] hover:shadow-lg"}`}
+    >
       {/* Custom Header */}
-      <div className="flex items-center justify-between border-b border-[var(--code-border)] bg-[var(--header-bg-color)] px-4 py-3 rounded-t-xl">
+      <div
+        className={`flex items-center justify-between border-b border-[var(--code-border)] bg-[var(--header-bg-color)] px-4 py-3 ${isFullscreen ? "" : "rounded-t-xl"}`}
+      >
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -458,11 +485,46 @@ export function LiveCode({
           <div className="text-xs text-[var(--text-p)] hidden sm:block">
             Live Preview
           </div>
+          <button
+            onClick={toggleFullscreen}
+            className="ml-2 p-1.5 rounded-md hover:bg-[var(--nav-pill)] transition-colors duration-200 text-[var(--text-p)] hover:text-[var(--bronzer)]"
+            title={isFullscreen ? "Exit fullscreen (ESC)" : "Enter fullscreen"}
+          >
+            {isFullscreen ? (
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
 
       {/* Sandpack Container */}
-      <div className="relative">
+      <div className={`relative ${isFullscreen ? "h-full" : ""}`}>
         <Sandpack
           theme={{
             colors: {
@@ -507,11 +569,11 @@ export function LiveCode({
             autorun: true,
             showNavigator: false,
             layout: mode,
-            showTabs: (fileNames && fileNames.length > 1) || false,
+            showTabs: (fileNames && fileNames.length > 1) || mode === "console",
             showLineNumbers: true,
             showInlineErrors: true,
             wrapContent: true,
-            editorHeight: 380,
+            editorHeight: isFullscreen ? "calc(100vh - 60px)" : 380,
             editorWidthPercentage: mode === "preview" ? 55 : 100,
             showConsole: mode === "console",
             showConsoleButton: false,
@@ -520,8 +582,8 @@ export function LiveCode({
             startRoute: "/",
             skipEval: false,
             classes: {
-              "sp-wrapper": "!border-0 !rounded-none",
-              "sp-layout": "!border-0 !rounded-none",
+              "sp-wrapper": `!border-0 !rounded-none ${isFullscreen ? "!h-full !m-0 !p-0" : ""}`,
+              "sp-layout": `!border-0 !rounded-none ${isFullscreen ? "!h-full !m-0" : ""}`,
               "sp-tab-button":
                 "!text-[var(--text-p)] !bg-transparent hover:!text-[var(--text-color)] hover:!bg-[var(--nav-pill)]",
               "sp-tab-button-active":
@@ -555,6 +617,11 @@ export function LiveCode({
               Ready
             </span>
             <span>Files: {Object.keys(files).length}</span>
+            {isFullscreen && (
+              <span className="text-[var(--bronzer)] font-medium">
+                Press ESC to exit fullscreen
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline">Powered by Sandpack</span>
@@ -573,5 +640,39 @@ export function LiveCode({
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {!isFullscreen && <div className="my-8">{sandpackContent}</div>}
+
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-[var(--bg-color)] flex items-center justify-center"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setIsFullscreen(false);
+              }
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="w-full h-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {sandpackContent}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

@@ -206,7 +206,10 @@ export default function RootLayout({
           <Navbar />
           <GAAnalytics />
           {children}
-          <Footer />
+          {/* Footer only shows on mobile since desktop has it integrated in navbar */}
+          <div className="lg:hidden mt-16">
+            <Footer />
+          </div>
           <Analytics />
           <SpeedInsights />
         </main>

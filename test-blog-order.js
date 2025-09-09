@@ -1,20 +1,7 @@
-import fs from "fs/promises";
-import path from "path";
+const fs = require("fs/promises");
+const path = require("path");
 
-type Metadata = {
-  category: string;
-  author: string;
-  enclosure: any;
-  title: string;
-  publishedAt: string;
-  summary: string;
-  image?: string;
-  tags?: string[];
-};
-
-async function parseFrontmatter(
-  fileContent: string
-): Promise<{ metadata: Metadata; content: string }> {
+async function parseFrontmatter(fileContent) {
   const frontmatterRegex = /---\s*([\s\S]*?)\s*---/;
   const match = frontmatterRegex.exec(fileContent);
 
@@ -23,9 +10,8 @@ async function parseFrontmatter(
   }
 
   const frontMatterBlock = match[1];
-  const content = fileContent.replace(frontmatterRegex, "").trim();
   const frontMatterLines = frontMatterBlock.trim().split("\n");
-  const metadata: Partial<Metadata> = {};
+  const metadata = {};
 
   frontMatterLines.forEach((line) => {
     const [key, ...valueArr] = line.split(": ");
@@ -33,20 +19,13 @@ async function parseFrontmatter(
       .join(": ")
       .trim()
       .replace(/^['"](.*)['"]$/, "$1");
-
-    if (key.trim() === "tags") {
-      metadata[key.trim() as keyof Metadata] = value
-        .slice(1, -1)
-        .split(",")
-        .map((tags) => tags.trim());
-    } else {
-      metadata[key.trim() as keyof Metadata] = value;
-    }
+    metadata[key.trim()] = value;
   });
-  return { metadata: metadata as Metadata, content };
+
+  return metadata;
 }
 
-async function getMDXFiles(dir: string): Promise<string[]> {
+async function getMDXFiles(dir) {
   try {
     return (await fs.readdir(dir)).filter(
       (file) => path.extname(file) === ".mdx"
@@ -56,27 +35,23 @@ async function getMDXFiles(dir: string): Promise<string[]> {
   }
 }
 
-async function readMDXFile(
-  filePath: string
-): Promise<{ metadata: Metadata; content: string }> {
+async function readMDXFile(filePath) {
   try {
     const rawContent = await fs.readFile(filePath, "utf-8");
     return parseFrontmatter(rawContent);
   } catch (error) {
-    return { metadata: {} as Metadata, content: "" };
+    return {};
   }
 }
 
-export async function getBlogPosts(): Promise<
-  { metadata: Metadata; slug: string; content: string }[]
-> {
+async function getBlogPosts() {
   const dir = path.join(process.cwd(), "contents");
   const mdxFiles = await getMDXFiles(dir);
   const posts = await Promise.all(
     mdxFiles.map(async (file) => {
-      const { metadata, content } = await readMDXFile(path.join(dir, file));
+      const metadata = await readMDXFile(path.join(dir, file));
       const slug = path.basename(file, path.extname(file));
-      return { metadata, slug, content };
+      return { metadata, slug };
     })
   );
 
@@ -87,3 +62,17 @@ export async function getBlogPosts(): Promise<
     return dateB.getTime() - dateA.getTime();
   });
 }
+
+async function main() {
+  console.log("Testing blog post ordering...\n");
+  const posts = await getBlogPosts();
+
+  console.log("Posts in order:");
+  posts.forEach((post, index) => {
+    console.log(
+      `${index + 1}. ${post.metadata.title} (${post.metadata.publishedAt})`
+    );
+  });
+}
+
+main().catch(console.error);

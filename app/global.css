@@ -174,3 +174,167 @@ html,
   background-color: var(--bronzer);
   border-radius: 20px;
 }
+
+/* Enhanced Blog Typography */
+.prose {
+  max-width: none;
+}
+
+.prose h1 {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-6 mt-8;
+  color: var(--text-color);
+}
+
+.prose h2 {
+  @apply text-2xl md:text-3xl font-semibold leading-tight tracking-tight mb-4 mt-8;
+  color: var(--text-color);
+}
+
+.prose h3 {
+  @apply text-xl md:text-2xl font-semibold leading-tight mb-3 mt-6;
+  color: var(--text-color);
+}
+
+.prose h4 {
+  @apply text-lg md:text-xl font-semibold leading-tight mb-3 mt-4;
+  color: var(--text-color);
+}
+
+.prose p {
+  @apply text-base md:text-lg leading-relaxed mb-4;
+  color: var(--text-p);
+  line-height: 1.75;
+}
+
+.prose ul,
+.prose ol {
+  @apply mb-4 pl-6;
+  color: var(--text-p);
+}
+
+.prose li {
+  @apply text-base md:text-lg leading-relaxed mb-2;
+  line-height: 1.75;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-[var(--bronzer)] pl-6 my-6 italic;
+  color: var(--text-p);
+  font-size: 1.1em;
+  line-height: 1.7;
+}
+
+.prose code {
+  @apply px-2 py-1 rounded text-sm;
+  background-color: var(--callout-bg);
+  color: var(--bronzer);
+  font-family: var(--font-geist-mono), "SF Mono", Monaco, Inconsolata,
+    "Roboto Mono", Consolas, "Droid Sans Mono", monospace;
+}
+
+.prose pre:not(.custom-codeblock) {
+  @apply rounded-xl my-6 overflow-hidden;
+  background-color: var(--card-bg);
+  border: 1px solid var(--callout-border);
+  padding: 0;
+}
+
+.prose pre:not(.custom-codeblock) code {
+  @apply p-0 bg-transparent text-[var(--text-color)] block;
+  font-family: var(--font-geist-mono), "SF Mono", Monaco, Inconsolata,
+    "Roboto Mono", Consolas, "Droid Sans Mono", monospace;
+}
+
+.prose a {
+  @apply text-[var(--bronzer)] underline decoration-2 underline-offset-4 transition-colors duration-200;
+}
+
+.prose a:hover {
+  @apply text-[var(--text-color)];
+}
+
+.prose strong {
+  @apply font-semibold;
+  color: var(--text-color);
+}
+
+.prose em {
+  @apply italic;
+  color: var(--text-p);
+}
+
+.prose hr {
+  @apply my-8 border-t;
+  border-color: var(--callout-border);
+}
+
+.prose img {
+  @apply rounded-xl shadow-lg my-6 mx-auto max-w-full h-auto;
+}
+
+.prose table {
+  @apply w-full border-collapse my-6;
+  border: 1px solid var(--callout-border);
+}
+
+.prose th,
+.prose td {
+  @apply p-3 text-left border-b;
+  border-color: var(--callout-border);
+}
+
+.prose th {
+  @apply font-semibold;
+  background-color: var(--header-bg-color);
+  color: var(--text-color);
+}
+
+.prose td {
+  color: var(--text-p);
+}
+
+/* Reading Flow Improvements */
+@media (min-width: 768px) {
+  .prose {
+    font-size: 1.125rem;
+    line-height: 1.777;
+  }
+
+  .prose p {
+    margin-bottom: 1.5rem;
+  }
+
+  .prose h1 + p,
+  .prose h2 + p,
+  .prose h3 + p,
+  .prose h4 + p {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Large Screen Typography */
+@media (min-width: 1024px) {
+  .prose {
+    font-size: 1.25rem;
+    line-height: 1.8;
+  }
+
+  .prose p {
+    margin-bottom: 1.75rem;
+  }
+}
+
+/* Code Block Mobile Optimizations */
+@media (max-width: 768px) {
+  .prose pre:not(.custom-codeblock) {
+    margin: 1rem -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .prose code:not(pre code) {
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+}
