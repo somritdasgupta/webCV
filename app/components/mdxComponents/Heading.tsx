@@ -15,17 +15,17 @@ export function createHeading(level) {
   return ({ children }) => {
     const slug = slugify(children);
     const sizeClasses = {
-      1: "text-4xl font-bold mt-8 mb-4",
-      2: "text-3xl font-medium mt-7 mb-3",
-      3: "text-2xl font-medium mt-6 mb-2",
-      4: "text-xl font-medium mt-5 mb-2",
+      1: "text-4xl font-bold mt-12 mb-6",
+      2: "text-3xl font-semibold mt-10 mb-5",
+      3: "text-2xl font-medium mt-8 mb-4",
+      4: "text-xl font-medium mt-6 mb-3",
     };
 
     return React.createElement(
       `h${level}`,
       {
         id: slug,
-        className: `relative my-12 ${sizeClasses[level]} text-current group`,
+        className: `relative ${sizeClasses[level]} text-[var(--text-color)] group`,
       },
       [
         React.createElement(
@@ -33,8 +33,8 @@ export function createHeading(level) {
           {
             href: `#${slug}`,
             key: `link-${slug}`,
-            className: `absolute -left-4 text-[var(--text-p)] text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 
-                      focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-[var(--bronzer)] cursor-pointer`,
+            className: `absolute -left-6 text-[var(--bronzer)] text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 
+                      focus:opacity-100 focus:outline-none cursor-pointer hover:text-[var(--text-color)]`,
             "aria-hidden": true,
             "aria-label": `Anchor for ${children}`,
           },

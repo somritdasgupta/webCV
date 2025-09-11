@@ -85,7 +85,7 @@ export function Footnote({ id, text, link }: FootnoteProps) {
   return (
     <a
       id={`footnote-${id}`}
-      className="text-violet-400 hover:scale-110 font-medium text-xs animate-pulse"
+      className="text-[var(--bronzer)] hover:text-[var(--text-color)] font-medium text-xs transition-colors duration-200"
       href={`#footnote-list`}
     >
       [{id}]
@@ -100,15 +100,15 @@ export function FootnoteList() {
   const sortedFootnotes = Array.from(footnotes.entries())
     .sort(([idA], [idB]) => idA - idB)
     .map(([id, { text, link }]) => (
-      <li key={id} className="flex align-text-top space-x-1 mb-2">
+      <li key={id} className="flex align-text-top space-x-3 mb-3 text-sm">
         <a
           id={`footnote-${id}`}
-          className="text-violet-400 hover:scale-110 font-medium text-sm"
+          className="text-[var(--bronzer)] hover:text-[var(--text-color)] font-medium text-sm transition-colors duration-200 flex-shrink-0"
           href={`#footnote-${id}`}
         >
           [{id}]
         </a>
-        <span className="text-[var(--text-p)] text-sm">
+        <span className="text-[var(--text-p)] leading-relaxed">
           {text}
           {link && (
             <a
@@ -116,20 +116,20 @@ export function FootnoteList() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Resource External link"
-              className="ml-1 inline-flex items-center"
+              className="ml-2 inline-flex items-center text-[var(--bronzer)] hover:text-[var(--text-color)] transition-colors duration-200"
             >
-              <FaExternalLinkAlt className="h-3 w-3 text-violet-400 hover:scale-110" />
+              <FaExternalLinkAlt className="h-3 w-3" />
             </a>
           )}
         </span>
       </li>
     ));
   return (
-    <div id="footnote-list" className="mt-6">
-      <h3 className="text-2xl font-semibold border-b-1 border-gray-600 pb-2 mb-4">
+    <div id="footnote-list" className="mt-12">
+      <h3 className="text-xl font-semibold text-[var(--text-color)] pb-2 mb-6 border-b border-[var(--callout-border)]">
         Footnotes
       </h3>
-      <ul className="list-none p-0">{sortedFootnotes}</ul>
+      <ul className="list-none p-0 space-y-2">{sortedFootnotes}</ul>
     </div>
   );
 }

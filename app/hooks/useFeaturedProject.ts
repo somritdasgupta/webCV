@@ -8,7 +8,8 @@ interface FeaturedProject {
 }
 
 export function useFeaturedProject() {
-  const [featuredProject, setFeaturedProject] = useState<FeaturedProject | null>(null);
+  const [featuredProject, setFeaturedProject] =
+    useState<FeaturedProject | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +31,7 @@ export function useFeaturedProject() {
             includeHomepage: true,
           }),
         });
-        
+
         const data = await response.json();
         if (response.ok) {
           setFeaturedProject(data);

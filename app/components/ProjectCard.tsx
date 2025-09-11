@@ -24,31 +24,31 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           </p>
         </div>
         <div className="ml-6 flex-shrink-0">
-          <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-2xl flex items-center justify-center">
-            <RiRocketLine className="w-8 h-8 text-white" />
+          <div className="w-12 h-12 border border-[var(--callout-border)] rounded-lg flex items-center justify-center">
+            <RiRocketLine className="w-6 h-6 text-[var(--text-color)]" />
           </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-3">
         <a
           href={project.html_url}
-          className="inline-flex items-center px-6 py-3 bg-[var(--text-color)] text-[var(--bg-color)] rounded-lg font-medium hover:scale-105 transition-all duration-200 shadow-lg"
+          className="inline-flex items-center px-4 py-2 text-[var(--text-color)] border border-[var(--callout-border)] rounded-lg font-medium hover:bg-[var(--callout-bg)] transition-all duration-200"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <TbBrandGithub className="w-5 h-5 mr-2" />
+          <TbBrandGithub className="w-4 h-4 mr-2" />
           View on GitHub
         </a>
 
         {project.homepage && (
           <a
             href={project.homepage}
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg font-medium hover:scale-105 transition-all duration-200 shadow-lg"
+            className="inline-flex items-center px-4 py-2 bg-[var(--text-color)] text-[var(--bg-color)] rounded-lg font-medium hover:opacity-80 transition-all duration-200"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <MdRocketLaunch className="w-5 h-5 mr-2" />
+            <MdRocketLaunch className="w-4 h-4 mr-2" />
             Live Demo
           </a>
         )}

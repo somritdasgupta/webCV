@@ -10,6 +10,7 @@ import Footer from "./components/footer";
 import { baseUrl } from "./lib/constants";
 import { SandpackCSS } from "./blog/[slug]/sandpack";
 import Script from "next/script";
+import AnimatedGrid from "./components/AnimatedGrid";
 
 export const revalidate = 43200;
 
@@ -65,7 +66,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={cx(
-        "text-black bg-white dark:text-white dark:bg-black",
+        "text-black bg-transparent dark:text-white dark:bg-transparent",
         GeistSans.variable,
         GeistMono.variable
       )}
@@ -202,7 +203,8 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans">
-        <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">
+        <AnimatedGrid />
+        <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4 relative z-10">
           <Navbar />
           <GAAnalytics />
           {children}

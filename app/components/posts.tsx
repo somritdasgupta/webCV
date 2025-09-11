@@ -158,61 +158,45 @@ function ClientBlogPosts({
             ? Object.entries(postsByYear)
                 .map(([year, posts]) => (
                   <div key={year} className="mb-8">
-                    <h1 className="text-2xl font-extrabold mb-6 text-center flex items-center justify-center border-dashed border-b-1 border-[var(--callout-border)] pb-4">
+                    <h2 className="text-xl font-bold mb-4 text-[var(--text-color)] border-b border-[var(--callout-border)] pb-2">
                       {year}
-                    </h1>
-                    <div className="space-y-4">
+                    </h2>
+                    <div className="space-y-3">
                       {posts.map((post) => (
                         <Link
                           key={post.slug}
-                          className="group block"
+                          className="group block border-l-4 border-[var(--callout-border)] pl-4 py-3 hover:border-[var(--bronzer)] transition-colors duration-200"
                           href={`/blog/${post.slug}`}
                         >
-                          <div
-                            className={`
-                            bg-[var(--card-bg)] backdrop-blur-md rounded-xl p-6 
-                            border border-[var(--callout-border)] 
-                            hover:bg-[var(--callout-bg)] 
-                            hover:border-[var(--bronzer)]/40
-                            transform hover:scale-[1.02] transition-all duration-500 ease-out
-                            shadow-lg hover:shadow-2xl hover:shadow-[var(--bronzer)]/20
-                          `}
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                              <h3 className="text-lg font-semibold text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-300 leading-snug">
-                                {post.metadata.title}
-                              </h3>
-                              {showPublicationYear && (
-                                <div className="flex items-center gap-2">
-                                  <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-[var(--bronzer)]/20 text-[var(--bronzer)] border border-[var(--bronzer)]/30 backdrop-blur-sm">
-                                    {formatDate(
-                                      post.metadata.publishedAt,
-                                      false
-                                    )}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            {post.metadata.tags &&
-                              post.metadata.tags.length > 0 && (
-                                <div className="mt-4 flex flex-wrap gap-2">
-                                  {post.metadata.tags.slice(0, 3).map((tag) => (
-                                    <span
-                                      key={tag}
-                                      className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--pill-color)] text-[var(--text-p)] border border-[var(--callout-border)]"
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))}
-                                  {post.metadata.tags.length > 3 && (
-                                    <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--pill-color)]/50 text-[var(--text-p)]/70">
-                                      +{post.metadata.tags.length - 3} more
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <h3 className="text-base font-medium text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200">
+                              {post.metadata.title}
+                            </h3>
+                            {showPublicationYear && (
+                              <span className="text-sm text-[var(--text-p)] flex-shrink-0">
+                                {formatDate(post.metadata.publishedAt, false)}
+                              </span>
+                            )}
                           </div>
+
+                          {post.metadata.tags &&
+                            post.metadata.tags.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {post.metadata.tags.slice(0, 3).map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="text-xs px-2 py-1 text-[var(--text-p)] bg-[var(--callout-bg)] border border-[var(--callout-border)] rounded"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                                {post.metadata.tags.length > 3 && (
+                                  <span className="text-xs text-[var(--text-p)]/70">
+                                    +{post.metadata.tags.length - 3} more
+                                  </span>
+                                )}
+                              </div>
+                            )}
                         </Link>
                       ))}
                     </div>
@@ -222,51 +206,37 @@ function ClientBlogPosts({
             : sortedPosts.map((post) => (
                 <Link
                   key={post.slug}
-                  className="group block"
+                  className="group block border-l-4 border-[var(--callout-border)] pl-4 py-3 hover:border-[var(--bronzer)] transition-colors duration-200"
                   href={`/blog/${post.slug}`}
                 >
-                  <div
-                    className={`
-                    bg-[var(--card-bg)] backdrop-blur-md rounded-xl p-6 
-                    border border-[var(--callout-border)] 
-                    hover:bg-[var(--callout-bg)] 
-                    hover:border-[var(--bronzer)]/40
-                    transform hover:scale-[1.02] transition-all duration-500 ease-out
-                    shadow-lg hover:shadow-2xl hover:shadow-[var(--bronzer)]/20
-                    ${showBorders ? "mb-4" : "mb-3"}
-                  `}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <h3 className="text-lg font-semibold text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-300 leading-snug">
-                        {post.metadata.title}
-                      </h3>
-                      {showPublicationYear && (
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-full bg-[var(--bronzer)]/20 text-[var(--bronzer)] border border-[var(--bronzer)]/30 backdrop-blur-sm">
-                            {formatDate(post.metadata.publishedAt, false)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {post.metadata.tags && post.metadata.tags.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {post.metadata.tags.slice(0, 3).map((tag) => (
-                          <span
-                            key={tag}
-                            className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--pill-color)] text-[var(--text-p)] border border-[var(--callout-border)]"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {post.metadata.tags.length > 3 && (
-                          <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--pill-color)]/50 text-[var(--text-p)]/70">
-                            +{post.metadata.tags.length - 3} more
-                          </span>
-                        )}
-                      </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <h3 className="text-base font-medium text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200">
+                      {post.metadata.title}
+                    </h3>
+                    {showPublicationYear && (
+                      <span className="text-sm text-[var(--text-p)] flex-shrink-0">
+                        {formatDate(post.metadata.publishedAt, false)}
+                      </span>
                     )}
                   </div>
+
+                  {post.metadata.tags && post.metadata.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {post.metadata.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs px-2 py-1 text-[var(--text-p)] bg-[var(--callout-bg)] border border-[var(--callout-border)] rounded"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {post.metadata.tags.length > 3 && (
+                        <span className="text-xs text-[var(--text-p)]/70">
+                          +{post.metadata.tags.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </Link>
               ))}
         </div>

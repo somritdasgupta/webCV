@@ -6,7 +6,11 @@ interface SectionHeaderProps {
   subtitle?: string;
 }
 
-export default function SectionHeader({ title, icon, subtitle }: SectionHeaderProps) {
+export default function SectionHeader({
+  title,
+  icon,
+  subtitle,
+}: SectionHeaderProps) {
   return (
     <div className="text-center">
       <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-p)] mb-4">
@@ -14,9 +18,7 @@ export default function SectionHeader({ title, icon, subtitle }: SectionHeaderPr
         {icon}
       </h2>
       {subtitle && (
-        <p className="text-lg text-[var(--text-p)]/70">
-          {subtitle}
-        </p>
+        <p className="text-lg text-[var(--text-p)]/70">{subtitle}</p>
       )}
     </div>
   );

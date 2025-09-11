@@ -24,15 +24,17 @@ export default function Home() {
       </div>
 
       {/* Content Sections */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 py-16">
+      <div className="space-y-16 py-16">
         {/* Featured Project Section */}
         <div className="space-y-8">
           <SectionHeader
             title="Highlights"
-            icon={<RiVerifiedBadgeLine className="inline w-8 h-8 ml-2 text-[var(--bronzer)] animate-pulse" />}
+            icon={
+              <RiVerifiedBadgeLine className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
+            }
           />
 
-          <div className="bg-[var(--card-bg)] rounded-2xl p-8 shadow-xl border border-[var(--callout-border)] hover:shadow-2xl transition-all duration-500">
+          <div className="border-l-4 border-[var(--callout-border)] pl-6 py-4">
             {error && (
               <div className="text-center p-8">
                 <p className="text-red-500 mb-4">{error}</p>
@@ -51,16 +53,21 @@ export default function Home() {
               </div>
             )}
 
-            {featuredProject ? <ProjectCard project={featuredProject} /> : <BoxLoader />}
+            {featuredProject ? (
+              <ProjectCard project={featuredProject} />
+            ) : (
+              <BoxLoader />
+            )}
           </div>
         </div>
 
         {/* Recent Posts Section */}
         <div className="space-y-8 pb-16">
           <SectionHeader
-            title="Latest Thoughts"
-            icon={<HiArrowTrendingUp className="inline w-8 h-8 ml-2 text-[var(--bronzer)] animate-pulse" />}
-            subtitle="Recent posts from my blog about tech, AI, and development"
+            title="Recent Posts"
+            icon={
+              <HiArrowTrendingUp className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
+            }
           />
 
           <div>

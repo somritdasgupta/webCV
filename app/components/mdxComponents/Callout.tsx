@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface CalloutProps {
   emoji: React.ReactNode;
@@ -7,12 +7,16 @@ interface CalloutProps {
 
 export function Callout({ emoji, children }: CalloutProps) {
   return (
-    <div className="flex items-center p-4 mt-8 mb-8 rounded-lg bg-[var(--callout-bg)] border-1 border-[var(--callout-border)] text-[var(--text-color)] shadow-xs backdrop-blur-sm">
-      <div className="text-lg mr-3 flex items-center justify-center flex-shrink-0 animate-pulse">
-        {emoji}
-      </div>
-      <div className="flex-1 text-xs leading-6">
-        {children}
+    <div className="my-8 bg-transparent border-l-4 border-[var(--bronzer)] pl-6">
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 mt-1">
+          <span className="text-lg leading-none">{emoji}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm leading-7 text-[var(--text-p)]">
+            {children}
+          </div>
+        </div>
       </div>
     </div>
   );

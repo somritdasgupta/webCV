@@ -279,6 +279,10 @@ export function LiveCode({
 
   // Handle fullscreen toggle
   const toggleFullscreen = () => {
+    // Disable fullscreen on mobile devices
+    if (window.innerWidth < 768) {
+      return;
+    }
     setIsFullscreen(!isFullscreen);
   };
 
@@ -424,8 +428,8 @@ export function LiveCode({
   // Show error state
   if (error) {
     return (
-      <div className="my-8 rounded-xl border border-red-300 bg-red-50 backdrop-blur-sm">
-        <div className="flex items-center justify-center p-8">
+      <div className="my-8">
+        <div className="flex items-center justify-center p-8 bg-red-50/50 border border-red-200 rounded-lg">
           <div className="text-center">
             <div className="text-red-600 font-medium mb-2">Sandbox Error</div>
             <div className="text-red-500 text-sm">{error}</div>
@@ -441,8 +445,8 @@ export function LiveCode({
   // Show loading state
   if (loading || Object.keys(files).length === 0) {
     return (
-      <div className="my-8 rounded-xl border border-[var(--code-border)] bg-[var(--card-bg)] backdrop-blur-sm">
-        <div className="flex items-center justify-center p-8">
+      <div className="my-8">
+        <div className="flex items-center justify-center p-8 bg-transparent border border-[var(--callout-border)] rounded-lg">
           <BoxLoader size="md" />
         </div>
       </div>
@@ -451,11 +455,11 @@ export function LiveCode({
 
   const sandpackContent = (
     <div
-      className={`${isFullscreen ? "h-full bg-[var(--bg-color)]" : "rounded-xl border border-[var(--code-border)] bg-[var(--card-bg)] backdrop-blur-sm transition-all duration-300 hover:border-[var(--bronzer)] hover:shadow-lg"}`}
+      className={`${isFullscreen ? "h-full bg-[var(--bg-color)]" : "bg-transparent border border-[var(--callout-border)] rounded-lg"}`}
     >
       {/* Custom Header */}
       <div
-        className={`flex items-center justify-between border-b border-[var(--code-border)] bg-[var(--header-bg-color)] px-4 py-3 ${isFullscreen ? "" : "rounded-t-xl"}`}
+        className={`flex items-center justify-between border-b border-[var(--callout-border)] bg-transparent px-4 py-3 ${isFullscreen ? "" : "rounded-t-lg"}`}
       >
         <div className="flex items-center gap-3">
           <div className="flex gap-1.5">
@@ -479,7 +483,7 @@ export function LiveCode({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs px-2 py-1 rounded-full bg-[var(--bronzer)] text-white font-medium">
+          <span className="text-xs px-2 py-1 rounded bg-[var(--bronzer)]/20 text-[var(--bronzer)] font-medium border border-[var(--bronzer)]/30">
             {template.charAt(0).toUpperCase() + template.slice(1)}
           </span>
           <div className="text-xs text-[var(--text-p)] hidden sm:block">
@@ -487,7 +491,7 @@ export function LiveCode({
           </div>
           <button
             onClick={toggleFullscreen}
-            className="ml-2 p-1.5 rounded-md hover:bg-[var(--nav-pill)] transition-colors duration-200 text-[var(--text-p)] hover:text-[var(--bronzer)]"
+            className="ml-2 p-1.5 rounded hover:bg-[var(--callout-border)]/20 transition-colors duration-200 text-[var(--text-p)] hover:text-[var(--bronzer)] hidden md:block"
             title={isFullscreen ? "Exit fullscreen (ESC)" : "Enter fullscreen"}
           >
             {isFullscreen ? (
@@ -585,15 +589,15 @@ export function LiveCode({
               "sp-wrapper": `!border-0 !rounded-none ${isFullscreen ? "!h-full !m-0 !p-0" : ""}`,
               "sp-layout": `!border-0 !rounded-none ${isFullscreen ? "!h-full !m-0" : ""}`,
               "sp-tab-button":
-                "!text-[var(--text-p)] !bg-transparent hover:!text-[var(--text-color)] hover:!bg-[var(--nav-pill)]",
+                "!text-[var(--text-p)] !bg-transparent hover:!text-[var(--text-color)] hover:!bg-[var(--callout-border)]/20",
               "sp-tab-button-active":
-                "!text-[var(--bronzer)] !bg-[var(--nav-pill)]",
+                "!text-[var(--bronzer)] !bg-[var(--callout-border)]/20",
               "sp-code-editor":
-                "!bg-[var(--bg-color)] !border-r !border-[var(--code-border)]",
-              "sp-preview-container": "!bg-[var(--bg-color)]",
+                "!bg-transparent !border-r !border-[var(--callout-border)]",
+              "sp-preview-container": "!bg-transparent",
               "sp-preview-iframe":
-                "!bg-white !rounded-lg !border !border-[var(--code-border)] !shadow-sm",
-              "sp-stack": "!bg-[var(--card-bg)]",
+                "!bg-white !border !border-[var(--callout-border)] !shadow-sm !w-full !max-w-full !overflow-auto",
+              "sp-stack": "!bg-transparent",
             },
           }}
           files={files}
@@ -609,11 +613,11 @@ export function LiveCode({
       </div>
 
       {/* Custom Footer */}
-      <div className="border-t border-[var(--code-border)] bg-[var(--header-bg-color)] px-4 py-2 rounded-b-xl">
+      <div className="border-t border-[var(--callout-border)] bg-transparent px-4 py-2 rounded-b-lg">
         <div className="flex items-center justify-between text-xs text-[var(--text-p)]">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
               Ready
             </span>
             <span>Files: {Object.keys(files).length}</span>
@@ -665,7 +669,7 @@ export function LiveCode({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="w-full h-full"
+              className="w-full h-full max-w-7xl mx-auto p-4"
               onClick={(e) => e.stopPropagation()}
             >
               {sandpackContent}
