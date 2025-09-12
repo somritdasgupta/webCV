@@ -6,9 +6,10 @@ import BoxLoader from "./components/BoxLoader";
 import HeroContent from "./components/HeroContent";
 import SectionHeader from "./components/SectionHeader";
 import ProjectCard from "./components/ProjectCard";
+import BookmarksPreview from "./components/BookmarksPreview";
 import { useFeaturedProject } from "./hooks/useFeaturedProject";
 import { RiVerifiedBadgeLine } from "react-icons/ri";
-import { HiArrowTrendingUp } from "react-icons/hi2";
+import { HiArrowTrendingUp, HiOutlineBookmark } from "react-icons/hi2";
 
 export default function Home() {
   const { featuredProject, error, loading } = useFeaturedProject();
@@ -24,7 +25,7 @@ export default function Home() {
       </div>
 
       {/* Content Sections */}
-      <div className="space-y-16 py-16">
+      <div className="space-y-24 py-16">
         {/* Featured Project Section */}
         <div className="space-y-8">
           <SectionHeader
@@ -62,9 +63,9 @@ export default function Home() {
         </div>
 
         {/* Recent Posts Section */}
-        <div className="space-y-8 pb-16">
+        <div className="space-y-8">
           <SectionHeader
-            title="Recent Posts"
+            title="Recent"
             icon={
               <HiArrowTrendingUp className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
             }
@@ -79,6 +80,27 @@ export default function Home() {
             />
             <div className="mt-12 text-center">
               <Button href="/blog" text="Explore All Posts" icon="right" />
+            </div>
+          </div>
+        </div>
+
+        {/* Bookmarks Preview Section */}
+        <div className="space-y-8 pb-16">
+          <SectionHeader
+            title="Bookmarked"
+            icon={
+              <HiOutlineBookmark className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
+            }
+          />
+
+          <div>
+            <BookmarksPreview />
+            <div className="mt-8 text-center">
+              <Button
+                href="/bookmarks"
+                text="View All Bookmarks"
+                icon="right"
+              />
             </div>
           </div>
         </div>

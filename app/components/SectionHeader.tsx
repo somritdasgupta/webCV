@@ -12,7 +12,7 @@ export default function SectionHeader({
   subtitle,
 }: SectionHeaderProps) {
   return (
-    <div className="text-center">
+    <div className="text-left">
       <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-p)] mb-4">
         {title}
         {icon}

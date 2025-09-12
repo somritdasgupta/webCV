@@ -138,7 +138,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
                   <Link
                     key={tag}
                     href={`/blog?tag=${encodeURIComponent(tag)}`}
-                    className="bg-[var(--pill-color)] hover:scale-105 custom-topic-pill text-xs px-2 py-1 rounded-full transition-all duration-300 hover:bg-[var(--bronzer)]/10"
+                    className="text-xs px-2 py-1 rounded border text-[var(--text-p)] border-[var(--callout-border)] hover:border-[var(--bronzer)] transition-colors"
                   >
                     {tag}
                   </Link>
@@ -192,7 +192,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
                     <Link
                       key={tag}
                       href={`/blog?tag=${encodeURIComponent(tag)}`}
-                      className="bg-[var(--pill-color)] hover:scale-105 custom-topic-pill text-sm transition-all duration-300 hover:bg-[var(--bronzer)]/10"
+                      className="text-xs px-2 py-1 rounded border text-[var(--text-p)] border-[var(--callout-border)] hover:border-[var(--bronzer)] transition-colors"
                     >
                       {tag}
                     </Link>

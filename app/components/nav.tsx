@@ -61,7 +61,7 @@ export function Navbar() {
                   >
                     <Link
                       href={path}
-                      className={`block px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 text-right min-w-[80px] ${
+                      className={`block px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 text-right min-w-[80px] relative ${
                         isActive
                           ? "bg-[var(--nav-pill-bg)] border border-[var(--nav-pill-border)] text-[var(--nav-text-active)] shadow-lg backdrop-blur-sm"
                           : "text-[var(--nav-text)] hover:bg-[var(--nav-pill-bg)] hover:border hover:border-[var(--nav-pill-border)] hover:text-[var(--nav-text-hover)] hover:backdrop-blur-sm"
@@ -70,7 +70,7 @@ export function Navbar() {
                       {isActive && (
                         <motion.div
                           className="absolute inset-0 rounded-xl bg-[var(--accent)]/10"
-                          layoutId="activeTab"
+                          layoutId="desktopActiveTab"
                           transition={{ duration: 0.3, ease: "easeInOut" }}
                         />
                       )}
@@ -139,14 +139,14 @@ export function Navbar() {
             }}
           >
             <div
-              className={`backdrop-blur-xl border rounded-2xl px-4 py-2 shadow-2xl transition-all duration-300 ${
+              className={`backdrop-blur-xl border rounded-2xl px-3 py-1 shadow-2xl transition-all duration-300 ${
                 isScrolled
                   ? "bg-[var(--nav-bg)] border-[var(--nav-border)] shadow-black/10 dark:shadow-black/40"
                   : "bg-[var(--nav-bg-blur)] border-[var(--nav-border)] shadow-black/5 dark:shadow-black/20"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1.5">
                   {Object.entries(navItems).map(([path, { name }], index) => {
                     const isActive = pathname === path;
                     return (
@@ -162,7 +162,7 @@ export function Navbar() {
                       >
                         <Link
                           href={path}
-                          className={`flex items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 group ${
+                          className={`flex items-center justify-center px-2.5 py-1 rounded-xl transition-all duration-200 group relative ${
                             isActive
                               ? "bg-[var(--nav-pill-bg)] border border-[var(--nav-pill-border)] text-[var(--nav-text-active)] shadow-sm"
                               : "text-[var(--nav-text)] hover:bg-[var(--nav-pill-bg)] hover:border hover:border-[var(--nav-pill-border)] hover:text-[var(--nav-text-hover)] hover:scale-105"
@@ -175,7 +175,7 @@ export function Navbar() {
                               transition={{ duration: 0.3, ease: "easeInOut" }}
                             />
                           )}
-                          <span className="relative z-10 capitalize text-sm font-medium">
+                          <span className="relative z-10 capitalize text-xs font-medium">
                             {name}
                           </span>
                         </Link>
@@ -185,12 +185,33 @@ export function Navbar() {
                 </div>
 
                 <motion.div
-                  className="flex items-center relative z-20"
+                  className="flex items-center space-x-1 relative z-20"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.2 }}
                 >
-                  <div className="p-2 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                  {/* Social Links */}
+                  <div className="flex items-center space-x-1">
+                    {socialLinks.slice(0, 2).map((link, index) => (
+                      <motion.a
+                        key={link.name}
+                        href={link.href}
+                        target={link.external ? "_blank" : undefined}
+                        rel={link.external ? "noopener noreferrer" : undefined}
+                        className="flex items-center justify-center px-2 py-1 text-xs text-[var(--nav-text)]/70 hover:text-[var(--nav-text-active)] hover:bg-[var(--nav-pill-bg)] rounded-lg transition-all duration-200"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                      >
+                        {link.name}
+                      </motion.a>
+                    ))}
+                  </div>
+
+                  {/* Theme Switcher */}
+                  <div className="p-1 -m-1 min-w-[36px] min-h-[36px] flex items-center justify-center">
                     <ThemeSwitcher />
                   </div>
                 </motion.div>
