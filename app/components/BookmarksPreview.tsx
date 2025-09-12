@@ -1,6 +1,5 @@
 "use client";
 
-import { HiExternalLink } from "react-icons/hi";
 import { useState, useEffect } from "react";
 
 interface BookmarkItem {
@@ -451,6 +450,18 @@ const getRandomBookmarks = (): BookmarkCategory[] => {
 };
 
 const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
+  // Function to truncate and clean URL for display
+  const getTruncatedUrl = (url: string, maxLength: number = 20) => {
+    // Remove protocol and www
+    let cleanUrl = url.replace(/^https?:\/\//, "").replace(/^www\./, "");
+    // Remove trailing slash
+    cleanUrl = cleanUrl.replace(/\/$/, "");
+    // Truncate if too long
+    return cleanUrl.length > maxLength
+      ? cleanUrl.substring(0, maxLength) + "..."
+      : cleanUrl;
+  };
+
   return (
     <a
       href={item.url}
@@ -460,10 +471,14 @@ const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
       title={item.description}
     >
       <span className="text-base flex-shrink-0">{item.icon || "🔗"}</span>
-      <span className="text-sm text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200 flex-1">
-        {item.title}
+      <div className="flex-1 min-w-0">
+        <span className="text-sm text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200 block">
+          {item.title}
+        </span>
+      </div>
+      <span className="text-xs text-[var(--text-p)]/50 group-hover:text-[var(--bronzer)]/70 transition-colors duration-200 flex-shrink-0">
+        {getTruncatedUrl(item.url)}
       </span>
-      <HiExternalLink className="w-3 h-3 text-[var(--text-p)]/30 group-hover:text-[var(--bronzer)] transition-colors duration-200 opacity-0 group-hover:opacity-100" />
     </a>
   );
 };
@@ -506,7 +521,7 @@ export default function BookmarksPreview() {
 
       <div className="text-center pt-6 border-t border-[var(--callout-border)]/20">
         <p className="text-sm text-[var(--text-p)]/70">
-          Discover more useful tools, resources, and inspiration
+          More useful tools, resources, and inspirations
         </p>
       </div>
     </div>

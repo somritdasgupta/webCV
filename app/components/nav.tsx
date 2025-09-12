@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { socialLinks } from "../lib/constants";
+import SocialLinks from "./SocialLinks";
 
 const navItems = {
   "/": { name: "about" },
@@ -14,64 +14,94 @@ const navItems = {
   "/bookmarks": { name: "links" },
 };
 
+// Optimized animation variants
+const desktopVariants = {
+  hidden: { opacity: 0, x: 20 },
+  visible: { opacity: 1, x: 0 },
+};
+
+const mobileVariants = {
+  hidden: { opacity: 0, y: -50 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -50 },
+};
+
+const linkVariants = {
+  hover: { scale: 1.02 },
+  tap: { scale: 0.98 },
+};
+
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+  // Memoize scroll handler to prevent unnecessary re-renders
+  const handleScroll = useMemo(() => {
+    let ticking = false;
 
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
+    return () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+
+          if (currentScrollY > lastScrollY && currentScrollY > 100) {
+            setIsVisible(false);
+          } else {
+            setIsVisible(true);
+          }
+
+          setIsScrolled(currentScrollY > 20);
+          setLastScrollY(currentScrollY);
+          ticking = false;
+        });
+        ticking = true;
       }
-
-      setIsScrolled(currentScrollY > 20);
-      setLastScrollY(currentScrollY);
     };
+  }, [lastScrollY]);
 
+  useEffect(() => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, [handleScroll]);
 
   return (
     <>
       {/* Desktop Navigation */}
       <motion.div
         className="hidden lg:block fixed right-6 top-1/2 transform -translate-y-1/2 z-50"
-        initial={{ opacity: 0, x: 20, scale: 0.9 }}
-        animate={{ opacity: 1, x: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+        variants={desktopVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <div className="relative">
-          <div className="backdrop-blur-xl bg-[var(--nav-bg)] border border-[var(--nav-border)] rounded-2xl p-4 shadow-lg shadow-black/5 dark:shadow-black/20">
-            <div className="flex flex-col space-y-3 items-end">
+          <div className="bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-2xl p-4 shadow-xl">
+            <div className="flex flex-col space-y-2 items-end">
               {Object.entries(navItems).map(([path, { name }]) => {
                 const isActive = pathname === path;
                 return (
                   <motion.div
                     key={path}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    variants={linkVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                   >
                     <Link
                       href={path}
-                      className={`block px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 text-right min-w-[80px] relative ${
+                      className={`block px-4 py-2 rounded-xl text-sm font-medium transition-colors duration-200 text-right min-w-[80px] relative ${
                         isActive
-                          ? "bg-[var(--nav-pill-bg)] border border-[var(--nav-pill-border)] text-[var(--nav-text-active)] shadow-lg backdrop-blur-sm"
-                          : "text-[var(--nav-text)] hover:bg-[var(--nav-pill-bg)] hover:border hover:border-[var(--nav-pill-border)] hover:text-[var(--nav-text-hover)] hover:backdrop-blur-sm"
+                          ? "bg-[var(--nav-pill-bg)] text-[var(--nav-text-active)] shadow-sm"
+                          : "text-[var(--nav-text)] hover:bg-[var(--nav-pill-bg)]/50 hover:text-[var(--nav-text-hover)]"
                       }`}
                     >
                       {isActive && (
                         <motion.div
-                          className="absolute inset-0 rounded-xl bg-[var(--accent)]/10"
+                          className="absolute inset-0 rounded-xl bg-[var(--accent)]/8"
                           layoutId="desktopActiveTab"
-                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
                         />
                       )}
                       <span className="relative z-10 capitalize">{name}</span>
@@ -81,98 +111,62 @@ export function Navbar() {
               })}
             </div>
 
-            <div className="my-4 h-px bg-gradient-to-r from-transparent via-[var(--nav-border)] to-transparent" />
+            <div className="my-3 h-px bg-[var(--nav-border)]/30" />
 
             <div className="flex justify-center">
-              <div className="p-1">
-                <ThemeSwitcher />
-              </div>
+              <ThemeSwitcher />
             </div>
           </div>
 
-          <motion.div
-            className="mt-4 backdrop-blur-xl bg-[var(--nav-bg)] border border-[var(--nav-border)] rounded-xl p-2 shadow-lg shadow-black/5 dark:shadow-black/20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.6,
-              delay: 0.2,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
-          >
-            <div className="flex flex-col space-y-1">
-              {socialLinks.slice(0, 3).map((link, index) => (
-                <motion.a
-                  key={link.name}
-                  href={link.href}
-                  target={link.external ? "_blank" : undefined}
-                  rel={link.external ? "noopener noreferrer" : undefined}
-                  className="flex items-center justify-center w-full h-8 text-xs text-[var(--nav-text)]/70 hover:text-[var(--nav-text-active)] hover:bg-[var(--nav-pill-bg)] rounded-lg transition-all duration-200"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                >
-                  {link.name}
-                </motion.a>
-              ))}
-            </div>
-          </motion.div>
+          <div className="mt-3 bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-xl p-2 shadow-xl">
+            <SocialLinks variant="navbar" />
+          </div>
         </div>
       </motion.div>
 
       {/* Mobile Navigation */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isVisible && (
           <motion.div
             className="lg:hidden fixed top-4 left-4 right-4 z-50"
-            initial={{ opacity: 0, y: -100, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -100, scale: 0.95 }}
-            transition={{
-              duration: 0.5,
-              ease: [0.25, 0.46, 0.45, 0.94],
-              type: "spring",
-              stiffness: 100,
-              damping: 15,
-            }}
+            variants={mobileVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <div
-              className={`backdrop-blur-xl border rounded-2xl px-3 py-1 shadow-2xl transition-all duration-300 ${
+              className={`bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-2xl px-3 py-2 shadow-xl transition-all duration-200 ${
                 isScrolled
-                  ? "bg-[var(--nav-bg)] border-[var(--nav-border)] shadow-black/10 dark:shadow-black/40"
-                  : "bg-[var(--nav-bg-blur)] border-[var(--nav-border)] shadow-black/5 dark:shadow-black/20"
+                  ? "shadow-black/10 dark:shadow-black/40"
+                  : "shadow-black/5 dark:shadow-black/20"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1.5">
-                  {Object.entries(navItems).map(([path, { name }], index) => {
+                <div className="flex items-center space-x-1">
+                  {Object.entries(navItems).map(([path, { name }]) => {
                     const isActive = pathname === path;
                     return (
                       <motion.div
                         key={path}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{
-                          duration: 0.3,
-                          delay: 0.05 + index * 0.05,
-                          ease: [0.25, 0.46, 0.45, 0.94],
-                        }}
+                        variants={linkVariants}
+                        whileHover="hover"
+                        whileTap="tap"
+                        transition={{ duration: 0.15, ease: "easeOut" }}
                       >
                         <Link
                           href={path}
-                          className={`flex items-center justify-center px-2.5 py-1 rounded-xl transition-all duration-200 group relative ${
+                          className={`flex items-center justify-center px-3 py-1.5 rounded-xl transition-colors duration-200 relative ${
                             isActive
-                              ? "bg-[var(--nav-pill-bg)] border border-[var(--nav-pill-border)] text-[var(--nav-text-active)] shadow-sm"
-                              : "text-[var(--nav-text)] hover:bg-[var(--nav-pill-bg)] hover:border hover:border-[var(--nav-pill-border)] hover:text-[var(--nav-text-hover)] hover:scale-105"
+                              ? "bg-[var(--nav-pill-bg)] text-[var(--nav-text-active)] shadow-sm"
+                              : "text-[var(--nav-text)] hover:bg-[var(--nav-pill-bg)]/50 hover:text-[var(--nav-text-hover)]"
                           }`}
                         >
                           {isActive && (
                             <motion.div
                               className="absolute inset-0 rounded-xl bg-[var(--accent)]/5"
                               layoutId="mobileActiveTab"
-                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                              transition={{ duration: 0.2, ease: "easeOut" }}
                             />
                           )}
                           <span className="relative z-10 capitalize text-xs font-medium">
@@ -184,37 +178,9 @@ export function Navbar() {
                   })}
                 </div>
 
-                <motion.div
-                  className="flex items-center space-x-1 relative z-20"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.2 }}
-                >
-                  {/* Social Links */}
-                  <div className="flex items-center space-x-1">
-                    {socialLinks.slice(0, 2).map((link, index) => (
-                      <motion.a
-                        key={link.name}
-                        href={link.href}
-                        target={link.external ? "_blank" : undefined}
-                        rel={link.external ? "noopener noreferrer" : undefined}
-                        className="flex items-center justify-center px-2 py-1 text-xs text-[var(--nav-text)]/70 hover:text-[var(--nav-text-active)] hover:bg-[var(--nav-pill-bg)] rounded-lg transition-all duration-200"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-                      >
-                        {link.name}
-                      </motion.a>
-                    ))}
-                  </div>
-
-                  {/* Theme Switcher */}
-                  <div className="p-1 -m-1 min-w-[36px] min-h-[36px] flex items-center justify-center">
-                    <ThemeSwitcher />
-                  </div>
-                </motion.div>
+                <div className="flex items-center">
+                  <ThemeSwitcher />
+                </div>
               </div>
             </div>
           </motion.div>
