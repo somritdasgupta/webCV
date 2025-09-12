@@ -12,8 +12,7 @@ export function ProConsComparison({ pros, cons }: ProConsComparisonProps) {
       {/* Pros Card */}
       <div className="flex-1 bg-transparent border-l-4 border-green-500 pl-6 py-4 mb-6 sm:mb-0">
         <h4 className="text-lg font-semibold text-[var(--text-color)] mb-4 flex items-center">
-          <FiCheckCircle className="h-5 w-5 mr-2 text-green-500" />
-          Pros
+          Pro's
         </h4>
         <div className="space-y-3">
           {pros.map((pro, index) => (
@@ -30,8 +29,7 @@ export function ProConsComparison({ pros, cons }: ProConsComparisonProps) {
       {/* Cons Card */}
       <div className="flex-1 bg-transparent border-l-4 border-red-500 pl-6 py-4">
         <h4 className="text-lg font-semibold text-[var(--text-color)] mb-4 flex items-center">
-          <FiXCircle className="h-5 w-5 mr-2 text-red-500" />
-          Cons
+          Con's
         </h4>
         <div className="space-y-3">
           {cons.map((con, index) => (

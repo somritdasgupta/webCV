@@ -134,28 +134,64 @@ export default function RootLayout({
                   const mql = window.matchMedia('(prefers-color-scheme: dark)');
                   return mql.matches ? 'dark' : 'light';
                 }
+                
+                function updateThemeProperties(isDark) {
+                  const root = document.documentElement;
+                  if (isDark) {
+                    root.style.setProperty("--bg-color", "#151217");
+                    root.style.setProperty("--text-color", "#fefefe");
+                    root.style.setProperty("--text-p", "#a0c0be");
+                    root.style.setProperty("--bronzer", "#a78bfa");
+                    root.style.setProperty("--callout-bg", "#1f293493");
+                    root.style.setProperty("--callout-border", "#322d47");
+                    root.style.setProperty("--card-bg", "#1f293493");
+                    root.style.setProperty("--nav-pill", "#181120");
+                  } else {
+                    root.style.setProperty("--bg-color", "#fffbfb");
+                    root.style.setProperty("--text-color", "#471919");
+                    root.style.setProperty("--text-p", "#6a2a2a");
+                    root.style.setProperty("--bronzer", "#2e6754");
+                    root.style.setProperty("--callout-bg", "#fbf7f7");
+                    root.style.setProperty("--callout-border", "#c8c8c8b3");
+                    root.style.setProperty("--card-bg", "#f1f1f1e6");
+                    root.style.setProperty("--nav-pill", "#f6f8ff");
+                  }
+                }
+                
                 const colorMode = getInitialColorMode();
+                const isDark = colorMode === 'dark';
+                
                 document.documentElement.setAttribute('data-theme', colorMode);
                 document.documentElement.style.setProperty('color-scheme', colorMode);
-                if (colorMode === 'dark') {
+                
+                if (isDark) {
                   document.documentElement.classList.add('dark');
                   document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
                 } else {
                   document.documentElement.classList.remove('dark');
                   document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
                 }
+                
+                // Update CSS custom properties
+                updateThemeProperties(isDark);
 
                 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                   const newColorMode = e.matches ? 'dark' : 'light';
+                  const newIsDark = newColorMode === 'dark';
+                  
                   document.documentElement.setAttribute('data-theme', newColorMode);
                   document.documentElement.style.setProperty('color-scheme', newColorMode);
-                  if (newColorMode === 'dark') {
+                  
+                  if (newIsDark) {
                     document.documentElement.classList.add('dark');
                     document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
                   } else {
                     document.documentElement.classList.remove('dark');
                     document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
                   }
+                  
+                  // Update CSS custom properties for system theme changes
+                  updateThemeProperties(newIsDark);
                 });
               })();
             `,
@@ -202,12 +238,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans">
+      <body className="antialiased mx-4 mt-4 lg:mx-auto font-sans">
         <AnimatedGrid />
-        <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4 relative z-10">
+        <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-2 lg:mt-6 flex flex-col px-2 md:px-4 relative z-10">
           <Navbar />
           <GAAnalytics />
-          {children}
+          <div className="lg:mt-0">{children}</div>
           {/* Footer only shows on mobile since desktop has it integrated in navbar */}
           <div className="lg:hidden mt-16">
             <Footer />

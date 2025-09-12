@@ -29,7 +29,6 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     const newTheme = isDark ? "dark" : "light";
 
     if (animate) {
-      // Add transition class to body for smooth theme switching
       document.body.style.transition =
         "background-color 0.3s ease, color 0.3s ease";
       document.documentElement.style.transition =
@@ -51,7 +50,6 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         ?.setAttribute("content", "#fffbfb");
     }
 
-    // Force update all CSS custom properties immediately
     const root = document.documentElement;
     if (isDark) {
       root.style.setProperty("--bg-color", "#151217");
@@ -74,7 +72,6 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     }
 
     if (animate) {
-      // Remove transition after animation completes
       setTimeout(() => {
         document.body.style.transition = "";
         document.documentElement.style.transition = "";
@@ -84,7 +81,6 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
 
   const createSlideTransition = (isDark: boolean) => {
     return new Promise<void>((resolve) => {
-      // Create sliding panels
       const panels: HTMLDivElement[] = [];
       const numPanels = 5;
 
@@ -132,7 +128,6 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         }, delay);
       }
 
-      // Create geometric shapes overlay
       setTimeout(() => {
         for (let i = 0; i < 8; i++) {
           const shape = document.createElement("div");
@@ -178,7 +173,6 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         }
       }, 200);
 
-      // Fallback resolve
       setTimeout(resolve, 1000);
     });
   };
@@ -189,10 +183,8 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     setIsAnimating(true);
     const newIsDarkMode = !isDarkMode;
 
-    // Start the slide transition
     const transitionPromise = createSlideTransition(newIsDarkMode);
 
-    // Update theme immediately for smooth transition
     setTimeout(() => {
       setIsDarkMode(newIsDarkMode);
       updateTheme(newIsDarkMode, true);
@@ -219,11 +211,16 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     <motion.button
       onClick={toggleTheme}
       disabled={isAnimating}
-      className={`text-base font-medium transition-all duration-200 ${
+      className={`relative z-30 text-base font-medium transition-all duration-200 touch-manipulation select-none min-w-[44px] min-h-[44px] flex items-center justify-center ${
         isAnimating
           ? "opacity-60 cursor-not-allowed"
-          : "text-[var(--text-p)] hover:text-[var(--bronzer)]"
+          : "text-[var(--text-p)] hover:text-[var(--bronzer)] active:text-[var(--bronzer)]"
       } ${className}`}
+      style={{
+        WebkitTapHighlightColor: "transparent",
+        touchAction: "manipulation",
+        pointerEvents: "auto",
+      }}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >

@@ -1,81 +1,117 @@
 @import "tailwindcss";
 
+/* =========================
+   CSS CUSTOM PROPERTIES
+   ========================= */
+
 :root {
-  --bg-color: transparent;
-  --light-text-color: #000000;
-  --text-color: #471919;
-  --text-p: #6a2a2a;
-  --bronzer: #2e6754;
-  --callout-bg: transparent;
-  --callout-border: #c8c8c8b3;
-  --card-bg: transparent;
-  --code-border: #cccccc;
-  --cons-card-border: #f97c7c99;
-  --header-bg-color: transparent;
-  --nav-pill: rgba(246, 248, 255, 0.1);
-  --pill-color: rgba(224, 224, 224, 0.1);
-  --post-title-bg: transparent;
-  --post-title-border: #c8c8c8b3;
-  --post-title-color: #333;
-  --pros-card-border: #9ccc65cc;
-  --row-even-bg-color: transparent;
-  --row-odd-bg-color: transparent;
-  --tweet-bg: transparent;
+  /* Core Colors */
+  --text-primary: #471919;
+  --text-secondary: #6a2a2a;
+  --text-light: #000000;
+  --accent: #2e6754;
+
+  /* UI Elements */
+  --border-light: rgba(200, 200, 200, 0.7);
+  --border-subtle: rgba(200, 200, 200, 0.2);
+  --shadow-light: rgba(0, 0, 0, 0.05);
+
+  /* Navigation */
+  --nav-bg: rgba(255, 255, 255, 0.7);
+  --nav-bg-blur: rgba(255, 255, 255, 0.1);
+  --nav-border: rgba(255, 255, 255, 0.18);
+  --nav-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  --nav-text: var(--text-secondary);
+  --nav-text-active: var(--accent);
+  --nav-text-hover: var(--text-primary);
+  --nav-pill-bg: rgba(255, 255, 255, 0.25);
+  --nav-pill-border: rgba(255, 255, 255, 0.3);
+
+  /* Cards & Components */
+  --card-border-success: rgba(156, 204, 101, 0.8);
+  --card-border-error: rgba(249, 124, 124, 0.6);
+  --pill-bg: rgba(224, 224, 224, 0.1);
+
+  /* Code Syntax Highlighting */
   --sh-class: #4e75a8;
   --sh-comment: #9e80ff;
   --sh-entity: #475458;
   --sh-identifier: #d45d5d;
-  --sh-jsxliterals: #6266d1;
   --sh-keyword: #4b8bb5;
   --sh-property: #e25a1c;
-  --sh-sign: #8996a3;
   --sh-string: #476565;
+  --sh-sign: #8996a3;
+  --sh-jsx: #6266d1;
 
-  /* Grid variables for light theme */
+  /* Grid Background */
   --grid-color: rgba(156, 163, 175, 0.12);
   --grid-size: 20px;
+
+  /* Legacy Variables for Compatibility */
+  --text-color: var(--text-primary);
+  --text-p: var(--text-secondary);
+  --bronzer: var(--accent);
+  --callout-border: var(--border-light);
+  --callout-bg: transparent;
+  --nav-border: var(--border-subtle);
+  --nav-shadow: var(--shadow-light);
+  --pros-card-border: var(--card-border-success);
+  --cons-card-border: var(--card-border-error);
+  --sh-jsxliterals: var(--sh-jsx);
+  --pill-color: var(--pill-bg);
 }
 
 [data-theme="dark"] {
-  --bg-color: transparent;
-  --light-text-color: #b0b0b0;
-  --text-color: #fefefe;
-  --text-p: #a0c0be;
-  --bronzer: #a78bfa;
-  --callout-bg: transparent;
-  --callout-border: #322d47;
-  --card-bg: transparent;
-  --code-border: #1c2c45;
-  --header-bg-color: transparent;
-  --nav-pill: rgba(24, 17, 32, 0.1);
-  --pill-color: rgba(31, 22, 40, 0.1);
-  --post-title-bg: transparent;
-  --post-title-border: #3c3c3cb3;
-  --post-title-color: #f5f5f5;
-  --pros-card-border: #cca581;
-  --cons-card-border: #e85f5f;
-  --row-even-bg-color: transparent;
-  --row-odd-bg-color: transparent;
-  --tweet-bg: transparent;
+  /* Core Colors */
+  --text-primary: #fefefe;
+  --text-secondary: #a0c0be;
+  --text-light: #b0b0b0;
+  --accent: #a78bfa;
+
+  /* UI Elements */
+  --border-light: rgba(50, 45, 71, 0.7);
+  --border-subtle: rgba(50, 45, 71, 0.3);
+  --shadow-light: rgba(0, 0, 0, 0.2);
+
+  /* Navigation */
+  --nav-bg: rgba(16, 16, 16, 0.7);
+  --nav-bg-blur: rgba(16, 16, 16, 0.1);
+  --nav-border: rgba(255, 255, 255, 0.125);
+  --nav-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --nav-text: var(--text-secondary);
+  --nav-text-active: var(--accent);
+  --nav-text-hover: var(--text-primary);
+  --nav-pill-bg: rgba(255, 255, 255, 0.1);
+  --nav-pill-border: rgba(255, 255, 255, 0.18);
+
+  /* Cards & Components */
+  --card-border-success: rgba(204, 165, 129, 0.8);
+  --card-border-error: rgba(232, 95, 95, 0.8);
+  --pill-bg: rgba(31, 22, 40, 0.1);
+
+  /* Code Syntax Highlighting */
   --sh-class: #4c97f8;
   --sh-comment: #ccc6e9;
   --sh-entity: #e25a1c;
   --sh-identifier: #ccc6e9;
-  --sh-jsxliterals: #0fa295;
   --sh-keyword: #a1a284;
   --sh-property: #e25a1c;
-  --sh-sign: #a1a284;
   --sh-string: #0fa295;
+  --sh-sign: #a1a284;
+  --sh-jsx: #0fa295;
 
-  /* Grid variables for dark theme */
+  /* Grid Background */
   --grid-color: rgba(75, 85, 99, 0.15);
-  --grid-size: 20px;
 }
+
+/* =========================
+   BASE STYLES
+   ========================= */
 
 html,
 body {
-  @apply transition-all duration-1500 ease-out text-[var(--text-color)] min-w-[300px];
   background: transparent;
+  color: var(--text-primary);
   font-family:
     var(--font-geist-sans),
     system-ui,
@@ -83,92 +119,91 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    "Open Sans",
-    "Helvetica Neue",
     sans-serif;
+  transition: all 1.5s ease-out;
+  min-width: 300px;
 }
 
 ::selection {
-  @apply bg-[#6a2a2a] text-[#fefefe];
+  background: var(--text-secondary);
+  color: #fefefe;
 }
+
+/* =========================
+   TYPOGRAPHY
+   ========================= */
 
 .font-cursive {
   font-family: "La Belle Aurore", cursive;
-  @apply font-medium;
+  font-weight: 500;
 }
 
+/* Base typography */
 h1,
 h2,
 h3,
 h4 {
-  @apply text-[var(--text-color)];
+  color: var(--text-primary);
 }
-
-p {
-  @apply text-[var(--text-p)];
-}
-
-strong {
-  @apply font-bold;
-}
-
-section {
-  @apply text-[var(--text-color)];
-}
-
+p,
 section p {
-  @apply text-[var(--text-p)];
+  color: var(--text-secondary);
 }
+strong {
+  font-weight: 700;
+}
+
+/* =========================
+   UTILITY CLASSES
+   ========================= */
 
 .container-custom {
-  @apply mx-auto px-[1rem];
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
-.custom-skill-pill {
-  @apply bg-[var(--bronzer)]/25 text-xs px-3 py-1 rounded-md;
+.custom-skill-pill,
+.skill-pill {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
 }
 
-.custom-topic-pill {
-  @apply text-xs px-3 py-1 rounded-md bg-[#6169793f] whitespace-nowrap overflow-hidden text-ellipsis inline-flex cursor-pointer;
+.custom-topic-pill,
+.topic-pill {
+  background: rgba(97, 105, 121, 0.25);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  cursor: pointer;
 }
 
 .icon-white {
-  @apply text-white;
+  color: white;
 }
 
-.custom-wrapper,
-.custom-editor,
-.custom-preview {
-  @apply overflow-hidden;
-}
+/* =========================
+   SCROLLBAR STYLES
+   ========================= */
 
-.custom-editor .sp-code-editor,
-.custom-preview .sp-preview-iframe {
-  @apply overflow-hidden;
-}
-
+/* Hide scrollbars globally */
 ::-webkit-scrollbar {
   display: none;
 }
-
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-body,
-html,
-.overflow-hidden {
-  overflow: -moz-scrollbars-none;
-  -ms-overflow-style: none;
-}
-
+/* Custom scrollbar for specific elements */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--bronzer) transparent;
+  scrollbar-color: var(--accent) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -180,190 +215,184 @@ html,
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--bronzer);
+  background-color: var(--accent);
   border-radius: 20px;
 }
 
-/* Enhanced Blog Typography */
+/* =========================
+   PROSE STYLES (MDX/Blog)
+   ========================= */
+
 .prose {
   max-width: none;
+  color: var(--text-secondary);
+  line-height: 1.75;
 }
 
+/* Headings */
 .prose h1 {
-  @apply text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight mb-6 mt-8;
-  color: var(--text-color);
+  font-size: clamp(1.875rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 2rem 0 1.5rem;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
 }
 
 .prose h2 {
-  @apply text-2xl md:text-3xl font-semibold leading-tight tracking-tight mb-4 mt-8;
-  color: var(--text-color);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 1.75rem 0 1rem;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
 }
 
 .prose h3 {
-  @apply text-xl md:text-2xl font-semibold leading-tight mb-3 mt-6;
-  color: var(--text-color);
+  font-size: clamp(1.25rem, 2.5vw, 1.875rem);
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1.5rem 0 0.75rem;
+  color: var(--text-primary);
 }
 
 .prose h4 {
-  @apply text-lg md:text-xl font-semibold leading-tight mb-3 mt-4;
-  color: var(--text-color);
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1.25rem 0 0.75rem;
+  color: var(--text-primary);
 }
 
+/* Text elements */
 .prose p {
-  @apply text-base md:text-lg leading-relaxed mb-4;
-  color: var(--text-p);
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
   line-height: 1.75;
+  margin-bottom: 1.5rem;
 }
 
 .prose ul,
 .prose ol {
-  @apply mb-4 pl-6;
-  color: var(--text-p);
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
 }
 
 .prose li {
-  @apply text-base md:text-lg leading-relaxed mb-2;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
   line-height: 1.75;
+  margin-bottom: 0.5rem;
 }
 
+/* Special elements */
 .prose blockquote {
-  @apply border-l-4 border-[var(--bronzer)] pl-6 my-6 italic;
-  color: var(--text-p);
+  border-left: 4px solid var(--accent);
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
   font-size: 1.1em;
   line-height: 1.7;
 }
 
 .prose code {
-  @apply px-2 py-1 rounded text-sm;
-  background-color: var(--callout-bg);
-  color: var(--bronzer);
-  font-family: var(--font-geist-mono), "SF Mono", Monaco, Inconsolata,
-    "Roboto Mono", Consolas, "Droid Sans Mono", monospace;
+  background: var(--pill-bg);
+  color: var(--accent);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: var(--font-geist-mono), "SF Mono", Monaco, monospace;
 }
 
 .prose pre:not(.custom-codeblock) {
-  @apply rounded-xl my-6 overflow-hidden;
-  background-color: var(--card-bg);
-  border: 1px solid var(--callout-border);
+  background: var(--pill-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  overflow: hidden;
   padding: 0;
 }
 
 .prose pre:not(.custom-codeblock) code {
-  @apply p-0 bg-transparent text-[var(--text-color)] block;
-  font-family: var(--font-geist-mono), "SF Mono", Monaco, Inconsolata,
-    "Roboto Mono", Consolas, "Droid Sans Mono", monospace;
+  background: transparent;
+  color: var(--text-primary);
+  padding: 0;
+  display: block;
+  font-family: var(--font-geist-mono), "SF Mono", Monaco, monospace;
 }
 
 .prose a {
-  @apply text-[var(--bronzer)] underline decoration-2 underline-offset-4 transition-colors duration-200;
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  transition: color 0.2s ease;
 }
 
 .prose a:hover {
-  @apply text-[var(--text-color)];
+  color: var(--text-primary);
 }
 
 .prose strong {
-  @apply font-semibold;
-  color: var(--text-color);
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .prose em {
-  @apply italic;
-  color: var(--text-p);
+  font-style: italic;
+  color: var(--text-secondary);
 }
 
-.prose hr {
-  @apply my-8 border-t;
-  border-color: var(--callout-border);
-}
-
-.prose img {
-  @apply rounded-xl shadow-lg my-6 mx-auto max-w-full h-auto;
-}
-
+/* Tables */
 .prose table {
-  @apply w-full border-collapse my-6;
-  border: 1px solid var(--callout-border);
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-light);
 }
 
 .prose th,
 .prose td {
-  @apply p-3 text-left border-b;
-  border-color: var(--callout-border);
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .prose th {
-  @apply font-semibold;
-  background-color: var(--header-bg-color);
-  color: var(--text-color);
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--pill-bg);
 }
 
 .prose td {
-  color: var(--text-p);
+  color: var(--text-secondary);
 }
 
-/* Reading Flow Improvements */
-@media (min-width: 768px) {
-  .prose {
-    font-size: 1.125rem;
-    line-height: 1.777;
-  }
-
-  .prose p {
-    margin-bottom: 1.5rem;
-  }
-
-  .prose h1 + p,
-  .prose h2 + p,
-  .prose h3 + p,
-  .prose h4 + p {
-    margin-top: 0.5rem;
-  }
+.prose hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid var(--border-light);
 }
 
-/* Large Screen Typography */
-@media (min-width: 1024px) {
-  .prose {
-    font-size: 1.25rem;
-    line-height: 1.8;
-  }
-
-  .prose p {
-    margin-bottom: 1.75rem;
-  }
+.prose img {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px var(--shadow-light);
+  margin: 1.5rem auto;
+  max-width: 100%;
+  height: auto;
 }
 
-/* Code Block Mobile Optimizations */
-@media (max-width: 768px) {
-  .prose pre:not(.custom-codeblock) {
-    margin: 1rem -1rem;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-  }
+/* =========================
+   ANIMATED GRID BACKGROUND
+   ========================= */
 
-  .prose code:not(pre code) {
-    word-break: break-word;
-    white-space: pre-wrap;
-  }
-}
-
-/* Animated Grid Background */
 .animated-grid-container {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   opacity: 1;
 }
 
 .animated-grid {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-image: linear-gradient(
       to right,
       var(--grid-color) 1px,
@@ -374,7 +403,26 @@ html,
   opacity: 0.6;
 }
 
-/* Responsive grid sizing - cleaner for mobile */
+/* =========================
+   COMPONENT-SPECIFIC STYLES
+   ========================= */
+
+/* Sandpack/Code Editor */
+.custom-wrapper,
+.custom-editor,
+.custom-preview {
+  overflow: hidden;
+}
+
+.custom-editor .sp-code-editor,
+.custom-preview .sp-preview-iframe {
+  overflow: hidden;
+}
+
+/* =========================
+   RESPONSIVE ADJUSTMENTS
+   ========================= */
+
 @media (max-width: 768px) {
   :root {
     --grid-size: 18px;
@@ -382,6 +430,18 @@ html,
 
   .animated-grid {
     opacity: 0.4;
+  }
+
+  .prose pre:not(.custom-codeblock) {
+    margin: 1rem -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .prose code:not(pre code) {
+    word-break: break-word;
+    white-space: pre-wrap;
   }
 }
 
