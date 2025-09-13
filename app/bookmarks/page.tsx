@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import SectionHeader from "../components/SectionHeader";
-import { HiBookmark } from "react-icons/hi2";
 
 interface BookmarkItem {
   title: string;
@@ -1126,7 +1124,127 @@ const bookmarkData: BookmarkCategory[] = [
   },
 ];
 
-const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
+// Color mapping for different categories - using completely distinct colors
+const getCategoryColors = (categoryTitle: string) => {
+  const colorMap: Record<
+    string,
+    { bg: string; border: string; accent: string }
+  > = {
+    "development tools": {
+      bg: "hover:bg-blue-100 dark:hover:bg-blue-900/30",
+      border: "border-l-blue-600",
+      accent: "text-blue-700 dark:text-blue-300",
+    },
+    "hosting & deployment": {
+      bg: "hover:bg-emerald-100 dark:hover:bg-emerald-900/30",
+      border: "border-l-emerald-600",
+      accent: "text-emerald-700 dark:text-emerald-300",
+    },
+    "databases & backend": {
+      bg: "hover:bg-purple-100 dark:hover:bg-purple-900/30",
+      border: "border-l-purple-600",
+      accent: "text-purple-700 dark:text-purple-300",
+    },
+    "design & creativity": {
+      bg: "hover:bg-pink-100 dark:hover:bg-pink-900/30",
+      border: "border-l-pink-600",
+      accent: "text-pink-700 dark:text-pink-300",
+    },
+    "productivity & utilities": {
+      bg: "hover:bg-orange-100 dark:hover:bg-orange-900/30",
+      border: "border-l-orange-600",
+      accent: "text-orange-700 dark:text-orange-300",
+    },
+    "api & testing": {
+      bg: "hover:bg-cyan-100 dark:hover:bg-cyan-900/30",
+      border: "border-l-cyan-600",
+      accent: "text-cyan-700 dark:text-cyan-300",
+    },
+    "code editors & ides": {
+      bg: "hover:bg-indigo-100 dark:hover:bg-indigo-900/30",
+      border: "border-l-indigo-600",
+      accent: "text-indigo-700 dark:text-indigo-300",
+    },
+    "frameworks & libraries": {
+      bg: "hover:bg-red-100 dark:hover:bg-red-900/30",
+      border: "border-l-red-600",
+      accent: "text-red-700 dark:text-red-300",
+    },
+    "databases & admin": {
+      bg: "hover:bg-yellow-100 dark:hover:bg-yellow-900/30",
+      border: "border-l-yellow-600",
+      accent: "text-yellow-700 dark:text-yellow-300",
+    },
+    "free courses & learning": {
+      bg: "hover:bg-green-100 dark:hover:bg-green-900/30",
+      border: "border-l-green-600",
+      accent: "text-green-700 dark:text-green-300",
+    },
+    "inspiration & portfolios": {
+      bg: "hover:bg-violet-100 dark:hover:bg-violet-900/30",
+      border: "border-l-violet-600",
+      accent: "text-violet-700 dark:text-violet-300",
+    },
+    "books & reading": {
+      bg: "hover:bg-amber-100 dark:hover:bg-amber-900/30",
+      border: "border-l-amber-600",
+      accent: "text-amber-700 dark:text-amber-300",
+    },
+    articles: {
+      bg: "hover:bg-teal-100 dark:hover:bg-teal-900/30",
+      border: "border-l-teal-600",
+      accent: "text-teal-700 dark:text-teal-300",
+    },
+    engineering: {
+      bg: "hover:bg-slate-100 dark:hover:bg-slate-700/30",
+      border: "border-l-slate-600",
+      accent: "text-slate-700 dark:text-slate-300",
+    },
+    design: {
+      bg: "hover:bg-rose-100 dark:hover:bg-rose-900/30",
+      border: "border-l-rose-600",
+      accent: "text-rose-700 dark:text-rose-300",
+    },
+    music: {
+      bg: "hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30",
+      border: "border-l-fuchsia-600",
+      accent: "text-fuchsia-700 dark:text-fuchsia-300",
+    },
+    "security & auth": {
+      bg: "hover:bg-gray-100 dark:hover:bg-gray-700/30",
+      border: "border-l-gray-600",
+      accent: "text-gray-700 dark:text-gray-300",
+    },
+    "analytics & monitoring": {
+      bg: "hover:bg-sky-100 dark:hover:bg-sky-900/30",
+      border: "border-l-sky-600",
+      accent: "text-sky-700 dark:text-sky-300",
+    },
+    "communication & social": {
+      bg: "hover:bg-lime-100 dark:hover:bg-lime-900/30",
+      border: "border-l-lime-600",
+      accent: "text-lime-700 dark:text-lime-300",
+    },
+    "e-commerce & payments": {
+      bg: "hover:bg-zinc-100 dark:hover:bg-zinc-700/30",
+      border: "border-l-zinc-600",
+      accent: "text-zinc-700 dark:text-zinc-300",
+    },
+  };
+
+  return (
+    colorMap[categoryTitle] || {
+      bg: "hover:bg-neutral-100 dark:hover:bg-neutral-800/30",
+      border: "border-l-neutral-600",
+      accent: "text-neutral-700 dark:text-neutral-300",
+    }
+  );
+};
+
+const BookmarkCard: React.FC<{
+  item: BookmarkItem;
+  categoryColors: { bg: string; border: string; accent: string };
+}> = ({ item, categoryColors }) => {
   const [faviconError, setFaviconError] = useState(false);
 
   const getFaviconUrl = (url: string) => {
@@ -1145,7 +1263,7 @@ const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center justify-between gap-2 p-2 bg-transparent hover:bg-[var(--callout-border)]/10 transition-all duration-200 group rounded-md"
+      className={`flex items-center justify-between gap-2 p-2 border-l-2 ${categoryColors.border} pl-3 hover:${categoryColors.bg} transition-all duration-200 group rounded-r-md`}
       title={item.description} // Show description on hover
     >
       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1161,11 +1279,13 @@ const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
             <span className="text-xs">{item.icon || "🔗"}</span>
           )}
         </div>
-        <span className="text-sm text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200 truncate">
+        <span
+          className={`text-sm font-medium ${categoryColors.accent} group-hover:opacity-80 transition-opacity duration-200 truncate`}
+        >
           {item.title}
         </span>
       </div>
-      <span className="text-xs text-[var(--text-p)]/40 hidden sm:block flex-shrink-0">
+      <span className="text-xs text-[var(--text-p)]/60 hidden sm:block flex-shrink-0">
         {new URL(item.url).hostname}
       </span>
     </a>
@@ -1175,97 +1295,42 @@ const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
 const CategorySection: React.FC<{ category: BookmarkCategory }> = ({
   category,
 }) => {
+  const colors = getCategoryColors(category.title);
+
   return (
     <div className="break-inside-avoid mb-6">
-      <h2 className="text-base font-bold text-[var(--text-color)] mb-3">
+      <h2 className={`text-base font-bold ${colors.accent} mb-3 capitalize`}>
         {category.title}
       </h2>
-      <div className="border-l-4 border-[var(--bronzer)] pl-4">
-        <div className="bg-[var(--callout-border)]/5 rounded-lg p-2 space-y-1">
-          {category.items.map((item, index) => (
-            <BookmarkCard key={index} item={item} />
-          ))}
-        </div>
+      <div className="space-y-1">
+        {category.items.map((item, index) => (
+          <BookmarkCard key={index} item={item} categoryColors={colors} />
+        ))}
       </div>
     </div>
   );
 };
 
 export default function BookmarksPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-
-  const categories = ["all", ...bookmarkData.map((category) => category.title)];
-
-  const filteredBookmarks = bookmarkData
-    .filter(
-      (category) =>
-        selectedCategory === "all" || category.title === selectedCategory
-    )
-    .map((category) => ({
-      ...category,
-      items: category.items.filter(
-        (item) =>
-          item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.description.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    }))
-    .filter((category) => category.items.length > 0);
-
   return (
     <div className="min-h-screen py-2">
       <div className="w-full">
-        {/* Header */}
-        <div className="mb-4">
-          {/* Search and Filter */}
-          <div className="mt-2 space-y-3">
-            <input
-              type="text"
-              placeholder="Search bookmarks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 bg-transparent border border-[var(--callout-border)] rounded-lg text-[var(--text-color)] placeholder-[var(--text-p)]/60 focus:outline-none focus:border-[var(--bronzer)] transition-colors duration-200 text-sm"
-            />
-
-            {/* Category Filter */}
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
-                    selectedCategory === category
-                      ? "bg-[var(--bronzer)] text-white"
-                      : "bg-[var(--callout-border)]/20 text-[var(--text-p)] hover:bg-[var(--callout-border)]/40"
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="mb-4 text-sm text-[var(--text-p)]">
-          {selectedCategory !== "all" && ` in ${selectedCategory}`}
-          {searchTerm && ` matching "${searchTerm}"`}
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[var(--text-color)] mb-2">
+            bookmarked
+          </h1>
+          <p className="text-[var(--text-p)]">
+            A curated collection of useful tools and resources
+          </p>
         </div>
 
         {/* Bookmarks Masonry Layout */}
         <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-0">
-          {filteredBookmarks.map((category, index) => (
+          {bookmarkData.map((category, index) => (
             <CategorySection key={index} category={category} />
           ))}
         </div>
-
-        {filteredBookmarks.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-[var(--text-p)] text-base">
-              No bookmarks found matching "{searchTerm}"
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

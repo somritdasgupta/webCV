@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full">
       {/* Hero Section */}
-      <div className="min-h-screen flex items-center px-6 sm:px-8 lg:px-12 py-8 lg:py-0">
+      <div className="min-h-screen flex items-center px-6 sm:px-8 lg:px-12 py-8 lg:py-0 pt-28 sm:pt-24 lg:pt-16">
         <div className="max-w-7xl mx-auto w-full">
           <HeroContent isMobile />
           <HeroContent />
@@ -29,7 +29,7 @@ export default function Home() {
         {/* Featured Project Section */}
         <div className="space-y-8">
           <SectionHeader
-            title="Highlights"
+            title="highlights"
             icon={
               <RiVerifiedBadgeLine className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
             }
@@ -65,7 +65,7 @@ export default function Home() {
         {/* Recent Posts Section */}
         <div className="space-y-8">
           <SectionHeader
-            title="Recent"
+            title="recent"
             icon={
               <HiArrowTrendingUp className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
             }
@@ -87,7 +87,7 @@ export default function Home() {
         {/* Bookmarks Preview Section */}
         <div className="space-y-8 pb-16">
           <SectionHeader
-            title="Bookmarked"
+            title="bookmarked"
             icon={
               <HiOutlineBookmark className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
             }

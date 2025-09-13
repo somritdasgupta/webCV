@@ -219,6 +219,16 @@ strong {
   border-radius: 20px;
 }
 
+/* Hide scrollbar utility class */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* =========================
    PROSE STYLES (MDX/Blog)
    ========================= */
