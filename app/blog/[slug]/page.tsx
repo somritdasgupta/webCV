@@ -114,11 +114,11 @@ export default async function Blog({ params }: { params: { slug: string } }) {
           {/* Back button - styled to match tags */}
           <Link
             href="/blog"
-            className="flex-shrink-0 px-3 py-1.5 -ml-3 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:bg-[var(--bronzer)]/10 hover:text-[var(--bronzer)] transition-all duration-200 flex items-center gap-1.5 group text-sm font-medium"
+            className="flex-shrink-0 px-3 py-0.5 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:bg-[var(--bronzer)]/10 hover:text-[var(--bronzer)] transition-all duration-200 flex items-center gap-1.5 group text-sm font-medium"
             title="Back to posts"
           >
             <svg
-              className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
+              className="w-2 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -141,7 +141,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
                   <Link
                     key={tag}
                     href={`/blog?tag=${encodeURIComponent(tag)}`}
-                    className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:bg-[var(--bronzer)]/10 hover:text-[var(--bronzer)] transition-all duration-200 whitespace-nowrap font-medium"
+                    className="flex-shrink-0 text-xs px-3 py-1 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:bg-[var(--bronzer)]/10 hover:text-[var(--bronzer)] transition-all duration-200 whitespace-nowrap font-medium"
                   >
                     {tag}
                   </Link>

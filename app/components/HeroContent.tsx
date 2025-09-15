@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import ProfileImage from "./ProfileImage";
 import AnimatedText from "./AnimatedText";
 
@@ -14,85 +11,56 @@ export default function HeroContent({ isMobile = false }: HeroContentProps) {
   if (isMobile) {
     return (
       <div className="block sm:hidden">
-        {/* Simple fade-in greeting - FIRST */}
-        <motion.h1
-          className="font-bold text-2xl text-[var(--text-p)] mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
-        >
-          hey, I'm Somrit {"\u{1F44B}"}
-        </motion.h1>
-
-        {/* Profile Picture - SECOND */}
-        <motion.div
-          className="flex justify-start mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.8, ease: "easeOut" }}
-        >
+        {/* Small Profile Picture - Mobile */}
+        <div className="flex justify-start mb-6">
           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-violet-500/20">
             <ProfileImage />
           </div>
-        </motion.div>
+        </div>
 
-        {/* Typewriter text - THIRD */}
-        <motion.div
-          className="text-lg leading-relaxed italic"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.4 }}
-        >
+        {/* Greeting - Mobile */}
+        <h1 className="text-2xl font-bold text-[var(--text-p)] mb-6">
+          hey, I'm Somrit 👋
+        </h1>
+
+        {/* Quote Section - Mobile */}
+        <div className="text-lg leading-relaxed italic">
           <AnimatedText
             text={HERO_TEXT}
             className="text-[var(--text-color)]"
-            delay={1600}
+            delay={300}
             speed={20}
           />
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="hidden sm:flex items-start space-x-6">
-      {/* Profile Picture - SECOND (but appears on left side) */}
-      <motion.div
-        className="flex-shrink-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.8, ease: "easeOut" }}
-      >
+      {/* Small Profile Picture - Desktop */}
+      <div className="flex-shrink-0">
         <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 border-violet-500/20">
           <ProfileImage />
         </div>
-      </motion.div>
+      </div>
 
-      {/* Content */}
+      {/* Content - Desktop */}
       <div className="flex-1 min-w-0">
-        {/* Simple fade-in greeting - FIRST */}
-        <motion.h1
-          className="font-bold text-3xl lg:text-4xl text-[var(--text-p)] mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
-        >
-          hey, I'm Somrit {"\u{1F44B}"}
-        </motion.h1>
+        {/* Greeting */}
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-p)] mb-6">
+          hey, I'm Somrit
+        </h1>
 
-        <motion.div
-          className="text-xl sm:text-2xl lg:text-3xl leading-relaxed italic"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.4 }}
-        >
+        {/* Quote Section */}
+        <div className="text-xl sm:text-2xl lg:text-3xl leading-relaxed italic">
           <AnimatedText
             text={HERO_TEXT}
             className="text-[var(--text-color)]"
-            delay={1600}
-            speed={1}
+            delay={300}
+            speed={20}
           />
-        </motion.div>
+        </div>
       </div>
     </div>
   );

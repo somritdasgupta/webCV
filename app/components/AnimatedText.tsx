@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 
 interface AnimatedTextProps {
   text: string;
@@ -14,8 +13,9 @@ export default function AnimatedText({
   text,
   className = "",
   delay = 0,
-  speed = 60,
+  speed = 30, // milliseconds per character
 }: AnimatedTextProps) {
+  const [displayedText, setDisplayedText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
 
@@ -32,6 +32,7 @@ export default function AnimatedText({
 
     if (currentIndex < text.length) {
       const timer = setTimeout(() => {
+        setDisplayedText(text.slice(0, currentIndex + 1));
         setCurrentIndex(currentIndex + 1);
       }, speed);
 
@@ -39,39 +40,11 @@ export default function AnimatedText({
     }
   }, [currentIndex, text, speed, isStarted]);
 
-  // Split text into characters while preserving spaces
-  const characters = text.split("");
-
   return (
     <span className={className}>
-      {characters.map((char, index) => {
-        const shouldShow = isStarted && index < currentIndex;
-
-        return (
-            <span
-            key={index}
-            style={{
-              display: char === " " ? "inline" : "inline-block",
-              minWidth: char === " " ? "0.25em" : "auto",
-            }}
-            >
-            {shouldShow ? (char === " " ? "\u00A0" : char) : ""}
-            </span>
-        );
-      })}
+      {displayedText}
       {currentIndex < text.length && isStarted && (
-        <motion.span
-          className="text-violet-500 ml-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 0] }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          |
-        </motion.span>
+        <span className="animate-pulse text-violet-500 ml-1">|</span>
       )}
     </span>
   );
