@@ -1,6 +1,6 @@
 "use client";
 
-import { footerLinks } from "../lib/constants";
+import { footerLinks, socialLinks } from "../lib/constants";
 
 interface SocialLinksProps {
   variant?: "footer" | "navbar";
@@ -20,39 +20,40 @@ export default function SocialLinks({
 
   if (variant === "footer") {
     return (
-      <ul
-        className={`font-sm mt-4 flex flex-col space-x-0 space-y-2 md:flex-row md:space-x-4 md:space-y-0 ${className}`}
+      <div
+        className={`flex items-center space-x-4 overflow-x-auto hide-scrollbar ${className}`}
       >
         {footerLinks.map((link, index) => (
-          <li className="!mb-0 !mt-2" key={index}>
-            <a
-              className="flex items-center text-[var(--text-p)] hover:text-[var(--bronzer)] hover:font-bold transition-all ease duration-600"
-              rel="noopener noreferrer"
-              target={link.href.startsWith("mailto:") ? "_self" : "_blank"}
-              href={link.href}
-            >
-              <span className="h-7">{truncateText(link.label)}</span>
-            </a>
-          </li>
+          <a
+            key={index}
+            className="flex-shrink-0 px-3 py-1 text-[var(--text-p)] hover:text-[var(--bronzer)] transition-colors duration-150 whitespace-nowrap"
+            rel="noopener noreferrer"
+            target={link.href.startsWith("mailto:") ? "_self" : "_blank"}
+            href={link.href}
+          >
+            {truncateText(link.label, 18)}
+          </a>
         ))}
-      </ul>
+      </div>
     );
   }
 
-  // Navbar variant
+  // Navbar variant - inline small links
   return (
-    <div className={`flex flex-col space-y-1 ${className}`}>
-      {footerLinks.slice(0, 3).map((link) => (
+    <div
+      className={`flex items-center justify-center space-x-2 text-xs ${className}`}
+    >
+      {socialLinks.map((link) => (
         <a
-          key={link.label}
+          key={link.name ?? link.href}
           href={link.href}
           target={link.href.startsWith("mailto:") ? "_self" : "_blank"}
           rel={
             link.href.startsWith("mailto:") ? undefined : "noopener noreferrer"
           }
-          className="flex items-center justify-center w-full h-8 text-xs text-[var(--nav-text)]/70 hover:text-[var(--nav-text-active)] hover:bg-[var(--nav-pill-bg)]/50 rounded-lg transition-colors duration-150"
+          className="inline-flex items-center justify-center h-6 px-2 text-[var(--nav-text)]/75 hover:text-[var(--nav-text-active)] transition-colors duration-150 rounded-md"
         >
-          {truncateText(link.label)}
+          {truncateText((link.name as string) || link.href, 10)}
         </a>
       ))}
     </div>

@@ -238,9 +238,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased mx-4 mt-4 lg:mx-auto font-sans">
+      <body className="antialiased mx-4 mt-2 lg:mx-auto font-sans">
         <AnimatedGrid />
-        <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-2 lg:mt-6 flex flex-col px-2 md:px-4 relative z-10">
+        <main className="max-w-8xl mx-auto w-full flex-auto min-w-0 mt-4 lg:mt-6 flex flex-col px-4 md:px-8 lg:pr-8 xl:pr-12 relative z-10 pb-20 lg:pb-8">
           <Navbar />
           <GAAnalytics />
           <div className="lg:mt-0">{children}</div>

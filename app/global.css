@@ -124,6 +124,11 @@ body {
   min-width: 300px;
 }
 
+/* Utility fallback for max-w-8xl (in case Tailwind doesn't provide it) */
+.max-w-8xl {
+  max-width: 1400px;
+}
+
 ::selection {
   background: var(--text-secondary);
   color: #fefefe;
@@ -411,6 +416,90 @@ strong {
     linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
   background-size: var(--grid-size) var(--grid-size);
   opacity: 0.7;
+}
+
+/* =========================
+   NAVBAR GLASS SHIMMER
+   ========================= */
+.nav-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-shimmer::after {
+  /* softer, wider diagonal shimmer clipped to rounded container (reverted) */
+  content: "";
+  position: absolute;
+  top: -120%;
+  left: -50%;
+  width: 200%;
+  height: 240%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-100%) rotate(0deg);
+  filter: blur(10px);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.9;
+  animation: navShimmer 3.2s linear infinite;
+  border-radius: inherit;
+}
+
+/* ensure shimmer follows container border radius */
+.nav-shimmer > * {
+  position: relative;
+  z-index: 0;
+}
+.nav-shimmer::after {
+  border-radius: inherit;
+}
+
+@keyframes navShimmer {
+  0% {
+    transform: translateX(-100%) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateX(0%) rotate(0deg);
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(100%) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .nav-shimmer::after {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/* reduce shimmer intensity in dark mode */
+[data-theme="dark"] .nav-shimmer::after {
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.03) 40%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.03) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  filter: blur(8px) saturate(0.8);
 }
 
 /* Animated Grid Cells */
