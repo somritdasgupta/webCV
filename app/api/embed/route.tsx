@@ -424,7 +424,7 @@ export async function GET(request: NextRequest) {
         <div class="author-fallback" style="display: none;">SD</div>
         <div class="author-info">
           <h4>Somrit Dasgupta</h4>
-          <p>Software Developer & Blogger</p>
+          <p>Engineer x Extraordinaire</p>
         </div>
       </div>
     </div>

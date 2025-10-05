@@ -17,15 +17,13 @@ export const revalidate = 43200;
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Somrit Dasgupta - Developer and Engineer",
+    default: "Somrit Dasgupta - Engineer x Extraordinaire",
     template: "%s | Somrit Dasgupta",
   },
-  description:
-    "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
+  description: "Personal website and blog of Somrit Dasgupta",
   openGraph: {
-    title: "Somrit Dasgupta - Developer and Engineer",
-    description:
-      "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
+    title: "Somrit Dasgupta - Engineer x Extraordinaire",
+    description: "Personal website and blog of Somrit Dasgupta",
     url: baseUrl,
     siteName: "Somrit Dasgupta",
     locale: "en_US",
@@ -38,7 +36,7 @@ export const metadata: Metadata = {
         url: `${baseUrl}/api/og?title=${encodeURIComponent(
           "hey, I'm Somrit 👋"
         )}`,
-        alt: "Somrit Dasgupta - Developer and Engineer",
+        alt: "Somrit Dasgupta - Engineer x Extraordinaire",
       },
     ],
   },
@@ -208,7 +206,7 @@ export default function RootLayout({
               name: "Somrit Dasgupta",
               jobTitle: "Software Engineer",
               description:
-                "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
+                "Personal website and blog of Somrit Dasgupta - a developer, engineer & extraordinaire",
               image: `${baseUrl}/somritdasgupta.jpg`,
               sameAs: [
                 "https://www.instagram.com/somritdasgupta",
@@ -227,9 +225,9 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               url: baseUrl,
-              name: "Somrit Dasgupta - Developer and Engineer",
+              name: "Somrit Dasgupta - Engineer x Extraordinaire",
               description:
-                "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
+                "Personal website and blog of Somrit Dasgupta - a developer, engineer & extraordinaire.",
               publisher: {
                 "@type": "Person",
                 name: "Somrit Dasgupta",
