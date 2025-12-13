@@ -10,6 +10,8 @@ import { BlogHeader } from "app/components/mdxComponents/BlogHeader";
 import { ReadingProgress } from "app/components/ReadingProgress";
 import { ShareButtons } from "app/components/ShareButtons";
 import { AuthorInfo } from "app/components/AuthorInfo";
+import ShimmerText from "app/components/ShimmerText";
+import ScaleIntro from "app/components/ScaleIntro";
 
 export const revalidate = 3600;
 
@@ -108,7 +110,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       />
 
       {/* Navigation */}
-      <div className="mt-8 mb-12">
+      <ScaleIntro className="mt-8 mb-12" delay={0}>
         {/* Navigation layout: back button left, tags right */}
         <div className="flex items-center justify-between gap-6">
           {/* Back button - styled to match tags */}
@@ -150,23 +152,23 @@ export default async function Blog({ params }: { params: { slug: string } }) {
             </div>
           )}
         </div>
-      </div>
+      </ScaleIntro>
 
       {/* Article Header */}
       <header className="mb-12">
         <div className="space-y-6">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-[var(--text-p)]">
-            {post.metadata.title}
+            <ShimmerText text={post.metadata.title} delay={0} />
           </h1>
 
           {post.metadata.summary && (
             <p className="text-lg md:text-xl text-[var(--text-p)]/70 leading-relaxed">
-              {post.metadata.summary}
+              <ShimmerText text={post.metadata.summary} delay={0} speed={0.015} />
             </p>
           )}
 
           {/* Meta Information */}
-          <div className="flex flex-col gap-4 pt-4 border-t border-[var(--callout-border)]/30">
+          <ScaleIntro className="flex flex-col gap-4 pt-4 border-t border-[var(--callout-border)]/30" delay={200}>
             {/* Mobile: Date and Author side by side */}
             <div className="flex items-center justify-between sm:hidden">
               <time className="text-sm font-medium text-[var(--bronzer)]">
@@ -182,17 +184,17 @@ export default async function Blog({ params }: { params: { slug: string } }) {
               </time>
               <AuthorInfo />
             </div>
-          </div>
+          </ScaleIntro>
         </div>
       </header>
 
       {/* Blog Header Visual */}
-      <div className="mb-12">
+      <ScaleIntro className="mb-12" delay={400}>
         <BlogHeader />
-      </div>
+      </ScaleIntro>
 
       {/* Article Content */}
-      <main>
+      <main className="animate-fade-in" style={{ animationDelay: `${(post.metadata.title.length + (post.metadata.summary?.length || 0)) * 20 + 300}ms` }}>
         <div
           className="prose prose-lg md:prose-xl max-w-none 
                         prose-headings:text-[var(--text-p)] 

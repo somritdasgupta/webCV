@@ -107,18 +107,6 @@ export default function RootLayout({
             });
           `}
         </Script>
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-4EM6ML5G79', {
-              page_title: document.title,
-              page_location: window.location.href,
-              send_page_view: true
-            });
-          `}
-        </Script>
 
         <script
           dangerouslySetInnerHTML={{
@@ -242,7 +230,6 @@ export default function RootLayout({
           <Navbar />
           <GAAnalytics />
           <div className="lg:mt-0">{children}</div>
-          {/* Footer only shows on mobile since desktop has it integrated in navbar */}
           <div className="lg:hidden mt-16">
             <Footer />
           </div>

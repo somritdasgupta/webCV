@@ -17,17 +17,14 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full">
       {/* Hero Section */}
-      <div className="min-h-screen flex items-center px-6 sm:px-8 lg:px-12 py-8 lg:py-0 pt-28 sm:pt-24 lg:pt-16">
-        <div className="max-w-7xl mx-auto w-full">
-          <HeroContent isMobile />
-          <HeroContent />
-        </div>
+      <div className="min-h-[40vh] lg:min-h-screen flex items-center justify-center py-6 lg:py-0">
+        <HeroContent />
       </div>
 
       {/* Content Sections */}
-      <div className="space-y-24 py-16">
+      <div className="space-y-6 lg:space-y-24 py-2 lg:py-16">
         {/* Featured Project Section */}
-        <div className="space-y-8">
+        <div className="space-y-4 lg:space-y-8">
           <SectionHeader
             title="highlights"
             icon={
@@ -35,7 +32,7 @@ export default function Home() {
             }
           />
 
-          <div className="border-l-4 border-[var(--callout-border)] pl-6 py-4">
+          <div className="relative rounded-2xl border border-[var(--callout-border)] bg-gradient-to-br from-[var(--callout-bg)] to-transparent p-6 lg:p-8">
             {error && (
               <div className="text-center p-8">
                 <p className="text-red-500 mb-4">{error}</p>
@@ -63,7 +60,7 @@ export default function Home() {
         </div>
 
         {/* Recent Posts Section */}
-        <div className="space-y-8">
+        <div className="space-y-4 lg:space-y-8">
           <SectionHeader
             title="recent"
             icon={
@@ -85,7 +82,7 @@ export default function Home() {
         </div>
 
         {/* Bookmarks Preview Section */}
-        <div className="space-y-8 pb-16">
+        <div className="space-y-4 lg:space-y-8 pb-8 lg:pb-16">
           <SectionHeader
             title="bookmarked"
             icon={

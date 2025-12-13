@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "predev": "npx figlet Somrit-WebCV",
+    "predev": "pnpm dlx figlet Somrit-WebCV",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"

@@ -7,50 +7,72 @@ interface BoxLoaderProps {
 }
 
 export function BoxLoader({ size = "md" }: BoxLoaderProps) {
-  const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-16 h-16",
+  const heights = {
+    sm: 3,
+    md: 4,
+    lg: 5,
   };
 
-  const containerVariants = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const boxVariants = {
-    animate: {
-      scale: [1, 1.2, 1],
-      opacity: [0.7, 1, 0.7],
-      transition: {
-        duration: 1.2,
-        repeat: Infinity,
-        ease: "easeInOut" as const,
-      },
-    },
-  };
+  const height = heights[size];
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <motion.div
-        className={`grid grid-cols-2 gap-1 ${sizeClasses[size]}`}
-        variants={containerVariants}
-        animate="animate"
+    <div className="w-full flex items-center justify-center">
+      <div
+        className="relative w-full rounded-full overflow-hidden"
+        style={{
+          height: height,
+          backgroundColor: "rgba(167, 139, 250, 0.08)",
+        }}
       >
-        {[0, 1, 2, 3].map((index) => (
-          <motion.div
-            key={index}
-            className="bg-gradient-to-br from-[var(--bronzer)] to-[var(--callout-border)] rounded-sm"
-            variants={boxVariants}
-            style={{
-              animationDelay: `${index * 0.1}s`,
-            }}
-          />
-        ))}
-      </motion.div>
+        <motion.div
+          className="absolute inset-y-0 rounded-full"
+          initial={{ left: "-35%" }}
+          style={{
+            background: `linear-gradient(90deg, 
+              transparent 0%,
+              rgba(167, 139, 250, 0.3) 25%,
+              #a78bfa 50%,
+              rgba(167, 139, 250, 0.3) 75%,
+              transparent 100%)`,
+            width: "35%",
+            willChange: "left",
+            boxShadow: "0 0 15px #a78bfa, 0 0 30px rgba(167, 139, 250, 0.5)",
+            filter: "blur(0.5px)",
+          }}
+          animate={{
+            left: ["-35%", "100%", "-35%"],
+          }}
+          transition={{
+            duration: 1.6,
+            repeat: Infinity,
+            ease: "linear",
+            repeatType: "loop",
+          }}
+        />
+
+        <motion.div
+          className="absolute inset-y-0 rounded-full"
+          initial={{ left: "-15%" }}
+          style={{
+            background: `radial-gradient(ellipse, 
+              rgba(255, 255, 255, 0.9) 0%,
+              rgba(167, 139, 250, 0.4) 50%,
+              transparent 100%)`,
+            width: "15%",
+            willChange: "left",
+            boxShadow: "0 0 8px rgba(255, 255, 255, 0.9)",
+          }}
+          animate={{
+            left: ["-15%", "100%", "-15%"],
+          }}
+          transition={{
+            duration: 1.6,
+            repeat: Infinity,
+            ease: "linear",
+            repeatType: "loop",
+          }}
+        />
+      </div>
     </div>
   );
 }

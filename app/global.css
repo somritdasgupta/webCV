@@ -426,80 +426,44 @@ strong {
   overflow: hidden;
 }
 
-.nav-shimmer::after {
-  /* softer, wider diagonal shimmer clipped to rounded container (reverted) */
+.nav-shimmer::before {
+  /* Subtle border glow - left and right sides only */
   content: "";
   position: absolute;
-  top: -120%;
-  left: -50%;
-  width: 200%;
-  height: 240%;
-  background: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.06) 40%,
-    rgba(255, 255, 255, 0.12) 50%,
-    rgba(255, 255, 255, 0.06) 60%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: translateX(-100%) rotate(0deg);
-  filter: blur(10px);
-  pointer-events: none;
-  mix-blend-mode: overlay;
-  opacity: 0.9;
-  animation: navShimmer 3.2s linear infinite;
+  inset: -1px;
   border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    to right,
+    rgba(167, 139, 250, 0.7) 0%,
+    rgba(147, 51, 234, 0.3) 20%,
+    rgba(167, 139, 250, 0) 40%,
+    rgba(167, 139, 250, 0) 60%,
+    rgba(147, 51, 234, 0.3) 80%,
+    rgba(167, 139, 250, 0.7) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  filter: blur(1px);
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
 }
 
-/* ensure shimmer follows container border radius */
+/* ensure content stays above */
 .nav-shimmer > * {
   position: relative;
-  z-index: 0;
-}
-.nav-shimmer::after {
-  border-radius: inherit;
+  z-index: 1;
 }
 
-@keyframes navShimmer {
-  0% {
-    transform: translateX(-100%) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateX(0%) rotate(0deg);
-    opacity: 0.9;
-  }
-  90% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateX(100%) rotate(0deg);
-    opacity: 0;
-  }
-}
-
-/* Respect reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  .nav-shimmer::after {
-    animation: none;
-    opacity: 0.7;
-  }
-}
-
-/* reduce shimmer intensity in dark mode */
-[data-theme="dark"] .nav-shimmer::after {
-  background: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.03) 40%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.03) 60%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  filter: blur(8px) saturate(0.8);
+/* reduce glow intensity in dark mode */
+[data-theme="dark"] .nav-shimmer::before {
+  opacity: 0.7;
 }
 
 /* Animated Grid Cells */
@@ -580,6 +544,192 @@ strong {
       0 0 4px rgba(56, 189, 248, 0.4),
       inset 0 0 4px rgba(56, 189, 248, 0.2);
   }
+}
+
+/* =========================
+   HERO SHIMMER ANIMATION
+   ========================= */
+
+@keyframes charShimmer {
+  0% {
+    opacity: 0;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.5);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+.animate-char-shimmer {
+  display: inline-block;
+  opacity: 0;
+  animation: charShimmer 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes avatarIntro {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-avatar-intro {
+  animation: avatarIntro 0.25s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  opacity: 0;
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: rotate(14deg);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: rotate(-8deg);
+  }
+}
+
+.animate-wave {
+  animation: wave 1.5s ease-in-out 1.5s 2;
+  transform-origin: 70% 70%;
+}
+
+/* =========================
+   AVATAR BLOB
+   ========================= */
+
+.avatar-blob-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+@media (min-width: 640px) {
+  .avatar-blob-container {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .avatar-blob-container {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+.avatar-blob-bg {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--bronzer) 0%,
+    transparent 70%
+  );
+  opacity: 0.15;
+  filter: blur(40px);
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  animation: blobMorph 8s ease-in-out infinite;
+}
+
+.avatar-blob {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  animation: blobMorph 8s ease-in-out infinite;
+}
+
+.avatar-blob img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+@keyframes blobMorph {
+  0%,
+  100% {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  }
+  25% {
+    border-radius: 58% 42% 75% 25% / 76% 46% 54% 24%;
+  }
+  50% {
+    border-radius: 50% 50% 33% 67% / 55% 27% 73% 45%;
+  }
+  75% {
+    border-radius: 33% 67% 58% 42% / 63% 68% 32% 37%;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Custom scrollbar for TOC */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--bronzer, #b87333);
+  border-radius: 3px;
+  opacity: 0.3;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  opacity: 0.6;
 }
 
 /* =========================
