@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   const token = process.env.GITHUB_TOKEN;
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') || '1');
+  const perPage = parseInt(searchParams.get('per_page') || '20');
 
   if (!token) {
-    return NextResponse.json([]);
+    return NextResponse.json({ commits: [], hasMore: false, total: 0 });
   }
 
   try {
@@ -26,13 +29,19 @@ export async function GET() {
     }
 
     const repos = await reposResponse.json();
-    const allCommits: any[] = [];
-
-    // Process repos to get commit history with real data
-    for (const repo of repos.slice(0, 15)) {
+    const pageCommits: any[] = [];
+    let totalFetched = 0;
+    const targetCommits = page * perPage;
+    
+    // Calculate which repos and pages to fetch for this specific page
+    const commitsPerRepo = 50;
+    
+    for (const repo of repos) {
+      if (pageCommits.length >= perPage) break;
+      
       try {
         const commitsResponse = await fetch(
-          `https://api.github.com/repos/${repo.full_name}/commits?per_page=30&author=somritdasgupta`,
+          `https://api.github.com/repos/${repo.full_name}/commits?per_page=${commitsPerRepo}&author=somritdasgupta`,
           {
             headers: {
               Accept: "application/vnd.github.v3+json",
@@ -45,21 +54,25 @@ export async function GET() {
         if (commitsResponse.ok) {
           const commits = await commitsResponse.json();
           if (Array.isArray(commits)) {
-            // Add commits with basic data first, then enhance with stats
             commits.forEach((commit: any) => {
               if (commit && commit.sha && commit.commit && commit.commit.author && commit.commit.message) {
-                allCommits.push({
-                  id: commit.sha,
-                  repo: repo.full_name,
-                  branch: repo.default_branch || 'main',
-                  timestamp: commit.commit.author.date,
-                  url: commit.html_url,
-                  message: commit.commit.message,
-                  author: commit.commit.author.name || commit.commit.author.email || 'Unknown',
-                  additions: 0,
-                  deletions: 0,
-                  files: 0,
-                });
+                totalFetched++;
+                
+                // Only include commits for the requested page
+                if (totalFetched > (page - 1) * perPage && pageCommits.length < perPage) {
+                  pageCommits.push({
+                    id: commit.sha,
+                    repo: repo.full_name,
+                    branch: repo.default_branch || 'main',
+                    timestamp: commit.commit.author.date,
+                    url: commit.html_url,
+                    message: commit.commit.message,
+                    author: commit.commit.author.name || commit.commit.author.email || 'Unknown',
+                    additions: 0,
+                    deletions: 0,
+                    files: 0,
+                  });
+                }
               }
             });
           }
@@ -69,10 +82,9 @@ export async function GET() {
       }
     }
 
-    // Now enhance recent commits with detailed stats (top 30 commits)
-    const recentCommits = allCommits.slice(0, 30);
-    for (let i = 0; i < recentCommits.length; i++) {
-      const commit = recentCommits[i];
+    // Enhance current page commits with detailed stats
+    for (let i = 0; i < pageCommits.length; i++) {
+      const commit = pageCommits[i];
       try {
         const detailResponse = await fetch(
           `https://api.github.com/repos/${commit.repo}/commits/${commit.id}`,
@@ -88,21 +100,25 @@ export async function GET() {
         if (detailResponse.ok) {
           const detail = await detailResponse.json();
           if (detail.stats) {
-            allCommits[i].additions = detail.stats.additions || 0;
-            allCommits[i].deletions = detail.stats.deletions || 0;
-            allCommits[i].files = detail.files ? detail.files.length : 0;
+            pageCommits[i].additions = detail.stats.additions || 0;
+            pageCommits[i].deletions = detail.stats.deletions || 0;
+            pageCommits[i].files = detail.files ? detail.files.length : 0;
           }
         }
       } catch (error) {
-        // Keep basic data if detailed fetch fails
         continue;
       }
     }
 
-    allCommits.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    pageCommits.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-    return NextResponse.json(allCommits);
+    return NextResponse.json({
+      commits: pageCommits,
+      hasMore: pageCommits.length === perPage,
+      page,
+      perPage
+    });
   } catch (error) {
-    return NextResponse.json([]);
+    return NextResponse.json({ commits: [], hasMore: false, total: 0 });
   }
 }

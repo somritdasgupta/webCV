@@ -23,17 +23,29 @@ export default function ActivityPage() {
   const [page, setPage] = useState(1);
   const [selectedRepo, setSelectedRepo] = useState<string>('all');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const perPage = 20;
 
+  const fetchCommits = async (pageNum: number) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/github-activity?page=${pageNum}&per_page=${perPage}`);
+      const data = await response.json();
+      
+      if (data.commits && Array.isArray(data.commits)) {
+        setCommits(data.commits);
+        setHasMore(data.hasMore);
+      }
+    } catch (error) {
+      console.error('Error fetching commits:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch("/api/github-activity")
-      .then((res) => res.json())
-      .then((data) => {
-        setCommits(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+    fetchCommits(page);
+  }, [page]);
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -55,8 +67,7 @@ export default function ActivityPage() {
     ? commits 
     : commits.filter(commit => commit.repo === selectedRepo);
   
-  const totalPages = Math.ceil(filteredCommits.length / perPage);
-  const paginatedCommits = filteredCommits.slice((page - 1) * perPage, page * perPage);
+  const paginatedCommits = filteredCommits;
   
   const uniqueRepos = Array.from(new Set(commits.map(commit => commit.repo)));
   const latestCommitPerRepo = new Set(
@@ -188,27 +199,25 @@ export default function ActivityPage() {
             </div>
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 text-sm rounded-lg bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:text-[var(--bronzer)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Previous
-              </button>
-              <span className="text-sm text-[var(--text-p)]">
-                {page} / {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="px-4 py-2 text-sm rounded-lg bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:text-[var(--bronzer)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || loading}
+              className="px-4 py-2 text-sm rounded-lg bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:text-[var(--bronzer)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-[var(--text-p)]">
+              Page {page}
+            </span>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!hasMore || loading}
+              className="px-4 py-2 text-sm rounded-lg bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:text-[var(--bronzer)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </>
       )}
     </section>
