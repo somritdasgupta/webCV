@@ -76,7 +76,7 @@ export default function ActivityPage() {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="px-4 py-2 text-sm rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-[var(--text-color)] hover:border-[var(--bronzer)]/50 focus:border-[var(--bronzer)] focus:outline-none transition-all duration-200 cursor-pointer min-w-[180px] shadow-lg flex items-center justify-between"
           >
-            <span>{selectedRepo === 'all' ? 'All repositories' : selectedRepo.split('/')[1]}</span>
+            <span>{selectedRepo === 'all' ? 'All repositories' : selectedRepo?.split('/')?.[1] || 'Unknown'}</span>
             <svg className={`w-4 h-4 text-[var(--text-p)]/60 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -104,7 +104,7 @@ export default function ActivityPage() {
                   }}
                   className={`px-4 py-2 text-sm cursor-pointer transition-colors hover:bg-white/10 ${selectedRepo === repo ? 'bg-[var(--bronzer)]/20 text-[var(--bronzer)]' : 'text-[var(--text-color)]'}`}
                 >
-                  {repo.split('/')[1]}
+                  {repo?.split('/')?.[1] || 'Unknown'}
                 </div>
               ))}
             </div>
@@ -163,19 +163,19 @@ export default function ActivityPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-medium text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors truncate">
-                            {commit.repo.split("/")[1]}
+                            {commit.repo?.split("/")?.[1] || 'Unknown'}
                           </span>
                           <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] flex-shrink-0">
                             {commit.branch}
                           </span>
                         </div>
                         <p className="text-sm text-[var(--text-color)] mb-1 truncate">
-                          {commit.message.split('\n')[0]}
+                          {commit.message?.split('\n')?.[0] || 'No message'}
                         </p>
                         <div className="flex items-center gap-3 text-xs text-[var(--text-p)]/70">
-                          <span>{commit.author}</span>
-                          <span>+{commit.additions} -{commit.deletions}</span>
-                          <span>{commit.files} files</span>
+                          <span>{commit.author || 'Unknown'}</span>
+                          <span>+{commit.additions || 0} -{commit.deletions || 0}</span>
+                          <span>{commit.files || 0} files</span>
                         </div>
                       </div>
                       <span className="text-xs text-[var(--text-p)]/60 flex-shrink-0">

@@ -46,13 +46,12 @@ export async function GET() {
         if (commitsResponse.ok) {
           const commits = await commitsResponse.json();
           if (Array.isArray(commits)) {
-            // Get detailed stats for recent commits only to avoid rate limits
             const recentCommits = commits.slice(0, 3);
             const olderCommits = commits.slice(3);
             
             // Fetch detailed stats for recent commits
             for (const commit of recentCommits) {
-              if (commit?.commit?.author?.date) {
+              if (commit?.commit?.author?.date && commit?.sha && repo?.full_name) {
                 try {
                   const detailResponse = await fetch(
                     `https://api.github.com/repos/${repo.full_name}/commits/${commit.sha}`,
@@ -68,13 +67,13 @@ export async function GET() {
                   if (detailResponse.ok) {
                     const detail = await detailResponse.json();
                     allCommits.push({
-                      id: commit.sha,
-                      repo: repo.full_name,
-                      branch: repo.default_branch,
-                      timestamp: commit.commit.author.date,
-                      url: commit.html_url,
-                      message: commit.commit.message,
-                      author: commit.commit.author.name,
+                      id: commit.sha || '',
+                      repo: repo.full_name || '',
+                      branch: repo.default_branch || 'main',
+                      timestamp: commit.commit.author.date || new Date().toISOString(),
+                      url: commit.html_url || '',
+                      message: commit.commit.message || 'No message',
+                      author: commit.commit.author.name || 'Unknown',
                       additions: detail.stats?.additions || 0,
                       deletions: detail.stats?.deletions || 0,
                       files: detail.files?.length || 0,
@@ -83,13 +82,13 @@ export async function GET() {
                 } catch (error) {
                   // Fallback to basic commit data
                   allCommits.push({
-                    id: commit.sha,
-                    repo: repo.full_name,
-                    branch: repo.default_branch,
-                    timestamp: commit.commit.author.date,
-                    url: commit.html_url,
-                    message: commit.commit.message,
-                    author: commit.commit.author.name,
+                    id: commit.sha || '',
+                    repo: repo.full_name || '',
+                    branch: repo.default_branch || 'main',
+                    timestamp: commit.commit.author.date || new Date().toISOString(),
+                    url: commit.html_url || '',
+                    message: commit.commit.message || 'No message',
+                    author: commit.commit.author.name || 'Unknown',
                     additions: 0,
                     deletions: 0,
                     files: 0,
@@ -100,15 +99,15 @@ export async function GET() {
             
             // Add older commits without detailed stats to avoid rate limits
             olderCommits.forEach((commit: any) => {
-              if (commit?.commit?.author?.date) {
+              if (commit?.commit?.author?.date && commit?.sha && repo?.full_name) {
                 allCommits.push({
-                  id: commit.sha,
-                  repo: repo.full_name,
-                  branch: repo.default_branch,
-                  timestamp: commit.commit.author.date,
-                  url: commit.html_url,
-                  message: commit.commit.message,
-                  author: commit.commit.author.name,
+                  id: commit.sha || '',
+                  repo: repo.full_name || '',
+                  branch: repo.default_branch || 'main',
+                  timestamp: commit.commit.author.date || new Date().toISOString(),
+                  url: commit.html_url || '',
+                  message: commit.commit.message || 'No message',
+                  author: commit.commit.author.name || 'Unknown',
                   additions: 0,
                   deletions: 0,
                   files: 0,
