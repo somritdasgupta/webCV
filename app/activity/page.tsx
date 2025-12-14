@@ -160,27 +160,27 @@ export default function ActivityPage() {
                           ? 'border-[var(--bronzer)] bg-[var(--bronzer)] group-hover:scale-110 shadow-[var(--bronzer)]/30' 
                           : 'border-[var(--callout-border)] bg-[var(--bg)] group-hover:border-[var(--bronzer)] group-hover:bg-[var(--bronzer)]/20'
                       }`}></div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors truncate">
-                        {commit.repo.split("/")[1]}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors truncate">
+                            {commit.repo.split("/")[1]}
+                          </span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] flex-shrink-0">
+                            {commit.branch}
+                          </span>
+                        </div>
+                        <p className="text-sm text-[var(--text-color)] mb-1 truncate">
+                          {commit.message.split('\n')[0]}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-[var(--text-p)]/70">
+                          <span>{commit.author}</span>
+                          <span>+{commit.additions} -{commit.deletions}</span>
+                          <span>{commit.files} files</span>
+                        </div>
+                      </div>
+                      <span className="text-xs text-[var(--text-p)]/60 flex-shrink-0">
+                        {formatTime(commit.timestamp)}
                       </span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] flex-shrink-0">
-                        {commit.branch}
-                      </span>
-                    </div>
-                    <p className="text-sm text-[var(--text-color)] mb-1 truncate">
-                      {commit.message.split('\n')[0]}
-                    </p>
-                    <div className="flex items-center gap-3 text-xs text-[var(--text-p)]/70">
-                      <span>{commit.author}</span>
-                      <span>+{commit.additions} -{commit.deletions}</span>
-                      <span>{commit.files} files</span>
-                    </div>
-                  </div>
-                  <span className="text-xs text-[var(--text-p)]/60 flex-shrink-0">
-                    {formatTime(commit.timestamp)}
-                  </span>
                     </Link>
                   </div>
                 );
