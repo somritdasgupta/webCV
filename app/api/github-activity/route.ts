@@ -29,10 +29,10 @@ export async function GET() {
     const allCommits: any[] = [];
 
     // Process repos to get commit history with real data
-    for (const repo of repos.slice(0, 8)) {
+    for (const repo of repos.slice(0, 15)) {
       try {
         const commitsResponse = await fetch(
-          `https://api.github.com/repos/${repo.full_name}/commits?per_page=15&author=somritdasgupta`,
+          `https://api.github.com/repos/${repo.full_name}/commits?per_page=30&author=somritdasgupta`,
           {
             headers: {
               Accept: "application/vnd.github.v3+json",
@@ -69,8 +69,8 @@ export async function GET() {
       }
     }
 
-    // Now enhance recent commits with detailed stats (top 20 commits)
-    const recentCommits = allCommits.slice(0, 20);
+    // Now enhance recent commits with detailed stats (top 30 commits)
+    const recentCommits = allCommits.slice(0, 30);
     for (let i = 0; i < recentCommits.length; i++) {
       const commit = recentCommits[i];
       try {
