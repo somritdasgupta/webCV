@@ -11,7 +11,7 @@ const navItems = {
   "/": { name: "about" },
   "/blog": { name: "writing" },
   "/projects": { name: "code" },
-  "/activity": { name: "activity" },
+  "/activity": { name: "commits" },
   "/bookmarks": { name: "bookmarked" },
 };
 
