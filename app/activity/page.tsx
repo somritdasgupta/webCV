@@ -21,8 +21,7 @@ export default function ActivityPage() {
   const [commits, setCommits] = useState<Commit[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [selectedRepo, setSelectedRepo] = useState<string>('all');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const [hasMore, setHasMore] = useState(true);
   const perPage = 20;
 
@@ -47,6 +46,16 @@ export default function ActivityPage() {
     fetchCommits(page);
   }, [page]);
 
+  // Sync with navigation toggle
+  useEffect(() => {
+    const handleViewChange = (event: CustomEvent) => {
+      // Handle any view change events if needed
+    };
+    
+    window.addEventListener('activityViewChange', handleViewChange as EventListener);
+    return () => window.removeEventListener('activityViewChange', handleViewChange as EventListener);
+  }, []);
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -63,9 +72,7 @@ export default function ActivityPage() {
     return "Just now";
   };
 
-  const filteredCommits = selectedRepo === 'all' 
-    ? commits 
-    : commits.filter(commit => commit.repo === selectedRepo);
+  const filteredCommits = commits;
   
   const paginatedCommits = filteredCommits;
   
@@ -78,62 +85,6 @@ export default function ActivityPage() {
 
   return (
     <section className="min-h-screen w-full">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="bg-color font-extrabold text-3xl tracking-tight">
-          commits
-        </h1>
-        <div className="relative">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="px-4 py-2 text-sm rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-[var(--text-color)] hover:border-[var(--bronzer)]/50 focus:border-[var(--bronzer)] focus:outline-none transition-all duration-200 cursor-pointer min-w-[180px] shadow-lg flex items-center justify-between"
-          >
-            <span>{selectedRepo === 'all' ? 'All repositories' : selectedRepo?.split('/')?.[1] || 'Unknown'}</span>
-            <svg className={`w-4 h-4 text-[var(--text-p)]/60 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          
-          {isDropdownOpen && (
-            <div className="absolute top-full mt-2 w-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
-              <div
-                onClick={() => {
-                  setSelectedRepo('all');
-                  setPage(1);
-                  setIsDropdownOpen(false);
-                }}
-                className={`px-4 py-2 text-sm cursor-pointer transition-colors hover:bg-white/10 ${selectedRepo === 'all' ? 'bg-[var(--bronzer)]/20 text-[var(--bronzer)]' : 'text-[var(--text-color)]'}`}
-              >
-                All repositories
-              </div>
-              {uniqueRepos.map(repo => (
-                <div
-                  key={repo}
-                  onClick={() => {
-                    setSelectedRepo(repo);
-                    setPage(1);
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`px-4 py-2 text-sm cursor-pointer transition-colors hover:bg-white/10 ${selectedRepo === repo ? 'bg-[var(--bronzer)]/20 text-[var(--bronzer)]' : 'text-[var(--text-color)]'}`}
-                >
-                  {repo?.split('/')?.[1] || 'Unknown'}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <p className="!text-[var(--text-p)]/80 mb-8">
-        Real-time commits from my repositories
-      </p>
-
-      {/* Close dropdown when clicking outside */}
-      {isDropdownOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setIsDropdownOpen(false)}
-        />
-      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-12">

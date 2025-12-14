@@ -9,12 +9,10 @@ import SocialLinks from "./SocialLinks";
 
 const navItems = {
   "/": { name: "about" },
-  "/blog": { name: "writing" },
-  "/activity": { name: "activity" },
-  "/bookmarks": { name: "bookmarked" },
+  "/blog": { name: "blog" },
+  "/projects": { name: "projects" },
 };
 
-// Optimized animation variants
 const desktopVariants = {
   hidden: { opacity: 0, x: 18 },
   visible: { opacity: 1, x: 0 },
@@ -34,11 +32,23 @@ const linkVariants = {
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [activityView, setActivityView] = useState(0);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
   const pathname = usePathname();
   const router = useRouter();
+  const [activityView, setActivityView] = useState(() => {
+    if (pathname === "/projects") return 0;
+    if (pathname === "/activity") return 1;
+    if (pathname === "/bookmarks") return 2;
+    return 0;
+  });
+
+  // Sync activityView with pathname changes
+  useEffect(() => {
+    if (pathname === "/projects") setActivityView(0);
+    else if (pathname === "/activity") setActivityView(1);
+    else if (pathname === "/bookmarks") setActivityView(2);
+  }, [pathname]);
 
   // Stable scroll handler using refs + useCallback for better performance
   const handleScroll = useCallback(() => {
@@ -88,46 +98,59 @@ export function Navbar() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     {Object.entries(navItems).map(([path, { name }]) => {
-                      const isActive = pathname === path || (pathname === "/bookmarks" && path === "/activity");
+                      const isActive = pathname === path;
                       
-                      if (path === "/activity" && (pathname === "/activity" || pathname === "/bookmarks")) {
+                      // Add toggle for projects/activity/bookmarks after projects
+                      if (path === "/projects") {
                         const views = ["projects", "commits", "bookmarked"];
-                        const routes = ["/activity", "/activity", "/bookmarks"];
-                        const currentIndex = pathname === "/bookmarks" ? 2 : activityView;
+                        const routes = ["/projects", "/activity", "/bookmarks"];
+                        const isToggleActive = ['/projects', '/activity', '/bookmarks'].includes(pathname);
+                        const currentIndex = pathname === "/projects" ? 0 : pathname === "/activity" ? 1 : pathname === "/bookmarks" ? 2 : 0;
                         
                         const handleToggle = () => {
                           const nextIndex = (currentIndex + 1) % 3;
-                          setActivityView(nextIndex);
-                          if (nextIndex === 2) {
-                            router.push("/bookmarks");
-                          } else {
-                            router.push("/activity");
-                            window.dispatchEvent(new CustomEvent("activityViewChange", { detail: nextIndex }));
-                          }
+                          router.push(routes[nextIndex]);
                         };
                         
                         return (
                           <motion.button
-                            key={path}
+                            key="toggle"
                             onClick={handleToggle}
-                            className="flex items-center gap-2 px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity"
+                            className="flex items-center gap-2 px-2 py-0.5 cursor-pointer hover:opacity-80 transition-all duration-200"
                           >
-                            <span className="text-[var(--nav-text-active)] font-extrabold text-xs lowercase">{views[currentIndex]}</span>
+                            <motion.span 
+                              key={views[currentIndex]}
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.2, ease: "easeOut" }}
+                              className={`font-extrabold text-xs lowercase ${
+                                isToggleActive ? 'text-[var(--nav-text-active)]' : 'text-[var(--nav-text)]'
+                              }`}
+                            >
+                              {views[currentIndex]}
+                            </motion.span>
                             <div className="flex gap-1">
-                              {[0, 1, 2].map((i) => (
-                                <div
-                                  key={i}
-                                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                                    i === currentIndex ? "bg-[var(--nav-text-active)] scale-125" : "bg-[var(--nav-text)]/30"
-                                  }`}
-                                />
-                              ))}
+                              {[0, 1, 2].map((i) => {
+                                const colors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500'];
+                                return (
+                                  <motion.div
+                                    key={i}
+                                    animate={{
+                                      scale: i === currentIndex ? 1.25 : 1
+                                    }}
+                                    transition={{ duration: 0.3, ease: "easeOut" }}
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      i === currentIndex ? colors[i] : "bg-[var(--nav-text)]/30"
+                                    }`}
+                                  />
+                                );
+                              })}
                             </div>
                           </motion.button>
                         );
                       }
                       
-                      if (path === "/bookmarks") return null;
+                      if (path === "/projects") return null;
                       
                       return (
                         <motion.div

@@ -1133,102 +1133,102 @@ const getCategoryColors = (categoryTitle: string) => {
     "development tools": {
       bg: "hover:bg-blue-100 dark:hover:bg-blue-900/30",
       border: "border-l-blue-600",
-      accent: "text-blue-700 dark:text-blue-300",
+      accent: "text-blue-800 dark:text-blue-300",
     },
     "hosting & deployment": {
       bg: "hover:bg-emerald-100 dark:hover:bg-emerald-900/30",
       border: "border-l-emerald-600",
-      accent: "text-emerald-700 dark:text-emerald-300",
+      accent: "text-emerald-800 dark:text-emerald-300",
     },
     "databases & backend": {
       bg: "hover:bg-purple-100 dark:hover:bg-purple-900/30",
       border: "border-l-purple-600",
-      accent: "text-purple-700 dark:text-purple-300",
+      accent: "text-purple-800 dark:text-purple-300",
     },
     "design & creativity": {
       bg: "hover:bg-pink-100 dark:hover:bg-pink-900/30",
       border: "border-l-pink-600",
-      accent: "text-pink-700 dark:text-pink-300",
+      accent: "text-pink-800 dark:text-pink-300",
     },
     "productivity & utilities": {
       bg: "hover:bg-orange-100 dark:hover:bg-orange-900/30",
       border: "border-l-orange-600",
-      accent: "text-orange-700 dark:text-orange-300",
+      accent: "text-orange-800 dark:text-orange-300",
     },
     "api & testing": {
       bg: "hover:bg-cyan-100 dark:hover:bg-cyan-900/30",
       border: "border-l-cyan-600",
-      accent: "text-cyan-700 dark:text-cyan-300",
+      accent: "text-cyan-800 dark:text-cyan-300",
     },
     "code editors & ides": {
       bg: "hover:bg-indigo-100 dark:hover:bg-indigo-900/30",
       border: "border-l-indigo-600",
-      accent: "text-indigo-700 dark:text-indigo-300",
+      accent: "text-indigo-800 dark:text-indigo-300",
     },
     "frameworks & libraries": {
       bg: "hover:bg-red-100 dark:hover:bg-red-900/30",
       border: "border-l-red-600",
-      accent: "text-red-700 dark:text-red-300",
+      accent: "text-red-800 dark:text-red-300",
     },
     "databases & admin": {
       bg: "hover:bg-yellow-100 dark:hover:bg-yellow-900/30",
       border: "border-l-yellow-600",
-      accent: "text-yellow-700 dark:text-yellow-300",
+      accent: "text-yellow-800 dark:text-yellow-300",
     },
     "free courses & learning": {
       bg: "hover:bg-green-100 dark:hover:bg-green-900/30",
       border: "border-l-green-600",
-      accent: "text-green-700 dark:text-green-300",
+      accent: "text-green-800 dark:text-green-300",
     },
     "inspiration & portfolios": {
       bg: "hover:bg-violet-100 dark:hover:bg-violet-900/30",
       border: "border-l-violet-600",
-      accent: "text-violet-700 dark:text-violet-300",
+      accent: "text-violet-800 dark:text-violet-300",
     },
     "books & reading": {
       bg: "hover:bg-amber-100 dark:hover:bg-amber-900/30",
       border: "border-l-amber-600",
-      accent: "text-amber-700 dark:text-amber-300",
+      accent: "text-amber-800 dark:text-amber-300",
     },
     articles: {
       bg: "hover:bg-teal-100 dark:hover:bg-teal-900/30",
       border: "border-l-teal-600",
-      accent: "text-teal-700 dark:text-teal-300",
+      accent: "text-teal-800 dark:text-teal-300",
     },
     engineering: {
       bg: "hover:bg-slate-100 dark:hover:bg-slate-700/30",
       border: "border-l-slate-600",
-      accent: "text-slate-700 dark:text-slate-300",
+      accent: "text-slate-800 dark:text-slate-300",
     },
     design: {
       bg: "hover:bg-rose-100 dark:hover:bg-rose-900/30",
       border: "border-l-rose-600",
-      accent: "text-rose-700 dark:text-rose-300",
+      accent: "text-rose-800 dark:text-rose-300",
     },
     music: {
       bg: "hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/30",
       border: "border-l-fuchsia-600",
-      accent: "text-fuchsia-700 dark:text-fuchsia-300",
+      accent: "text-fuchsia-800 dark:text-fuchsia-300",
     },
     "security & auth": {
       bg: "hover:bg-gray-100 dark:hover:bg-gray-700/30",
       border: "border-l-gray-600",
-      accent: "text-gray-700 dark:text-gray-300",
+      accent: "text-gray-800 dark:text-gray-300",
     },
     "analytics & monitoring": {
       bg: "hover:bg-sky-100 dark:hover:bg-sky-900/30",
       border: "border-l-sky-600",
-      accent: "text-sky-700 dark:text-sky-300",
+      accent: "text-sky-800 dark:text-sky-300",
     },
     "communication & social": {
       bg: "hover:bg-lime-100 dark:hover:bg-lime-900/30",
       border: "border-l-lime-600",
-      accent: "text-lime-700 dark:text-lime-300",
+      accent: "text-lime-800 dark:text-lime-300",
     },
     "e-commerce & payments": {
       bg: "hover:bg-zinc-100 dark:hover:bg-zinc-700/30",
       border: "border-l-zinc-600",
-      accent: "text-zinc-700 dark:text-zinc-300",
+      accent: "text-zinc-800 dark:text-zinc-300",
     },
   };
 
@@ -1236,7 +1236,7 @@ const getCategoryColors = (categoryTitle: string) => {
     colorMap[categoryTitle] || {
       bg: "hover:bg-neutral-100 dark:hover:bg-neutral-800/30",
       border: "border-l-neutral-600",
-      accent: "text-neutral-700 dark:text-neutral-300",
+      accent: "text-neutral-800 dark:text-neutral-300",
     }
   );
 };
@@ -1280,7 +1280,7 @@ const BookmarkCard: React.FC<{
           )}
         </div>
         <span
-          className={`text-sm font-medium ${categoryColors.accent} group-hover:opacity-80 transition-opacity duration-200 truncate`}
+          className="text-sm font-medium text-[var(--bronzer)] group-hover:opacity-80 transition-opacity duration-200 truncate"
         >
           {item.title}
         </span>
@@ -1299,7 +1299,7 @@ const CategorySection: React.FC<{ category: BookmarkCategory }> = ({
 
   return (
     <div className="break-inside-avoid mb-6">
-      <h2 className={`text-base font-bold ${colors.accent} mb-3 capitalize`}>
+      <h2 className="text-base font-bold text-[var(--bronzer)] mb-3 capitalize">
         {category.title}
       </h2>
       <div className="space-y-1">
