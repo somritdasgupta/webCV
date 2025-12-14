@@ -17,17 +17,14 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full">
       {/* Hero Section */}
-      <div className="min-h-screen flex items-center px-6 sm:px-8 lg:px-12 py-8 lg:py-0 pt-28 sm:pt-24 lg:pt-16">
-        <div className="max-w-7xl mx-auto w-full">
-          <HeroContent isMobile />
-          <HeroContent />
-        </div>
+      <div className="min-h-[40vh] lg:min-h-screen flex items-center justify-center py-6 lg:py-0">
+        <HeroContent />
       </div>
 
       {/* Content Sections */}
-      <div className="space-y-24 py-16">
+      <div className="space-y-6 lg:space-y-24 pt-2 lg:pt-8">
         {/* Featured Project Section */}
-        <div className="space-y-8">
+        <div className="space-y-4 lg:space-y-8">
           <SectionHeader
             title="highlights"
             icon={
@@ -35,7 +32,7 @@ export default function Home() {
             }
           />
 
-          <div className="border-l-4 border-[var(--callout-border)] pl-6 py-4">
+          <div className="nav-shimmer bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-2xl p-6 lg:p-8">
             {error && (
               <div className="text-center p-8">
                 <p className="text-red-500 mb-4">{error}</p>
@@ -63,13 +60,14 @@ export default function Home() {
         </div>
 
         {/* Recent Posts Section */}
-        <div className="space-y-8">
+        <div className="space-y-4 lg:space-y-8 pb-6 lg:pb-12 relative">
           <SectionHeader
             title="recent"
             icon={
               <HiArrowTrendingUp className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
             }
           />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--nav-border)] to-transparent" />
 
           <div>
             <BlogPosts
@@ -78,14 +76,14 @@ export default function Home() {
               showBorders={true}
               showPublicationYear={true}
             />
-            <div className="mt-12 text-center">
+            <div className="mt-8">
               <Button href="/blog" text="Explore All Posts" icon="right" />
             </div>
           </div>
         </div>
 
         {/* Bookmarks Preview Section */}
-        <div className="space-y-8 pb-16">
+        <div className="space-y-4 lg:space-y-8 pb-8 lg:pb-16 relative">
           <SectionHeader
             title="bookmarked"
             icon={
@@ -95,7 +93,7 @@ export default function Home() {
 
           <div>
             <BookmarksPreview />
-            <div className="mt-8 text-center">
+            <div className="mt-8">
               <Button
                 href="/bookmarks"
                 text="View All Bookmarks"

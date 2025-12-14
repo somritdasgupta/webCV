@@ -64,38 +64,6 @@ export default function ProjectsPage() {
 
   return (
     <div className="text-white">
-      <div className="flex items-center mb-4">
-        <h1 className="bg-color font-extrabold text-3xl tracking-tight">
-          my background
-        </h1>
-        <Resume />
-      </div>
-      <section className="mb-8 border-b border-[var(--callout-border)]">
-        <div className="space-y-4 mb-4">
-          <p className="!text-[var(--text-p)]/80">
-            I completed my schooling at St. Stephens School, where I developed
-            an{" "}
-            <u>
-              <b>interest</b>
-            </u>{" "}
-            in computers and programming.
-          </p>
-          <p className="!text-[var(--text-p)]/80">
-            Afterwards, I earned a{" "}
-            <u>
-              <b>B.Tech</b>
-            </u>{" "}
-            in Computer Science and Engineering from Maulana Abul Kalam Azad
-            University of Technology, where I learned low-level programming
-            using java. Since then, I've worked on some personal projects, and
-            I'd{" "}
-            <u>
-              <b>love</b>
-            </u>{" "}
-            for you to check them out.
-          </p>
-        </div>
-      </section>
       <section className="mb-4">
         {error && <p className="text-red-500">{error}</p>}
         <div className="space-y-6">

@@ -10,6 +10,9 @@ import { BlogHeader } from "app/components/mdxComponents/BlogHeader";
 import { ReadingProgress } from "app/components/ReadingProgress";
 import { ShareButtons } from "app/components/ShareButtons";
 import { AuthorInfo } from "app/components/AuthorInfo";
+import ShimmerText from "app/components/ShimmerText";
+import ScaleIntro from "app/components/ScaleIntro";
+import ScrollToTop from "app/components/ScrollToTop";
 
 export const revalidate = 3600;
 
@@ -80,7 +83,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
   const currentUrl = `${baseUrl}/blog/${post.slug}`;
 
   return (
-    <article className="min-h-screen">
+    <article className="min-h-screen w-full">
       <ReadingProgress />
       <script
         type="application/ld+json"
@@ -108,7 +111,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       />
 
       {/* Navigation */}
-      <div className="mt-8 mb-12">
+      <ScaleIntro className="mt-8 mb-12" delay={0}>
         {/* Navigation layout: back button left, tags right */}
         <div className="flex items-center justify-between gap-6">
           {/* Back button - styled to match tags */}
@@ -150,7 +153,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
             </div>
           )}
         </div>
-      </div>
+      </ScaleIntro>
 
       {/* Article Header */}
       <header className="mb-12">
@@ -166,7 +169,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
           )}
 
           {/* Meta Information */}
-          <div className="flex flex-col gap-4 pt-4 border-t border-[var(--callout-border)]/30">
+          <ScaleIntro className="flex flex-col gap-4 pt-4 border-t border-[var(--callout-border)]/30" delay={200}>
             {/* Mobile: Date and Author side by side */}
             <div className="flex items-center justify-between sm:hidden">
               <time className="text-sm font-medium text-[var(--bronzer)]">
@@ -182,40 +185,18 @@ export default async function Blog({ params }: { params: { slug: string } }) {
               </time>
               <AuthorInfo />
             </div>
-          </div>
+          </ScaleIntro>
         </div>
       </header>
 
       {/* Blog Header Visual */}
-      <div className="mb-12">
+      <ScaleIntro className="mb-12" delay={400}>
         <BlogHeader />
-      </div>
+      </ScaleIntro>
 
       {/* Article Content */}
       <main>
-        <div
-          className="prose prose-lg md:prose-xl max-w-none 
-                        prose-headings:text-[var(--text-p)] 
-                        prose-headings:tracking-tight
-                        prose-p:text-[var(--text-p)]/85 
-                        prose-p:leading-relaxed
-                        prose-p:text-base md:prose-p:text-lg
-                        prose-a:text-[var(--bronzer)] 
-                        prose-a:decoration-2 
-                        prose-a:underline-offset-4
-                        prose-strong:text-[var(--text-p)]
-                        prose-code:text-[var(--bronzer)]
-                        prose-code:bg-[var(--callout-border)]/20
-                        prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                        prose-blockquote:border-l-[var(--bronzer)]
-                        prose-blockquote:text-[var(--text-p)]/80
-                        prose-ul:text-[var(--text-p)]/85
-                        prose-ol:text-[var(--text-p)]/85
-                        prose-li:text-base md:prose-li:text-lg
-                        prose-li:leading-relaxed
-                        prose-img:rounded-xl prose-img:shadow-lg
-                        prose-hr:border-[var(--callout-border)]"
-        >
+        <div className="prose w-full">
           <CustomMDX source={post.content} />
         </div>
       </main>

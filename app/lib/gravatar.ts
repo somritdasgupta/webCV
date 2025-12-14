@@ -19,7 +19,8 @@ export function getGravatarUrl(
 }
 
 function getClientSideHash(email: string): string {
-  if (email === "thesomritdasgupta@gmail.com") {
+  const gravatarEmail = process.env.GRAVATAR_EMAIL || "thesomritdasgupta@gmail.com";
+  if (email === gravatarEmail) {
     return "a8e1f469bb7013312e34531805d35517";
   }
 

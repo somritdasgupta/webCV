@@ -61,9 +61,9 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
           </h2>
           <Link
             href={`/blog/${randomPost.slug}`}
-            className="block mb-0 text-[var(--text-color)] hover:scale-102 rounded-lg transition-colors duration-300"
+            className="block mb-0 text-[var(--text-color)] hover:scale-102 rounded-xl transition-all duration-300"
           >
-            <div className="bg-[var(--post-title-bg)] border border-[var(--post-title-border)] text-[var(--post-title-color)] backdrop-blur-md rounded-lg p-3 text-base flex justify-between items-center">
+            <div className="nav-shimmer bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-xl p-3 text-base flex justify-between items-center">
               {randomPost.metadata.title}
               <RiArrowRightUpLine className="w-5 h-5 ml-2 text-[var(--bronzer)]" />
             </div>
@@ -85,11 +85,11 @@ const RelatedPosts: React.FC<RelatedPostsProps> = ({
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
-            className="block mb-0 text-[var(--text-color)] hover:scale-x-100.5 rounded-lg transition-colors duration-300"
+            className="block mb-0 text-[var(--text-color)] hover:scale-x-100.5 rounded-xl transition-all duration-300"
           >
-            <div className="bg-[var(--post-title-bg)] border border-[var(--post-title-border)] text-[var(--post-title-color)] backdrop-blur-md rounded-lg p-3 text-base flex justify-between items-center">
+            <div className="nav-shimmer bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-xl p-3 text-base flex justify-between items-center">
               {post.metadata.title}
-              <RiArrowRightUpLine className="w-5 h-5 ml-2 text-[var(--bronzer)] animate-pulse" />
+              <RiArrowRightUpLine className="w-5 h-5 ml-2 text-[var(--bronzer)]" />
             </div>
           </Link>
         ))}

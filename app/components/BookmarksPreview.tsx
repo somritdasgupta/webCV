@@ -439,28 +439,34 @@ const getRandomBookmarks = (): BookmarkCategory[] => {
   const shuffledCategories = shuffleArray(allBookmarkData);
   const selectedCategories = shuffledCategories.slice(0, 3);
 
-  // For each selected category, randomly pick 2-3 items
+  // For each selected category, pick only 2 items
   return selectedCategories.map((category) => ({
     ...category,
-    items: shuffleArray(category.items).slice(
-      0,
-      Math.floor(Math.random() * 2) + 2
-    ), // 2-3 items
+    items: shuffleArray(category.items).slice(0, 2), // 2 items only
   }));
 };
 
 const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
-  // Function to truncate and clean URL for display
+  const [faviconError, setFaviconError] = useState(false);
+
+  const getFaviconUrl = (url: string) => {
+    try {
+      const domain = new URL(url).hostname;
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
+    } catch {
+      return null;
+    }
+  };
+
   const getTruncatedUrl = (url: string, maxLength: number = 20) => {
-    // Remove protocol and www
     let cleanUrl = url.replace(/^https?:\/\//, "").replace(/^www\./, "");
-    // Remove trailing slash
     cleanUrl = cleanUrl.replace(/\/$/, "");
-    // Truncate if too long
     return cleanUrl.length > maxLength
       ? cleanUrl.substring(0, maxLength) + "..."
       : cleanUrl;
   };
+
+  const faviconUrl = getFaviconUrl(item.url);
 
   return (
     <a
@@ -470,7 +476,18 @@ const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
       className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-[var(--callout-border)]/10 transition-all duration-200 group"
       title={item.description}
     >
-      <span className="text-base flex-shrink-0">{item.icon || "🔗"}</span>
+      <div className="w-4 h-4 min-w-[16px] min-h-[16px] flex-shrink-0 flex items-center justify-center">
+        {faviconUrl && !faviconError ? (
+          <img
+            src={faviconUrl}
+            alt={`${item.title} favicon`}
+            className="w-4 h-4 min-w-[16px] min-h-[16px] object-contain rounded-sm"
+            onError={() => setFaviconError(true)}
+          />
+        ) : (
+          <span className="text-xs">{item.icon || "🔗"}</span>
+        )}
+      </div>
       <div className="flex-1 min-w-0">
         <span className="text-sm text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200 block">
           {item.title}
@@ -491,7 +508,7 @@ const CategorySection: React.FC<{ category: BookmarkCategory }> = ({
       <h3 className="text-sm font-semibold text-[var(--text-color)] mb-3 uppercase tracking-wide">
         {category.title}
       </h3>
-      <div className="space-y-2">
+      <div className="space-y-2 border-l-4 border-[var(--callout-border)] pl-4">
         {category.items.map((item, index) => (
           <BookmarkCard key={index} item={item} />
         ))}
@@ -509,21 +526,13 @@ export default function BookmarksPreview() {
   }, []);
 
   return (
-    <div className="space-y-8">
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {bookmarks.map((category, index) => (
-          <CategorySection
-            key={`${category.title}-${index}`}
-            category={category}
-          />
-        ))}
-      </div>
-
-      <div className="text-center pt-6 border-t border-[var(--callout-border)]/20">
-        <p className="text-sm text-[var(--text-p)]/70">
-          More useful tools, resources, and inspirations
-        </p>
-      </div>
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {bookmarks.map((category, index) => (
+        <CategorySection
+          key={`${category.title}-${index}`}
+          category={category}
+        />
+      ))}
     </div>
   );
 }

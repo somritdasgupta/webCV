@@ -3,18 +3,16 @@
 import Link from "next/link";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import SocialLinks from "./SocialLinks";
 
 const navItems = {
   "/": { name: "about" },
-  "/blog": { name: "writing" },
-  "/projects": { name: "code" },
-  "/bookmarks": { name: "bookmarked" },
+  "/blog": { name: "blog" },
+  "/projects": { name: "projects" },
 };
 
-// Optimized animation variants
 const desktopVariants = {
   hidden: { opacity: 0, x: 18 },
   visible: { opacity: 1, x: 0 },
@@ -34,10 +32,23 @@ const linkVariants = {
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  // useRef for lastScrollY + ticking to avoid re-renders and stable handler
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const [activityView, setActivityView] = useState(() => {
+    if (pathname === "/projects") return 0;
+    if (pathname === "/activity") return 1;
+    if (pathname === "/bookmarks") return 2;
+    return 0;
+  });
+
+  // Sync activityView with pathname changes
+  useEffect(() => {
+    if (pathname === "/projects") setActivityView(0);
+    else if (pathname === "/activity") setActivityView(1);
+    else if (pathname === "/bookmarks") setActivityView(2);
+  }, [pathname]);
 
   // Stable scroll handler using refs + useCallback for better performance
   const handleScroll = useCallback(() => {
@@ -88,6 +99,59 @@ export function Navbar() {
                   <div className="flex items-center space-x-2">
                     {Object.entries(navItems).map(([path, { name }]) => {
                       const isActive = pathname === path;
+                      
+                      // Add toggle for projects/activity/bookmarks after projects
+                      if (path === "/projects") {
+                        const views = ["projects", "commits", "bookmarked"];
+                        const routes = ["/projects", "/activity", "/bookmarks"];
+                        const isToggleActive = ['/projects', '/activity', '/bookmarks'].includes(pathname);
+                        const currentIndex = pathname === "/projects" ? 0 : pathname === "/activity" ? 1 : pathname === "/bookmarks" ? 2 : 0;
+                        
+                        const handleToggle = () => {
+                          const nextIndex = (currentIndex + 1) % 3;
+                          router.push(routes[nextIndex]);
+                        };
+                        
+                        return (
+                          <motion.button
+                            key="toggle"
+                            onClick={handleToggle}
+                            className="flex items-center gap-2 px-2 py-0.5 cursor-pointer hover:opacity-80 transition-all duration-200"
+                          >
+                            <motion.span 
+                              key={views[currentIndex]}
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.2, ease: "easeOut" }}
+                              className={`font-extrabold text-xs lowercase ${
+                                isToggleActive ? 'text-[var(--nav-text-active)]' : 'text-[var(--nav-text)]'
+                              }`}
+                            >
+                              {views[currentIndex]}
+                            </motion.span>
+                            <div className="flex gap-1">
+                              {[0, 1, 2].map((i) => {
+                                const colors = ['bg-red-500', 'bg-blue-500', 'bg-yellow-500'];
+                                return (
+                                  <motion.div
+                                    key={i}
+                                    animate={{
+                                      scale: i === currentIndex ? 1.25 : 1
+                                    }}
+                                    transition={{ duration: 0.3, ease: "easeOut" }}
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      i === currentIndex ? colors[i] : "bg-[var(--nav-text)]/30"
+                                    }`}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </motion.button>
+                        );
+                      }
+                      
+                      if (path === "/projects") return null;
+                      
                       return (
                         <motion.div
                           key={path}
@@ -115,9 +179,12 @@ export function Navbar() {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <div className="hidden sm:flex">
-                      <SocialLinks variant="navbar" />
-                    </div>
+                    <a
+                      href="/Resume.pdf"
+                      className="hidden sm:inline-flex items-center justify-center h-6 px-2 text-[var(--nav-text)]/75 hover:text-[var(--nav-text-active)] transition-colors duration-150 rounded-md text-xs"
+                    >
+                      resume
+                    </a>
                     <div className="ml-2">
                       <ThemeSwitcher compact />
                     </div>

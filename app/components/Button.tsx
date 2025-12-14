@@ -5,12 +5,12 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 interface ButtonProps {
   href: string;
   text: string;
-  icon: "left" | "right"; // Props passed on and helps choose the icon to use
+  icon: "left" | "right";
 }
 
 const icons = {
-  left: <FaArrowLeft className="w-3 h-3 mr-1" />,
-  right: <FaArrowRight className="w-3 h-3 ml-1" />,
+  left: <FaArrowLeft className="w-4 h-4 mr-2" />,
+  right: <FaArrowRight className="w-4 h-4 ml-2" />,
 };
 
 const Button: React.FC<ButtonProps> = ({ href, text, icon }) => {
@@ -19,7 +19,7 @@ const Button: React.FC<ButtonProps> = ({ href, text, icon }) => {
   return (
     <Link
       href={href}
-      className="inline-flex items-center mb-4 hover:!text-[var(--bronzer)] transition-all duration-300 ease"
+      className="button-glow inline-flex items-center justify-center px-4 py-2.5 text-[var(--text-secondary)] border border-[var(--nav-border)] rounded-xl font-medium hover:text-[var(--text-primary)] transition-all duration-200"
     >
       {icon === "left" && IconComponent}
       {text}
