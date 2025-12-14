@@ -28,12 +28,12 @@ export async function GET() {
     const repos = await reposResponse.json();
     const allCommits: any[] = [];
 
-    // Process all repos to get complete history
-    for (const repo of repos) {
+    // Process top repos to get detailed commit history with stats
+    for (const repo of repos.slice(0, 10)) {
       try {
-        // Get all commits from this repo
+        // Get commits from this repo
         const commitsResponse = await fetch(
-          `https://api.github.com/repos/${repo.full_name}/commits?per_page=100&author=somritdasgupta`,
+          `https://api.github.com/repos/${repo.full_name}/commits?per_page=20&author=somritdasgupta`,
           {
             headers: {
               Accept: "application/vnd.github.v3+json",
@@ -46,11 +46,8 @@ export async function GET() {
         if (commitsResponse.ok) {
           const commits = await commitsResponse.json();
           if (Array.isArray(commits)) {
-            const recentCommits = commits.slice(0, 3);
-            const olderCommits = commits.slice(3);
-            
-            // Fetch detailed stats for recent commits
-            for (const commit of recentCommits) {
+            // Fetch detailed stats for all commits in this repo
+            for (const commit of commits) {
               if (commit?.commit?.author?.date && commit?.sha && repo?.full_name) {
                 try {
                   const detailResponse = await fetch(
@@ -96,24 +93,6 @@ export async function GET() {
                 }
               }
             }
-            
-            // Add older commits without detailed stats to avoid rate limits
-            olderCommits.forEach((commit: any) => {
-              if (commit?.commit?.author?.date && commit?.sha && repo?.full_name) {
-                allCommits.push({
-                  id: commit.sha || '',
-                  repo: repo.full_name || '',
-                  branch: repo.default_branch || 'main',
-                  timestamp: commit.commit.author.date || new Date().toISOString(),
-                  url: commit.html_url || '',
-                  message: commit.commit.message || 'No message',
-                  author: commit.commit.author.name || 'Unknown',
-                  additions: 0,
-                  deletions: 0,
-                  files: 0,
-                });
-              }
-            });
           }
         }
       } catch (error) {

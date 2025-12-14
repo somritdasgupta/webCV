@@ -69,7 +69,7 @@ export default function ActivityPage() {
     <section className="min-h-screen w-full">
       <div className="flex items-center justify-between mb-4">
         <h1 className="bg-color font-extrabold text-3xl tracking-tight">
-          commit activity
+          commits
         </h1>
         <div className="relative">
           <button
@@ -113,7 +113,7 @@ export default function ActivityPage() {
       </div>
 
       <p className="!text-[var(--text-p)]/80 mb-8">
-        Real-time commit activity from my repositories
+        Real-time commits from my repositories
       </p>
 
       {/* Close dropdown when clicking outside */}
