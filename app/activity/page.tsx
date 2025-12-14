@@ -131,33 +131,40 @@ export default function ActivityPage() {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: idx * 0.05 }}
-                className="group bg-[var(--card-bg)] border border-[var(--callout-border)] rounded-2xl p-6 hover:border-[var(--bronzer)] transition-all"
+                className="nav-shimmer bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-2xl p-6 lg:p-8"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-xl font-bold text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors">
-                    {repo.name}
-                  </h3>
-                  <div className="flex gap-2">
-                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs font-medium border border-[var(--callout-border)] rounded-lg hover:border-[var(--bronzer)] hover:text-[var(--bronzer)] transition-all">
-                      Code
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl lg:text-2xl font-semibold text-[var(--text-color)] mb-2">
+                      {repo.name}
+                    </h3>
+                    {repo.description && (
+                      <p className="text-sm lg:text-base text-[var(--text-p)] leading-relaxed">
+                        {repo.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <a
+                      href={repo.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center px-4 py-2.5 text-[var(--text-secondary)] border border-[var(--nav-border)] rounded-xl font-medium hover:text-[var(--text-primary)] hover:border-[var(--accent)] transition-all duration-200"
+                    >
+                      View on GitHub
                     </a>
                     {repo.homepage && (
-                      <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 text-xs font-medium bg-[var(--bronzer)] text-white rounded-lg hover:opacity-90 transition-all">
-                        Live
+                      <a
+                        href={repo.homepage}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center px-4 py-2.5 bg-[var(--accent)] text-white rounded-xl font-medium hover:opacity-90 transition-all duration-200"
+                      >
+                        Live Demo
                       </a>
                     )}
                   </div>
                 </div>
-                {repo.description && <p className="text-sm text-[var(--text-p)] mb-3">{repo.description}</p>}
-                {repo.topics?.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {repo.topics.map((topic: string) => (
-                      <span key={topic} className="text-xs px-2.5 py-1 bg-[var(--bronzer)]/10 text-[var(--bronzer)] rounded-full">
-                        {topic}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </motion.div>
             ))}
           </motion.div>
@@ -171,43 +178,48 @@ export default function ActivityPage() {
           >
             {commits.length > 0 ? (
               <>
-                <div className="space-y-3 mb-6">
-                  {commits.map((commit, idx) => (
-                    <motion.div
-                      key={commit.id}
-                      initial={{ x: 20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: idx * 0.03 }}
-                    >
-                      <Link
-                        href={commit.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block group bg-[var(--card-bg)] border border-[var(--callout-border)] rounded-xl p-5 hover:border-[var(--bronzer)] transition-all"
+                <div className="relative">
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[var(--bronzer)] via-[var(--bronzer)]/50 to-transparent" />
+                  <div className="space-y-6">
+                    {commits.map((commit, idx) => (
+                      <motion.div
+                        key={commit.id}
+                        initial={{ x: 20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: idx * 0.03 }}
+                        className="relative pl-12"
                       >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-bold text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors">
-                              {commit.repo?.split("/")[1]}
-                            </span>
-                            <span className="text-xs px-2 py-0.5 bg-[var(--bronzer)]/10 text-[var(--bronzer)] rounded-full">
-                              {commit.branch}
-                            </span>
+                        <div className="absolute left-2.5 top-2 w-3 h-3 rounded-full bg-[var(--bronzer)] ring-4 ring-[var(--card-bg)]" />
+                        <Link
+                          href={commit.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block group bg-[var(--card-bg)] border border-[var(--callout-border)] rounded-xl p-5 hover:border-[var(--bronzer)] transition-all"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-bold text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors">
+                                {commit.repo?.split("/")[1]}
+                              </span>
+                              <span className="text-xs px-2 py-0.5 bg-[var(--bronzer)]/10 text-[var(--bronzer)] rounded-full">
+                                {commit.branch}
+                              </span>
+                            </div>
+                            <span className="text-xs text-[var(--text-p)]/60">{formatTime(commit.timestamp)}</span>
                           </div>
-                          <span className="text-xs text-[var(--text-p)]/60">{formatTime(commit.timestamp)}</span>
-                        </div>
-                        <p className="text-sm text-[var(--text-color)] mb-2">{commit.message?.split("\n")[0]}</p>
-                        <div className="flex gap-4 text-xs text-[var(--text-p)]/70">
-                          <span>{commit.author}</span>
-                          <span className="text-green-400">+{commit.additions}</span>
-                          <span className="text-red-400">-{commit.deletions}</span>
-                          <span>{commit.files} files</span>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
+                          <p className="text-sm text-[var(--text-color)] mb-2">{commit.message?.split("\n")[0]}</p>
+                          <div className="flex gap-4 text-xs text-[var(--text-p)]/70">
+                            <span>{commit.author}</span>
+                            <span className="text-green-400">+{commit.additions}</span>
+                            <span className="text-red-400">-{commit.deletions}</span>
+                            <span>{commit.files} files</span>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex justify-center gap-3">
+                <div className="flex justify-center gap-3 mt-8">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
@@ -221,7 +233,7 @@ export default function ActivityPage() {
                   <button
                     onClick={() => setPage((p) => p + 1)}
                     disabled={!hasMore}
-                    className="px-6 py-2.5 text-sm font-medium border border-[var(--callout-border)] rounded-xl hover:border-[var(--bronzer)} hover:text-[var(--bronzer)] disabled:opacity-30 transition-all"
+                    className="px-6 py-2.5 text-sm font-medium border border-[var(--callout-border)] rounded-xl hover:border-[var(--bronzer)] hover:text-[var(--bronzer)] disabled:opacity-30 transition-all"
                   >
                     →
                   </button>
