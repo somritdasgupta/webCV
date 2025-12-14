@@ -36,19 +36,9 @@ export function Navbar() {
   const ticking = useRef(false);
   const pathname = usePathname();
   const router = useRouter();
-  const [activityView, setActivityView] = useState(() => {
-    if (pathname === "/projects") return 0;
-    if (pathname === "/activity") return 1;
-    if (pathname === "/bookmarks") return 2;
-    return 0;
-  });
 
-  // Sync activityView with pathname changes
-  useEffect(() => {
-    if (pathname === "/projects") setActivityView(0);
-    else if (pathname === "/activity") setActivityView(1);
-    else if (pathname === "/bookmarks") setActivityView(2);
-  }, [pathname]);
+
+
 
   // Stable scroll handler using refs + useCallback for better performance
   const handleScroll = useCallback(() => {
@@ -105,7 +95,7 @@ export function Navbar() {
                         const views = ["projects", "commits", "bookmarked"];
                         const routes = ["/projects", "/activity", "/bookmarks"];
                         const isToggleActive = ['/projects', '/activity', '/bookmarks'].includes(pathname);
-                        const currentIndex = pathname === "/projects" ? 0 : pathname === "/activity" ? 1 : pathname === "/bookmarks" ? 2 : 0;
+                        const currentIndex = pathname === "/activity" ? 1 : pathname === "/bookmarks" ? 2 : 0;
                         
                         const handleToggle = () => {
                           const nextIndex = (currentIndex + 1) % 3;
@@ -120,8 +110,8 @@ export function Navbar() {
                           >
                             <motion.span 
                               key={views[currentIndex]}
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
                               transition={{ duration: 0.2, ease: "easeOut" }}
                               className={`font-extrabold text-xs lowercase ${
                                 isToggleActive ? 'text-[var(--nav-text-active)]' : 'text-[var(--nav-text)]'
