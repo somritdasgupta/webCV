@@ -115,9 +115,12 @@ export function Navbar() {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <div className="hidden sm:flex">
-                      <SocialLinks variant="navbar" />
-                    </div>
+                    <a
+                      href="/Resume.pdf"
+                      className="hidden sm:inline-flex items-center justify-center h-6 px-2 text-[var(--nav-text)]/75 hover:text-[var(--nav-text-active)] transition-colors duration-150 rounded-md text-xs"
+                    >
+                      resume
+                    </a>
                     <div className="ml-2">
                       <ThemeSwitcher compact />
                     </div>

@@ -7,9 +7,14 @@ import BoxLoader from "../components/BoxLoader";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Blog",
+  title: "Blog - Somrit Dasgupta",
   description:
-    "Read my blog on software technology to technical events, analysis and more. Grab your coffee and see what catches your eye.",
+    "Technical blog covering software development, web technologies, AI/ML, cloud computing, and programming insights. Stay updated with the latest tech trends and tutorials.",
+  openGraph: {
+    title: "Blog - Somrit Dasgupta",
+    description: "Technical blog covering software development, web technologies, AI/ML, and programming insights.",
+    type: "website",
+  },
 };
 
 const FeedLinks = () => (
@@ -33,7 +38,23 @@ const FeedLinks = () => (
 
 export default function Page() {
   return (
-    <section>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "Somrit Dasgupta's Blog",
+            description: "Technical blog covering software development, web technologies, AI/ML, and programming insights",
+            author: {
+              "@type": "Person",
+              name: "Somrit Dasgupta",
+            },
+          }),
+        }}
+      />
+      <section>
       <div className="flex items-center mb-4">
         <h1 className="bg-color font-extrabold text-3xl tracking-tight">
           read my blog
@@ -75,5 +96,6 @@ export default function Page() {
         />
       </Suspense>
     </section>
+    </>
   );
 }

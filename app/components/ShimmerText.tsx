@@ -34,11 +34,11 @@ export default function ShimmerText({
   }, [delay]);
 
   return (
-    <span ref={ref} className={className}>
+    <span ref={ref} className={`${className} inline-block`}>
       {text.split("").map((char, i) => (
         <span
           key={i}
-          className={visible ? "animate-char-shimmer" : "opacity-0"}
+          className={`inline-block ${visible ? "animate-char-shimmer" : "opacity-0"}`}
           style={{ animationDelay: `${i * speed}s` }}
         >
           {char === " " ? "\u00A0" : char}

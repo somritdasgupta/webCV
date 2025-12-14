@@ -47,18 +47,13 @@
   --grid-color: rgba(156, 163, 175, 0.12);
   --grid-size: 20px;
 
-  /* Legacy Variables for Compatibility */
-  --text-color: var(--text-primary);
+  /* Aliases */
   --text-p: var(--text-secondary);
   --bronzer: var(--accent);
   --callout-border: var(--border-light);
   --callout-bg: transparent;
-  --nav-border: var(--border-subtle);
-  --nav-shadow: var(--shadow-light);
   --pros-card-border: var(--card-border-success);
   --cons-card-border: var(--card-border-error);
-  --sh-jsxliterals: var(--sh-jsx);
-  --pill-color: var(--pill-bg);
 }
 
 [data-theme="dark"] {
@@ -162,35 +157,7 @@ strong {
    UTILITY CLASSES
    ========================= */
 
-.container-custom {
-  margin: 0 auto;
-  padding: 0 1rem;
-}
 
-.custom-skill-pill,
-.skill-pill {
-  background: color-mix(in srgb, var(--accent) 25%, transparent);
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.375rem;
-}
-
-.custom-topic-pill,
-.topic-pill {
-  background: rgba(97, 105, 121, 0.25);
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.375rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: inline-flex;
-  cursor: pointer;
-}
-
-.icon-white {
-  color: white;
-}
 
 /* =========================
    SCROLLBAR STYLES
@@ -205,14 +172,14 @@ strong {
   -ms-overflow-style: none;
 }
 
-/* Custom scrollbar for specific elements */
+/* Custom scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--accent) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -220,11 +187,16 @@ strong {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--accent);
-  border-radius: 20px;
+  background: var(--accent);
+  border-radius: 3px;
+  opacity: 0.3;
 }
 
-/* Hide scrollbar utility class */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  opacity: 0.6;
+}
+
+
 .scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -463,6 +435,137 @@ strong {
 
 /* reduce glow intensity in dark mode */
 [data-theme="dark"] .nav-shimmer::before {
+  opacity: 0.7;
+}
+
+/* =========================
+   CONTACT PILLS
+   ========================= */
+.contact-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  background: var(--nav-bg)/95;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--nav-border);
+  border-radius: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .contact-pill {
+    width: auto;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+}
+
+.contact-pill::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    to right,
+    rgba(167, 139, 250, 0.7) 0%,
+    rgba(147, 51, 234, 0.3) 20%,
+    rgba(167, 139, 250, 0) 40%,
+    rgba(167, 139, 250, 0) 60%,
+    rgba(147, 51, 234, 0.3) 80%,
+    rgba(167, 139, 250, 0.7) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  filter: blur(1px);
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
+}
+
+.contact-pill:hover {
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+}
+
+.contact-pill:hover::before {
+  filter: blur(1.5px);
+  box-shadow: 0 0 24px rgba(167, 139, 250, 0.6);
+}
+
+.contact-pill > span {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="dark"] .contact-pill::before {
+  opacity: 0.7;
+}
+
+/* =========================
+   BUTTON GLOW
+   ========================= */
+.button-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.button-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    to right,
+    rgba(167, 139, 250, 0.7) 0%,
+    rgba(147, 51, 234, 0.3) 20%,
+    rgba(167, 139, 250, 0) 40%,
+    rgba(167, 139, 250, 0) 60%,
+    rgba(147, 51, 234, 0.3) 80%,
+    rgba(167, 139, 250, 0.7) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  filter: blur(1px);
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
+}
+
+.button-glow:hover {
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+}
+
+.button-glow:hover::before {
+  filter: blur(1.5px);
+  box-shadow: 0 0 24px rgba(167, 139, 250, 0.6);
+}
+
+.button-glow > * {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="dark"] .button-glow::before {
   opacity: 0.7;
 }
 
@@ -713,40 +816,9 @@ strong {
   animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
 
-/* Custom scrollbar for TOC */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--bronzer, #b87333);
-  border-radius: 3px;
-  opacity: 0.3;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  opacity: 0.6;
-}
-
 /* =========================
    COMPONENT-SPECIFIC STYLES
    ========================= */
-
-/* Sandpack/Code Editor */
-.custom-wrapper,
-.custom-editor,
-.custom-preview {
-  overflow: hidden;
-}
-
-.custom-editor .sp-code-editor,
-.custom-preview .sp-preview-iframe {
-  overflow: hidden;
-}
 
 /* =========================
    RESPONSIVE ADJUSTMENTS
@@ -758,10 +830,8 @@ strong {
   }
 
   .prose pre:not(.custom-codeblock) {
-    margin: 1rem -1rem;
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
+    margin: 1rem 0;
+    border-radius: 0.75rem;
   }
 
   .prose code:not(pre code) {

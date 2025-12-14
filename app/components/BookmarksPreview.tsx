@@ -439,13 +439,10 @@ const getRandomBookmarks = (): BookmarkCategory[] => {
   const shuffledCategories = shuffleArray(allBookmarkData);
   const selectedCategories = shuffledCategories.slice(0, 3);
 
-  // For each selected category, randomly pick 2-3 items
+  // For each selected category, pick only 2 items
   return selectedCategories.map((category) => ({
     ...category,
-    items: shuffleArray(category.items).slice(
-      0,
-      Math.floor(Math.random() * 2) + 2
-    ), // 2-3 items
+    items: shuffleArray(category.items).slice(0, 2), // 2 items only
   }));
 };
 
@@ -491,7 +488,7 @@ const CategorySection: React.FC<{ category: BookmarkCategory }> = ({
       <h3 className="text-sm font-semibold text-[var(--text-color)] mb-3 uppercase tracking-wide">
         {category.title}
       </h3>
-      <div className="space-y-2">
+      <div className="space-y-2 border-l-4 border-[var(--callout-border)] pl-4">
         {category.items.map((item, index) => (
           <BookmarkCard key={index} item={item} />
         ))}
@@ -509,21 +506,13 @@ export default function BookmarksPreview() {
   }, []);
 
   return (
-    <div className="space-y-8">
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {bookmarks.map((category, index) => (
-          <CategorySection
-            key={`${category.title}-${index}`}
-            category={category}
-          />
-        ))}
-      </div>
-
-      <div className="text-center pt-6 border-t border-[var(--callout-border)]/20">
-        <p className="text-sm text-[var(--text-p)]/70">
-          More useful tools, resources, and inspirations
-        </p>
-      </div>
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {bookmarks.map((category, index) => (
+        <CategorySection
+          key={`${category.title}-${index}`}
+          category={category}
+        />
+      ))}
     </div>
   );
 }

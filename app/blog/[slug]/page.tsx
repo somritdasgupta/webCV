@@ -12,6 +12,7 @@ import { ShareButtons } from "app/components/ShareButtons";
 import { AuthorInfo } from "app/components/AuthorInfo";
 import ShimmerText from "app/components/ShimmerText";
 import ScaleIntro from "app/components/ScaleIntro";
+import ScrollToTop from "app/components/ScrollToTop";
 
 export const revalidate = 3600;
 
@@ -82,7 +83,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
   const currentUrl = `${baseUrl}/blog/${post.slug}`;
 
   return (
-    <article className="min-h-screen">
+    <article className="min-h-screen w-full">
       <ReadingProgress />
       <script
         type="application/ld+json"
@@ -158,12 +159,12 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       <header className="mb-12">
         <div className="space-y-6">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-[var(--text-p)]">
-            <ShimmerText text={post.metadata.title} delay={0} />
+            {post.metadata.title}
           </h1>
 
           {post.metadata.summary && (
             <p className="text-lg md:text-xl text-[var(--text-p)]/70 leading-relaxed">
-              <ShimmerText text={post.metadata.summary} delay={0} speed={0.015} />
+              {post.metadata.summary}
             </p>
           )}
 
@@ -195,29 +196,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
 
       {/* Article Content */}
       <main className="animate-fade-in" style={{ animationDelay: `${(post.metadata.title.length + (post.metadata.summary?.length || 0)) * 20 + 300}ms` }}>
-        <div
-          className="prose prose-lg md:prose-xl max-w-none 
-                        prose-headings:text-[var(--text-p)] 
-                        prose-headings:tracking-tight
-                        prose-p:text-[var(--text-p)]/85 
-                        prose-p:leading-relaxed
-                        prose-p:text-base md:prose-p:text-lg
-                        prose-a:text-[var(--bronzer)] 
-                        prose-a:decoration-2 
-                        prose-a:underline-offset-4
-                        prose-strong:text-[var(--text-p)]
-                        prose-code:text-[var(--bronzer)]
-                        prose-code:bg-[var(--callout-border)]/20
-                        prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                        prose-blockquote:border-l-[var(--bronzer)]
-                        prose-blockquote:text-[var(--text-p)]/80
-                        prose-ul:text-[var(--text-p)]/85
-                        prose-ol:text-[var(--text-p)]/85
-                        prose-li:text-base md:prose-li:text-lg
-                        prose-li:leading-relaxed
-                        prose-img:rounded-xl prose-img:shadow-lg
-                        prose-hr:border-[var(--callout-border)]"
-        >
+        <div className="prose w-full">
           <CustomMDX source={post.content} />
         </div>
       </main>

@@ -5,7 +5,7 @@ import { getGravatarUrl } from "../lib/gravatar";
 import { useState } from "react";
 
 export function AuthorInfo() {
-  const email = "thesomritdasgupta@gmail.com";
+  const email = process.env.GRAVATAR_EMAIL || "thesomritdasgupta@gmail.com";
   const gravatarUrl = getGravatarUrl(email, 64, "mp");
   const [imageError, setImageError] = useState(false);
 
