@@ -1,15 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface ThemeSwitcherProps {
   className?: string;
+  compact?: boolean;
 }
 
-export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
+export function ThemeSwitcher({
+  className = "",
+  compact = false,
+}: ThemeSwitcherProps) {
   const [isDarkMode, setIsDarkMode] = useState<boolean | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [spinKey, setSpinKey] = useState(0);
+  const [spinDir, setSpinDir] = useState<1 | -1>(1);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -183,6 +189,10 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     setIsAnimating(true);
     const newIsDarkMode = !isDarkMode;
 
+    // set spin direction: light->dark (show moon) rotate clockwise (1), dark->light rotate counter (-1)
+    setSpinDir(newIsDarkMode ? 1 : -1);
+    setSpinKey((k) => k + 1);
+
     const transitionPromise = createSlideTransition(newIsDarkMode);
 
     setTimeout(() => {
@@ -198,7 +208,7 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
   if (isDarkMode === null) {
     return (
       <motion.div
-        className={`text-sm text-[var(--text-p)]/50 ${className}`}
+        className={`${compact ? "text-xs" : "text-sm"} text-[var(--text-p)]/50 ${className}`}
         animate={{ opacity: [0.3, 1, 0.3] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
@@ -211,7 +221,8 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
     <motion.button
       onClick={toggleTheme}
       disabled={isAnimating}
-      className={`relative z-30 text-base font-medium transition-all duration-200 touch-manipulation select-none min-w-[44px] min-h-[44px] flex items-center justify-center ${
+      aria-label={isDarkMode ? "Switch to light theme" : "Switch to dark theme"}
+      className={`relative z-30 ${compact ? "text-sm p-1 min-w-[34px] min-h-[34px]" : "text-base p-2 min-w-[44px] min-h-[44px]"} font-medium transition-all duration-200 touch-manipulation select-none flex items-center justify-center rounded-md bg-transparent ${
         isAnimating
           ? "opacity-60 cursor-not-allowed"
           : "text-[var(--text-p)] hover:text-[var(--bronzer)] active:text-[var(--bronzer)]"
@@ -221,20 +232,58 @@ export function ThemeSwitcher({ className = "" }: ThemeSwitcherProps) {
         touchAction: "manipulation",
         pointerEvents: "auto",
       }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.96 }}
     >
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={isDarkMode ? "dark" : "light"}
-          initial={{ opacity: 0, rotateX: 90 }}
-          animate={{ opacity: 1, rotateX: 0 }}
-          exit={{ opacity: 0, rotateX: -90 }}
-          transition={{ duration: 0.3 }}
-        >
-          {isDarkMode ? "light" : "dark"}
-        </motion.span>
-      </AnimatePresence>
+      {/* animated icon that spins on toggle */}
+      <motion.span
+        key={spinKey}
+        initial={{ rotate: 0 }}
+        animate={{ rotate: spinDir * 360 }}
+        transition={{ duration: 0.7, ease: [0.2, 0.8, 0.25, 1] }}
+      >
+        {isDarkMode ? (
+          // show sun icon when currently dark (clicking will switch to light)
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={compact ? 18 : 20}
+            height={compact ? 18 : 20}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-[var(--bronzer)]"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="M4.2 4.2l1.4 1.4" />
+            <path d="M18.4 18.4l1.4 1.4" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="M4.2 19.8l1.4-1.4" />
+            <path d="M18.4 5.6l1.4-1.4" />
+          </svg>
+        ) : (
+          // show moon icon when currently light (clicking will switch to dark)
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={compact ? 18 : 20}
+            height={compact ? 18 : 20}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-[var(--text-p)]"
+          >
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+          </svg>
+        )}
+      </motion.span>
     </motion.button>
   );
 }

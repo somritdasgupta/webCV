@@ -1,6 +1,5 @@
 "use client";
 
-import { HiExternalLink } from "react-icons/hi";
 import { useState, useEffect } from "react";
 
 interface BookmarkItem {
@@ -440,17 +439,26 @@ const getRandomBookmarks = (): BookmarkCategory[] => {
   const shuffledCategories = shuffleArray(allBookmarkData);
   const selectedCategories = shuffledCategories.slice(0, 3);
 
-  // For each selected category, randomly pick 2-3 items
+  // For each selected category, pick only 2 items
   return selectedCategories.map((category) => ({
     ...category,
-    items: shuffleArray(category.items).slice(
-      0,
-      Math.floor(Math.random() * 2) + 2
-    ), // 2-3 items
+    items: shuffleArray(category.items).slice(0, 2), // 2 items only
   }));
 };
 
 const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
+  // Function to truncate and clean URL for display
+  const getTruncatedUrl = (url: string, maxLength: number = 20) => {
+    // Remove protocol and www
+    let cleanUrl = url.replace(/^https?:\/\//, "").replace(/^www\./, "");
+    // Remove trailing slash
+    cleanUrl = cleanUrl.replace(/\/$/, "");
+    // Truncate if too long
+    return cleanUrl.length > maxLength
+      ? cleanUrl.substring(0, maxLength) + "..."
+      : cleanUrl;
+  };
+
   return (
     <a
       href={item.url}
@@ -460,10 +468,14 @@ const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
       title={item.description}
     >
       <span className="text-base flex-shrink-0">{item.icon || "🔗"}</span>
-      <span className="text-sm text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200 flex-1">
-        {item.title}
+      <div className="flex-1 min-w-0">
+        <span className="text-sm text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200 block">
+          {item.title}
+        </span>
+      </div>
+      <span className="text-xs text-[var(--text-p)]/50 group-hover:text-[var(--bronzer)]/70 transition-colors duration-200 flex-shrink-0">
+        {getTruncatedUrl(item.url)}
       </span>
-      <HiExternalLink className="w-3 h-3 text-[var(--text-p)]/30 group-hover:text-[var(--bronzer)] transition-colors duration-200 opacity-0 group-hover:opacity-100" />
     </a>
   );
 };
@@ -476,7 +488,7 @@ const CategorySection: React.FC<{ category: BookmarkCategory }> = ({
       <h3 className="text-sm font-semibold text-[var(--text-color)] mb-3 uppercase tracking-wide">
         {category.title}
       </h3>
-      <div className="space-y-2">
+      <div className="space-y-2 border-l-4 border-[var(--callout-border)] pl-4">
         {category.items.map((item, index) => (
           <BookmarkCard key={index} item={item} />
         ))}
@@ -494,21 +506,13 @@ export default function BookmarksPreview() {
   }, []);
 
   return (
-    <div className="space-y-8">
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {bookmarks.map((category, index) => (
-          <CategorySection
-            key={`${category.title}-${index}`}
-            category={category}
-          />
-        ))}
-      </div>
-
-      <div className="text-center pt-6 border-t border-[var(--callout-border)]/20">
-        <p className="text-sm text-[var(--text-p)]/70">
-          Discover more useful tools, resources, and inspiration
-        </p>
-      </div>
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {bookmarks.map((category, index) => (
+        <CategorySection
+          key={`${category.title}-${index}`}
+          category={category}
+        />
+      ))}
     </div>
   );
 }

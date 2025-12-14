@@ -23,7 +23,7 @@ export function useFeaturedProject() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            featuredId: 917047238,
+            featuredId: 1062808930,
             includeDescription: true,
             includeTopics: false,
             includeName: true,

@@ -10,6 +10,9 @@ import { BlogHeader } from "app/components/mdxComponents/BlogHeader";
 import { ReadingProgress } from "app/components/ReadingProgress";
 import { ShareButtons } from "app/components/ShareButtons";
 import { AuthorInfo } from "app/components/AuthorInfo";
+import ShimmerText from "app/components/ShimmerText";
+import ScaleIntro from "app/components/ScaleIntro";
+import ScrollToTop from "app/components/ScrollToTop";
 
 export const revalidate = 3600;
 
@@ -80,7 +83,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
   const currentUrl = `${baseUrl}/blog/${post.slug}`;
 
   return (
-    <article className="min-h-screen">
+    <article className="min-h-screen w-full">
       <ReadingProgress />
       <script
         type="application/ld+json"
@@ -107,52 +110,50 @@ export default async function Blog({ params }: { params: { slug: string } }) {
         }}
       />
 
-      {/* Navigation - Mobile vs Desktop */}
-      <div className="mb-8">
-        {/* Mobile Navigation */}
-        <div className="block sm:hidden">
-          <div className="flex items-center justify-between mb-4">
-            <Link
-              href="/blog"
-              className="p-2 rounded-lg hover:bg-[var(--nav-pill)] transition-colors duration-200 text-[var(--text-p)] hover:text-[var(--bronzer)] flex items-center justify-center"
-              title="Back to posts"
+      {/* Navigation */}
+      <ScaleIntro className="mt-8 mb-12" delay={0}>
+        {/* Navigation layout: back button left, tags right */}
+        <div className="flex items-center justify-between gap-6">
+          {/* Back button - styled to match tags */}
+          <Link
+            href="/blog"
+            className="flex-shrink-0 px-3 py-0.5 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:bg-[var(--bronzer)]/10 hover:text-[var(--bronzer)] transition-all duration-200 flex items-center gap-1.5 group text-sm font-medium"
+            title="Back to posts"
+          >
+            <svg
+              className="w-2 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </Link>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            <span>Back</span>
+          </Link>
 
-            {post.metadata.tags && (
-              <div className="flex flex-wrap gap-1.5 max-w-[70%]">
+          {/* Tags - right aligned and scrollable */}
+          {post.metadata.tags && (
+            <div className="flex-1 overflow-hidden max-w-md">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1 justify-end">
                 {post.metadata.tags.map((tag) => (
                   <Link
                     key={tag}
                     href={`/blog?tag=${encodeURIComponent(tag)}`}
-                    className="text-xs px-2 py-1 rounded border text-[var(--text-p)] border-[var(--callout-border)] hover:border-[var(--bronzer)] transition-colors"
+                    className="flex-shrink-0 text-xs px-3 py-1 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:bg-[var(--bronzer)]/10 hover:text-[var(--bronzer)] transition-all duration-200 whitespace-nowrap font-medium"
                   >
                     {tag}
                   </Link>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-
-        {/* Desktop Navigation */}
-        <div className="hidden sm:block">
-          <Button href="/blog" text="Back to posts" icon="left" />
-        </div>
-      </div>
+      </ScaleIntro>
 
       {/* Article Header */}
       <header className="mb-12">
@@ -168,7 +169,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
           )}
 
           {/* Meta Information */}
-          <div className="flex flex-col gap-4 pt-4 border-t border-[var(--callout-border)]/30">
+          <ScaleIntro className="flex flex-col gap-4 pt-4 border-t border-[var(--callout-border)]/30" delay={200}>
             {/* Mobile: Date and Author side by side */}
             <div className="flex items-center justify-between sm:hidden">
               <time className="text-sm font-medium text-[var(--bronzer)]">
@@ -177,63 +178,25 @@ export default async function Blog({ params }: { params: { slug: string } }) {
               <AuthorInfo />
             </div>
 
-            {/* Desktop: Date, Author, and Tags */}
-            <div className="hidden sm:flex sm:items-center sm:justify-between">
-              <div className="flex items-center gap-6">
-                <time className="text-sm font-medium text-[var(--bronzer)]">
-                  {formatDate(post.metadata.publishedAt)}
-                </time>
-                <AuthorInfo />
-              </div>
-
-              {post.metadata.tags && (
-                <div className="flex flex-wrap gap-2">
-                  {post.metadata.tags.map((tag) => (
-                    <Link
-                      key={tag}
-                      href={`/blog?tag=${encodeURIComponent(tag)}`}
-                      className="text-xs px-2 py-1 rounded border text-[var(--text-p)] border-[var(--callout-border)] hover:border-[var(--bronzer)] transition-colors"
-                    >
-                      {tag}
-                    </Link>
-                  ))}
-                </div>
-              )}
+            {/* Desktop: Date and Author */}
+            <div className="hidden sm:flex sm:items-center sm:gap-6">
+              <time className="text-sm font-medium text-[var(--bronzer)]">
+                {formatDate(post.metadata.publishedAt)}
+              </time>
+              <AuthorInfo />
             </div>
-          </div>
+          </ScaleIntro>
         </div>
       </header>
 
       {/* Blog Header Visual */}
-      <div className="mb-12">
+      <ScaleIntro className="mb-12" delay={400}>
         <BlogHeader />
-      </div>
+      </ScaleIntro>
 
       {/* Article Content */}
       <main>
-        <div
-          className="prose prose-lg md:prose-xl max-w-none 
-                        prose-headings:text-[var(--text-p)] 
-                        prose-headings:tracking-tight
-                        prose-p:text-[var(--text-p)]/85 
-                        prose-p:leading-relaxed
-                        prose-p:text-base md:prose-p:text-lg
-                        prose-a:text-[var(--bronzer)] 
-                        prose-a:decoration-2 
-                        prose-a:underline-offset-4
-                        prose-strong:text-[var(--text-p)]
-                        prose-code:text-[var(--bronzer)]
-                        prose-code:bg-[var(--callout-border)]/20
-                        prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                        prose-blockquote:border-l-[var(--bronzer)]
-                        prose-blockquote:text-[var(--text-p)]/80
-                        prose-ul:text-[var(--text-p)]/85
-                        prose-ol:text-[var(--text-p)]/85
-                        prose-li:text-base md:prose-li:text-lg
-                        prose-li:leading-relaxed
-                        prose-img:rounded-xl prose-img:shadow-lg
-                        prose-hr:border-[var(--callout-border)]"
-        >
+        <div className="prose w-full">
           <CustomMDX source={post.content} />
         </div>
       </main>
