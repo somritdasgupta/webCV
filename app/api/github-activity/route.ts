@@ -52,6 +52,11 @@ export async function GET() {
                   branch: repo.default_branch,
                   timestamp: commit.commit.author.date,
                   url: commit.html_url,
+                  message: commit.commit.message,
+                  author: commit.commit.author.name,
+                  additions: commit.stats?.additions || 0,
+                  deletions: commit.stats?.deletions || 0,
+                  files: commit.files?.length || 0,
                 });
               }
             });
