@@ -17,24 +17,7 @@ export const metadata = {
   },
 };
 
-const FeedLinks = () => (
-  <div className="flex space-x-2 ml-4 mt-2 text-xs">
-    <a
-      href="/rss"
-      className="flex items-center font-medium text-violet-400 hover:scale-105 transition-all duration-300 ease"
-    >
-      <RiArrowRightUpLine className="animate-pulse" />
-      <span>RSS</span>
-    </a>
-    <a
-      href="/json"
-      className="flex items-center font-medium text-violet-400 hover:scale-105 transition-all duration-300 ease"
-    >
-      <RiArrowRightUpLine className="animate-pulse" />
-      <span>JSON</span>
-    </a>
-  </div>
-);
+
 
 export default function Page() {
   return (
@@ -55,24 +38,8 @@ export default function Page() {
         }}
       />
       <section>
-      <div className="flex items-center mb-4">
-        <h1 className="bg-color font-extrabold text-3xl tracking-tight">
-          read my blog
-        </h1>
-        <FeedLinks />
-      </div>
-
-      <p className="mt-4 !text-[var(--text-p)]/80 mb-4">
-        This is the place where I share my insights and opinions on software
-        technology, technical events, analysis and more. Grab your coffee and
-        explore the posts that I've written over time and I hope you find them
-        interesting.{" "}
-      </p>
-
       <Suspense fallback={<div className="flex justify-center py-8"><BoxLoader /></div>}>
-        <div className="mb-6">
-          <SearchFilter />
-        </div>
+        <SearchFilter />
 
         <BlogPosts
           showTags={true}

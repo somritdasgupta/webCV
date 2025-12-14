@@ -447,17 +447,26 @@ const getRandomBookmarks = (): BookmarkCategory[] => {
 };
 
 const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
-  // Function to truncate and clean URL for display
+  const [faviconError, setFaviconError] = useState(false);
+
+  const getFaviconUrl = (url: string) => {
+    try {
+      const domain = new URL(url).hostname;
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
+    } catch {
+      return null;
+    }
+  };
+
   const getTruncatedUrl = (url: string, maxLength: number = 20) => {
-    // Remove protocol and www
     let cleanUrl = url.replace(/^https?:\/\//, "").replace(/^www\./, "");
-    // Remove trailing slash
     cleanUrl = cleanUrl.replace(/\/$/, "");
-    // Truncate if too long
     return cleanUrl.length > maxLength
       ? cleanUrl.substring(0, maxLength) + "..."
       : cleanUrl;
   };
+
+  const faviconUrl = getFaviconUrl(item.url);
 
   return (
     <a
@@ -467,7 +476,18 @@ const BookmarkCard: React.FC<{ item: BookmarkItem }> = ({ item }) => {
       className="flex items-center gap-3 p-2 -mx-2 rounded-lg hover:bg-[var(--callout-border)]/10 transition-all duration-200 group"
       title={item.description}
     >
-      <span className="text-base flex-shrink-0">{item.icon || "🔗"}</span>
+      <div className="w-4 h-4 min-w-[16px] min-h-[16px] flex-shrink-0 flex items-center justify-center">
+        {faviconUrl && !faviconError ? (
+          <img
+            src={faviconUrl}
+            alt={`${item.title} favicon`}
+            className="w-4 h-4 min-w-[16px] min-h-[16px] object-contain rounded-sm"
+            onError={() => setFaviconError(true)}
+          />
+        ) : (
+          <span className="text-xs">{item.icon || "🔗"}</span>
+        )}
+      </div>
       <div className="flex-1 min-w-0">
         <span className="text-sm text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors duration-200 block">
           {item.title}

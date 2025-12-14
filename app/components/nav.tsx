@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import SocialLinks from "./SocialLinks";
 
 const navItems = {
   "/": { name: "about" },
   "/blog": { name: "writing" },
-  "/projects": { name: "code" },
-  "/activity": { name: "commits" },
+  "/activity": { name: "activity" },
   "/bookmarks": { name: "bookmarked" },
 };
 
@@ -35,10 +34,11 @@ const linkVariants = {
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  // useRef for lastScrollY + ticking to avoid re-renders and stable handler
+  const [activityView, setActivityView] = useState(0);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   // Stable scroll handler using refs + useCallback for better performance
   const handleScroll = useCallback(() => {
@@ -88,7 +88,47 @@ export function Navbar() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     {Object.entries(navItems).map(([path, { name }]) => {
-                      const isActive = pathname === path;
+                      const isActive = pathname === path || (pathname === "/bookmarks" && path === "/activity");
+                      
+                      if (path === "/activity" && (pathname === "/activity" || pathname === "/bookmarks")) {
+                        const views = ["projects", "commits", "bookmarked"];
+                        const routes = ["/activity", "/activity", "/bookmarks"];
+                        const currentIndex = pathname === "/bookmarks" ? 2 : activityView;
+                        
+                        const handleToggle = () => {
+                          const nextIndex = (currentIndex + 1) % 3;
+                          setActivityView(nextIndex);
+                          if (nextIndex === 2) {
+                            router.push("/bookmarks");
+                          } else {
+                            router.push("/activity");
+                            window.dispatchEvent(new CustomEvent("activityViewChange", { detail: nextIndex }));
+                          }
+                        };
+                        
+                        return (
+                          <motion.button
+                            key={path}
+                            onClick={handleToggle}
+                            className="flex items-center gap-2 px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity"
+                          >
+                            <span className="text-[var(--nav-text-active)] font-extrabold text-xs lowercase">{views[currentIndex]}</span>
+                            <div className="flex gap-1">
+                              {[0, 1, 2].map((i) => (
+                                <div
+                                  key={i}
+                                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                    i === currentIndex ? "bg-[var(--nav-text-active)] scale-125" : "bg-[var(--nav-text)]/30"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </motion.button>
+                        );
+                      }
+                      
+                      if (path === "/bookmarks") return null;
+                      
                       return (
                         <motion.div
                           key={path}

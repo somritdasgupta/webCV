@@ -34,27 +34,45 @@ export function SearchFilter() {
 
   return (
     <div className="relative mb-6">
-      <div className="relative">
-        <RiSearchLine
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-p)]"
-          size={20}
-        />
-        <input
-          type="text"
-          placeholder="Search posts..."
-          value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="w-full pl-10 pr-10 py-3 bg-[var(--card-bg)] border border-[var(--callout-border)] rounded-lg text-[var(--text-color)] placeholder-[var(--text-p)] focus:outline-none focus:ring-2 focus:ring-[var(--bronzer)] focus:border-transparent transition-all duration-300"
-        />
-        {searchTerm && (
-          <button
-            onClick={clearSearch}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text-p)] hover:text-[var(--text-color)] transition-colors duration-200"
-            aria-label="Clear search"
+      <div className="relative flex items-center gap-2">
+        <div className="relative flex-1">
+          <RiSearchLine
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-p)]"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Search posts..."
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full pl-10 pr-10 py-3 bg-[var(--card-bg)] border border-[var(--callout-border)] rounded-lg text-[var(--text-color)] placeholder-[var(--text-p)] focus:outline-none focus:ring-2 focus:ring-[var(--bronzer)] focus:border-transparent transition-all duration-300"
+          />
+          {searchTerm && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--text-p)] hover:text-[var(--text-color)] transition-colors duration-200"
+              aria-label="Clear search"
+            >
+              <RiCloseLine size={20} />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href="/rss"
+            className="px-4 py-3 bg-[var(--card-bg)] border border-[var(--callout-border)] rounded-lg text-[var(--text-color)] hover:border-[var(--bronzer)] hover:text-[var(--bronzer)] transition-all duration-300 font-medium text-sm"
+            title="RSS Feed"
           >
-            <RiCloseLine size={20} />
-          </button>
-        )}
+            RSS
+          </a>
+          <a
+            href="/json"
+            className="px-4 py-3 bg-[var(--card-bg)] border border-[var(--callout-border)] rounded-lg text-[var(--text-color)] hover:border-[var(--bronzer)] hover:text-[var(--bronzer)] transition-all duration-300 font-medium text-sm"
+            title="JSON Feed"
+          >
+            JSON
+          </a>
+        </div>
       </div>
       {searchTerm && (
         <p className="mt-2 text-sm text-[var(--text-p)]">
