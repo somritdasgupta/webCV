@@ -44,22 +44,40 @@ export async function GET() {
         if (commitsResponse.ok) {
           const commits = await commitsResponse.json();
           if (Array.isArray(commits)) {
-            commits.forEach((commit: any) => {
+            for (const commit of commits.slice(0, 10)) {
               if (commit?.commit?.author?.date) {
-                allCommits.push({
-                  id: commit.sha,
-                  repo: repo.full_name,
-                  branch: repo.default_branch,
-                  timestamp: commit.commit.author.date,
-                  url: commit.html_url,
-                  message: commit.commit.message,
-                  author: commit.commit.author.name,
-                  additions: commit.stats?.additions || 0,
-                  deletions: commit.stats?.deletions || 0,
-                  files: commit.files?.length || 0,
-                });
+                try {
+                  const commitDetailResponse = await fetch(
+                    `https://api.github.com/repos/${repo.full_name}/commits/${commit.sha}`,
+                    {
+                      headers: {
+                        Accept: "application/vnd.github.v3+json",
+                        Authorization: `token ${token}`,
+                      },
+                      cache: 'no-store',
+                    }
+                  );
+                  
+                  if (commitDetailResponse.ok) {
+                    const commitDetail = await commitDetailResponse.json();
+                    allCommits.push({
+                      id: commit.sha,
+                      repo: repo.full_name,
+                      branch: repo.default_branch,
+                      timestamp: commit.commit.author.date,
+                      url: commit.html_url,
+                      message: commit.commit.message,
+                      author: commit.commit.author.name,
+                      additions: commitDetail.stats?.additions || 0,
+                      deletions: commitDetail.stats?.deletions || 0,
+                      files: commitDetail.files?.length || 0,
+                    });
+                  }
+                } catch (error) {
+                  continue;
+                }
               }
-            });
+            }
           }
         }
       } catch (error) {

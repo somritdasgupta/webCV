@@ -70,21 +70,28 @@ export default function ActivityPage() {
         <h1 className="bg-color font-extrabold text-3xl tracking-tight">
           commit activity
         </h1>
-        <select
-          value={selectedRepo}
-          onChange={(e) => {
-            setSelectedRepo(e.target.value);
-            setPage(1);
-          }}
-          className="px-3 py-1.5 text-sm rounded-lg bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-color)] hover:border-[var(--bronzer)] focus:border-[var(--bronzer)] focus:outline-none transition-colors"
-        >
-          <option value="all">All repositories</option>
-          {uniqueRepos.map(repo => (
-            <option key={repo} value={repo}>
-              {repo.split('/')[1]}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={selectedRepo}
+            onChange={(e) => {
+              setSelectedRepo(e.target.value);
+              setPage(1);
+            }}
+            className="px-4 py-2 text-sm rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-[var(--text-color)] hover:border-[var(--bronzer)]/50 focus:border-[var(--bronzer)] focus:outline-none transition-all duration-200 appearance-none cursor-pointer min-w-[180px] shadow-lg"
+          >
+            <option value="all" className="bg-[var(--bg)] text-[var(--text-color)]">All repositories</option>
+            {uniqueRepos.map(repo => (
+              <option key={repo} value={repo} className="bg-[var(--bg)] text-[var(--text-color)]">
+                {repo.split('/')[1]}
+              </option>
+            ))}
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <svg className="w-4 h-4 text-[var(--text-p)]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       <p className="!text-[var(--text-p)]/80 mb-8">
@@ -102,7 +109,7 @@ export default function ActivityPage() {
       ) : (
         <>
           <div className="relative mb-8">
-            <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-[var(--callout-border)]"></div>
+            <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-[var(--callout-border)]"></div>
             <div className="space-y-4">
               {paginatedCommits.map((commit) => {
                 const isLatest = latestCommitPerRepo.has(commit.id);
@@ -112,12 +119,12 @@ export default function ActivityPage() {
                     href={commit.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative flex gap-4 pl-8 py-2"
+                    className="group relative flex gap-4 pl-10 py-3"
                   >
-                    <div className={`absolute left-0 top-3 w-4 h-4 rounded-full border-2 transition-all duration-200 z-10 ${
+                    <div className={`absolute left-1.5 top-4 w-3 h-3 rounded-full border-2 transition-all duration-200 bg-[var(--bg)] ${
                       isLatest 
-                        ? 'bg-[var(--bronzer)] border-[var(--bronzer)] group-hover:scale-110' 
-                        : 'bg-[var(--callout-bg)] border-[var(--callout-border)] group-hover:border-[var(--bronzer)] group-hover:bg-[var(--bronzer)]/20'
+                        ? 'border-[var(--bronzer)] bg-[var(--bronzer)] group-hover:scale-125 shadow-lg shadow-[var(--bronzer)]/30' 
+                        : 'border-[var(--callout-border)] group-hover:border-[var(--bronzer)] group-hover:bg-[var(--bronzer)]/20'
                     }`}></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
