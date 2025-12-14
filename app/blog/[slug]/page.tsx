@@ -195,7 +195,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       </ScaleIntro>
 
       {/* Article Content */}
-      <main className="animate-fade-in" style={{ animationDelay: `${(post.metadata.title.length + (post.metadata.summary?.length || 0)) * 20 + 300}ms` }}>
+      <main>
         <div className="prose w-full">
           <CustomMDX source={post.content} />
         </div>

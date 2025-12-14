@@ -15,21 +15,21 @@ export default function HeroContent() {
 
   return (
     <div className="w-full flex flex-col items-start lg:items-center gap-6 lg:gap-8">
-      <div className="w-full flex flex-col lg:flex-row items-center lg:items-center gap-8 lg:gap-12">
+      <div className="w-full flex flex-row items-center gap-4 sm:gap-6 lg:gap-12 pt-4 lg:pt-0">
         {/* Gravatar */}
         <div
-          className={`flex-shrink-0 self-start lg:self-center ${
+          className={`flex-shrink-0 ${
             mounted ? "animate-avatar-intro" : "opacity-0"
           }`}
         >
-          <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-30 lg:h-30 rounded-full overflow-hidden">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-[8vw] lg:h-[8vw] rounded-full overflow-hidden">
             <ProfileImage />
           </div>
         </div>
 
         {/* Text */}
         <h1
-          className="text-[10vw] sm:text-[10vw] lg:text-[8vw] font-semibold leading-none self-start lg:self-center whitespace-nowrap"
+          className="text-[9vw] sm:text-[10vw] lg:text-[8vw] font-semibold leading-none whitespace-nowrap tracking-tight lg:tracking-normal"
           style={{ color: "var(--text-color)" }}
         >
           <ShimmerText text={text} />

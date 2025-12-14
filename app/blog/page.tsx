@@ -1,8 +1,7 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { BlogPosts } from "app/components/posts";
 import { RiArrowRightUpLine } from "react-icons/ri";
 import { SearchFilter } from "../components/SearchFilter";
-import BoxLoader from "../components/BoxLoader";
 
 export const revalidate = 3600;
 
@@ -70,31 +69,15 @@ export default function Page() {
       </p>
 
       <div className="mb-6">
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center h-12">
-              <BoxLoader size="sm" />
-            </div>
-          }
-        >
-          <SearchFilter />
-        </Suspense>
+        <SearchFilter />
       </div>
 
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-32">
-            <BoxLoader />
-          </div>
-        }
-      >
-        <BlogPosts
-          showTags={true}
-          showBorders={false}
-          showPublicationYear={true}
-          groupByYear={true}
-        />
-      </Suspense>
+      <BlogPosts
+        showTags={true}
+        showBorders={false}
+        showPublicationYear={true}
+        groupByYear={true}
+      />
     </section>
     </>
   );
