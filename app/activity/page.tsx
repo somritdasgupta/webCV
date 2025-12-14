@@ -109,23 +109,31 @@ export default function ActivityPage() {
       ) : (
         <>
           <div className="relative mb-8">
-            <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-[var(--callout-border)]"></div>
             <div className="space-y-4">
-              {paginatedCommits.map((commit) => {
+              {paginatedCommits.map((commit, index) => {
                 const isLatest = latestCommitPerRepo.has(commit.id);
+                const isLast = index === paginatedCommits.length - 1;
                 return (
-                  <Link
-                    key={commit.id}
-                    href={commit.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative flex gap-4 pl-10 py-3"
-                  >
-                    <div className={`absolute left-1.5 top-4 w-3 h-3 rounded-full border-2 transition-all duration-200 bg-[var(--bg)] ${
-                      isLatest 
-                        ? 'border-[var(--bronzer)] bg-[var(--bronzer)] group-hover:scale-125 shadow-lg shadow-[var(--bronzer)]/30' 
-                        : 'border-[var(--callout-border)] group-hover:border-[var(--bronzer)] group-hover:bg-[var(--bronzer)]/20'
-                    }`}></div>
+                  <div key={commit.id} className="relative">
+                    {/* Timeline line segments */}
+                    {index > 0 && (
+                      <div className="absolute left-2 -top-2 w-0.5 h-2 bg-[var(--callout-border)]"></div>
+                    )}
+                    {!isLast && (
+                      <div className="absolute left-2 bottom-0 w-0.5 h-2 bg-[var(--callout-border)]"></div>
+                    )}
+                    
+                    <Link
+                      href={commit.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative flex gap-4 pl-8 py-3"
+                    >
+                      <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 transition-all duration-200 ${
+                        isLatest 
+                          ? 'border-[var(--bronzer)] bg-[var(--bronzer)] group-hover:scale-110 shadow-lg shadow-[var(--bronzer)]/30' 
+                          : 'border-[var(--callout-border)] bg-[var(--bg)] group-hover:border-[var(--bronzer)] group-hover:bg-[var(--bronzer)]/20'
+                      }`}></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium text-[var(--text-color)] group-hover:text-[var(--bronzer)] transition-colors truncate">
@@ -147,7 +155,8 @@ export default function ActivityPage() {
                   <span className="text-xs text-[var(--text-p)]/60 flex-shrink-0">
                     {formatTime(commit.timestamp)}
                   </span>
-                  </Link>
+                    </Link>
+                  </div>
                 );
               })}
             </div>
