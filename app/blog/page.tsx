@@ -1,7 +1,8 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { BlogPosts } from "app/components/posts";
 import { RiArrowRightUpLine } from "react-icons/ri";
 import { SearchFilter } from "../components/SearchFilter";
+import BoxLoader from "../components/BoxLoader";
 
 export const revalidate = 3600;
 
@@ -68,16 +69,18 @@ export default function Page() {
         interesting.{" "}
       </p>
 
-      <div className="mb-6">
-        <SearchFilter />
-      </div>
+      <Suspense fallback={<div className="flex justify-center py-8"><BoxLoader /></div>}>
+        <div className="mb-6">
+          <SearchFilter />
+        </div>
 
-      <BlogPosts
-        showTags={true}
-        showBorders={false}
-        showPublicationYear={true}
-        groupByYear={true}
-      />
+        <BlogPosts
+          showTags={true}
+          showBorders={false}
+          showPublicationYear={true}
+          groupByYear={true}
+        />
+      </Suspense>
     </section>
     </>
   );

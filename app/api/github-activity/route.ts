@@ -1,48 +1,71 @@
 import { NextResponse } from "next/server";
 
-export const revalidate = 300; // 5 minutes
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const token = process.env.GITHUB_TOKEN;
 
   if (!token) {
-    return NextResponse.json(
-      { error: "GitHub token not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json([]);
   }
 
-  const response = await fetch(
-    "https://api.github.com/users/somritdasgupta/events/public?per_page=50",
-    {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-        Authorization: `token ${token}`,
-      },
-      next: { revalidate: 300 },
+  try {
+    const reposResponse = await fetch(
+      "https://api.github.com/users/somritdasgupta/repos?per_page=100&sort=updated",
+      {
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+          Authorization: `token ${token}`,
+        },
+        cache: 'no-store',
+      }
+    );
+
+    if (!reposResponse.ok) {
+      return NextResponse.json([]);
     }
-  );
 
-  if (!response.ok) {
-    return NextResponse.json(
-      { error: "Failed to fetch activity" },
-      { status: 500 }
-    );
+    const repos = await reposResponse.json();
+    const allCommits: any[] = [];
+
+    for (const repo of repos.slice(0, 20)) {
+      try {
+        const commitsResponse = await fetch(
+          `https://api.github.com/repos/${repo.full_name}/commits?per_page=50&author=somritdasgupta`,
+          {
+            headers: {
+              Accept: "application/vnd.github.v3+json",
+              Authorization: `token ${token}`,
+            },
+            cache: 'no-store',
+          }
+        );
+
+        if (commitsResponse.ok) {
+          const commits = await commitsResponse.json();
+          if (Array.isArray(commits)) {
+            commits.forEach((commit: any) => {
+              if (commit?.commit?.author?.date) {
+                allCommits.push({
+                  id: commit.sha,
+                  repo: repo.full_name,
+                  branch: repo.default_branch,
+                  timestamp: commit.commit.author.date,
+                  url: commit.html_url,
+                });
+              }
+            });
+          }
+        }
+      } catch (error) {
+        continue;
+      }
+    }
+
+    allCommits.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    return NextResponse.json(allCommits.slice(0, 200));
+  } catch (error) {
+    return NextResponse.json([]);
   }
-
-  const events = await response.json();
-
-  // Filter only push events (commits)
-  const commits = events
-    .filter((event: any) => event.type === "PushEvent")
-    .map((event: any) => ({
-      id: event.id,
-      repo: event.repo.name,
-      branch: event.payload.ref.replace("refs/heads/", ""),
-      commitCount: event.payload.commits.length,
-      timestamp: event.created_at,
-      url: `https://github.com/${event.repo.name}/commits/${event.payload.ref.replace("refs/heads/", "")}`,
-    }));
-
-  return NextResponse.json(commits);
 }
