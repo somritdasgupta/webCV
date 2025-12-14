@@ -5,23 +5,29 @@ import { GeistMono } from "geist/font/mono";
 import { Navbar } from "./components/nav";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics as GAAnalytics } from "./components/Analytics";
 import Footer from "./components/footer";
-import { baseUrl } from "./sitemap";
+import { baseUrl } from "./lib/constants";
 import { SandpackCSS } from "./blog/[slug]/sandpack";
 import Script from "next/script";
+import AnimatedGrid from "./components/AnimatedGrid";
+
+export const revalidate = 43200;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Somrit Dasgupta - Developer and Engineer",
+    default: "Somrit Dasgupta - Software Engineer & Developer",
     template: "%s | Somrit Dasgupta",
   },
-  description:
-    "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
+  description: "Software Engineer specializing in web development, AI/ML, and cloud technologies. Explore my projects, blog posts, and technical insights.",
+  keywords: ["Somrit Dasgupta", "Software Engineer", "Web Developer", "Full Stack Developer", "React", "Next.js", "TypeScript", "AI/ML", "Cloud Computing", "Tech Blog"],
+  authors: [{ name: "Somrit Dasgupta", url: baseUrl }],
+  creator: "Somrit Dasgupta",
+  publisher: "Somrit Dasgupta",
   openGraph: {
-    title: "Somrit Dasgupta - Developer and Engineer",
-    description:
-      "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
+    title: "Somrit Dasgupta - Software Engineer & Developer",
+    description: "Software Engineer specializing in web development, AI/ML, and cloud technologies. Explore my projects, blog posts, and technical insights.",
     url: baseUrl,
     siteName: "Somrit Dasgupta",
     locale: "en_US",
@@ -29,14 +35,21 @@ export const metadata: Metadata = {
     images: [
       {
         type: "image/png",
-        width: 630,
+        width: 1200,
         height: 630,
         url: `${baseUrl}/api/og?title=${encodeURIComponent(
           "hey, I'm Somrit 👋"
         )}`,
-        alt: "Somrit Dasgupta - Developer and Engineer",
+        alt: "Somrit Dasgupta - Software Engineer & Developer",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Somrit Dasgupta - Software Engineer & Developer",
+    description: "Software Engineer specializing in web development, AI/ML, and cloud technologies.",
+    creator: "@somritdasgupta",
+    images: [`${baseUrl}/api/og?title=${encodeURIComponent("hey, I'm Somrit 👋")}`],
   },
   robots: {
     index: true,
@@ -47,6 +60,15 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+  },
+  alternates: {
+    canonical: baseUrl,
+    types: {
+      "application/rss+xml": `${baseUrl}/rss`,
     },
   },
 };
@@ -62,7 +84,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={cx(
-        "text-black bg-white dark:text-white dark:bg-black",
+        "text-black bg-transparent dark:text-white dark:bg-transparent",
         GeistSans.variable,
         GeistMono.variable
       )}
@@ -78,8 +100,37 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
         <link rel="apple-touch-icon" href="/favicon.png" />
         <meta name="theme-color" content="#fffbfb" />
-
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap"
+        />
         <SandpackCSS />
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                  page_title: document.title,
+                  page_location: window.location.href,
+                  send_page_view: true
+                });
+              `}
+            </Script>
+          </>
+        )}
 
         <script
           dangerouslySetInnerHTML={{
@@ -93,36 +144,70 @@ export default function RootLayout({
                   const mql = window.matchMedia('(prefers-color-scheme: dark)');
                   return mql.matches ? 'dark' : 'light';
                 }
+                
+                function updateThemeProperties(isDark) {
+                  const root = document.documentElement;
+                  if (isDark) {
+                    root.style.setProperty("--bg-color", "#151217");
+                    root.style.setProperty("--text-color", "#fefefe");
+                    root.style.setProperty("--text-p", "#a0c0be");
+                    root.style.setProperty("--bronzer", "#a78bfa");
+                    root.style.setProperty("--callout-bg", "#1f293493");
+                    root.style.setProperty("--callout-border", "#322d47");
+                    root.style.setProperty("--card-bg", "#1f293493");
+                    root.style.setProperty("--nav-pill", "#181120");
+                  } else {
+                    root.style.setProperty("--bg-color", "#fffbfb");
+                    root.style.setProperty("--text-color", "#471919");
+                    root.style.setProperty("--text-p", "#6a2a2a");
+                    root.style.setProperty("--bronzer", "#2e6754");
+                    root.style.setProperty("--callout-bg", "#fbf7f7");
+                    root.style.setProperty("--callout-border", "#c8c8c8b3");
+                    root.style.setProperty("--card-bg", "#f1f1f1e6");
+                    root.style.setProperty("--nav-pill", "#f6f8ff");
+                  }
+                }
+                
                 const colorMode = getInitialColorMode();
+                const isDark = colorMode === 'dark';
+                
                 document.documentElement.setAttribute('data-theme', colorMode);
                 document.documentElement.style.setProperty('color-scheme', colorMode);
-                if (colorMode === 'dark') {
+                
+                if (isDark) {
                   document.documentElement.classList.add('dark');
                   document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
                 } else {
                   document.documentElement.classList.remove('dark');
                   document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
                 }
+                
+                // Update CSS custom properties
+                updateThemeProperties(isDark);
 
-                // Listen for changes in color scheme
                 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                   const newColorMode = e.matches ? 'dark' : 'light';
+                  const newIsDark = newColorMode === 'dark';
+                  
                   document.documentElement.setAttribute('data-theme', newColorMode);
                   document.documentElement.style.setProperty('color-scheme', newColorMode);
-                  if (newColorMode === 'dark') {
+                  
+                  if (newIsDark) {
                     document.documentElement.classList.add('dark');
                     document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0a0310');
                   } else {
                     document.documentElement.classList.remove('dark');
                     document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fffbfb');
                   }
+                  
+                  // Update CSS custom properties for system theme changes
+                  updateThemeProperties(newIsDark);
                 });
               })();
             `,
           }}
         />
 
-        {/* Person schema (Somrit) */}
         <Script
           id="person-schema"
           type="application/ld+json"
@@ -133,7 +218,7 @@ export default function RootLayout({
               name: "Somrit Dasgupta",
               jobTitle: "Software Engineer",
               description:
-                "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
+                "Personal website and blog of Somrit Dasgupta - a developer, engineer & extraordinaire",
               image: `${baseUrl}/somritdasgupta.jpg`,
               sameAs: [
                 "https://www.instagram.com/somritdasgupta",
@@ -144,7 +229,6 @@ export default function RootLayout({
           }}
         />
 
-        {/* WebSite schema */}
         <Script
           id="website-schema"
           type="application/ld+json"
@@ -153,35 +237,71 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               url: baseUrl,
-              name: "Somrit Dasgupta - Developer and Engineer",
+              name: "Somrit Dasgupta - Software Engineer & Developer",
               description:
-                "Personal website and blog of Somrit Dasgupta, a developer and engineer.",
-              publisher: {
+                "Software Engineer specializing in web development, AI/ML, and cloud technologies. Explore my projects, blog posts, and technical insights.",
+              author: {
                 "@type": "Person",
                 name: "Somrit Dasgupta",
+                url: baseUrl,
+                jobTitle: "Software Engineer",
+                sameAs: [
+                  "https://github.com/somritdasgupta",
+                  "https://www.linkedin.com/in/somritdasgupta",
+                  "https://www.instagram.com/somritdasgupta",
+                ],
+              },
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate: `${baseUrl}/blog?search={search_term_string}`,
+                },
+                "query-input": "required name=search_term_string",
               },
             }),
           }}
         />
-
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-4EM6ML5G79"
-          strategy="afterInteractive"
+          id="breadcrumb-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: baseUrl,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Blog",
+                  item: `${baseUrl}/blog`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: "Projects",
+                  item: `${baseUrl}/projects`,
+                },
+              ],
+            }),
+          }}
         />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-4EM6ML5G79');
-          `}
-        </Script>
       </head>
-      <body className="antialiased mx-4 mt-8 lg:mx-auto font-sans">
-        <main className="max-w-7xl mx-auto flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-4">
+      <body className="antialiased mx-4 mt-2 lg:mx-auto font-sans">
+        <AnimatedGrid />
+        <main className="max-w-8xl mx-auto w-full flex-auto min-w-0 mt-4 lg:mt-6 flex flex-col px-2 md:px-8 lg:pr-8 xl:pr-12 relative z-10 pb-20 lg:pb-8">
           <Navbar />
-          {children}
-          <Footer />
+          <GAAnalytics />
+          <div className="lg:mt-0">{children}</div>
+          <div className="lg:hidden mt-16">
+            <Footer />
+          </div>
           <Analytics />
           <SpeedInsights />
         </main>

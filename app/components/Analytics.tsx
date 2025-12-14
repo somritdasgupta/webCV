@@ -14,8 +14,9 @@ function AnalyticsComponent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (typeof window.gtag !== "undefined") {
-      window.gtag("config", process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!, {
+    const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+    if (typeof window.gtag !== "undefined" && gaId) {
+      window.gtag("config", gaId, {
         page_path: pathname + searchParams.toString(),
       });
     }

@@ -1,0 +1,121 @@
+---
+title: "Right, So Why Am I Still Coding at 1 AM?"
+publishedAt: "2024-04-28"
+summary: "Let's be honest. The workday is over, but the CLI is still open. Why I code for fun, and why it's not as crazy as it sounds."
+tags: [career, development, opinions]
+---
+
+The clock hits 1 AM. I've just spent the last two hours wrestling with a legacy Java service that has more XML configuration than actual logic. The final PR is up, Slack is closed, and my brain feels like a wrung-out sponge. The sane, logical human response is to shut the lid on the work laptop, grab some non-oily food, watch the football highlights, and let my brain cells go into low-power mode.
+
+## But that's not what's happening. The work machine is off, but my PC is on. The terminal is open, and I'm elbow-deep in a Rust script to scrape financial data because I got annoyed with an API's rate limits.
+
+The clock hits 1 AM. I've just spent the last two hours wrestling with a legacy Java service that has more XML configuration than actual logic. The final PR is up, Slack is closed, and my brain feels like a wrung-out sponge. The sane, logical human response is to shut the lid on the work laptop, grab some non-oily food, watch the football highlights, and let my brain cells go into low-power mode.
+
+But that's not what's happening. The work machine is off, but my personal Mac is on. The terminal is open, and I'm elbow-deep in a Rust script to scrape financial data because I got annoyed with an API's rate limits.
+
+Why? It's the ultimate question. Are we just gluttons for punishment? Addicted to the screen's glow? Maybe. But the truth is, this isn't unpaid overtime. This is the antidote to my day job.
+
+### My Sandbox, My Rules, My Mistakes
+
+Let's be brutally honest about the 9-to-5. Even in the best jobs, you're playing in someone else's sandbox. You're a highly-skilled professional working within a labyrinth of constraints: the tech debt from a decade ago, the architectural decisions made by people who have long since left the company, the coding style guide that insists on `kebab-case` for some reason. You're a cog. A vital, well-compensated cog, but a cog nonetheless.
+
+My personal project folder is my escape from that. It's my own private universe where I am the benevolent, and occasionally reckless, dictator.
+
+**It's a vacation from technical debt.** My day job is often about carefully navigating and paying down debt. My side project starts with a beautiful, pristine `git init`. There is no legacy code. There are no existing users to disappoint. It's a clean slate—a feeling so rare and wonderful it's almost therapeutic.
+
+**I have absolute, unquestioned control.** Last month, I spent an entire weekend over-engineering a smart home dashboard using Docker, Grafana, and a Raspberry Pi, just to display the temperature in my room. The stock app does it in one tap. But my dashboard has a slick, custom font and updates in real-time via WebSockets. It was a ridiculous, pointless, and deeply satisfying endeavor.
+
+<Callout emoji="💡">
+  This is the purest form of problem-solving. There's no bureaucracy. No
+  meetings to "align on the go-forward strategy." It's just me, a problem I
+  invented, and the raw, uncut dopamine hit when the damn thing finally compiles
+  and runs. It's a video game where I write the code for the game *and* get the
+  high score.
+</Callout>
+
+### Down the Open-Source Rabbit Hole
+
+This solitary obsession is often the gateway drug to something bigger: the global, chaotic, and wonderful world of open source. It never starts as some grand ambition. It starts with a tiny annoyance. A typo in the documentation. A misleading error message.
+
+You think, "Someone should fix that." Then you think, "Wait, _I_ can fix that."
+
+I'll never forget the sheer terror of my first PR. I was convinced I was about to be flamed into oblivion for missing some unwritten rule. I clicked "Create pull request" and braced for impact, expecting a comment like, "Did you even read the contribution guidelines, you amateur?"
+
+Instead, what I got was: "Hey, thanks for catching this! Good spot. Could you add a quick test case for it?" It was welcoming. It was constructive. And when that PR was finally merged, it was a bigger thrill than shipping a major feature at work. My code—my tiny, insignificant change—was now part of a tool used by thousands of people.
+
+And it's not just about code. Sometimes the best contribution is triaging new issues, improving the documentation, or just helping someone else in a discussion forum. It's a community where your reputation is built on the quality of your ideas and your willingness to help.
+
+This world operates on a different currency. The motivations are night and day compared to corporate life.
+
+<Table
+  data={{
+    headers: ["Factor", "Day Job Project", "Open Source Contribution"],
+    rows: [
+      [
+        "The Goal",
+        "Ship the feature on the roadmap, on time.",
+        "Fix the one thing that's broken or annoying me.",
+      ],
+      [
+        "The Code",
+        "Follows established patterns, is risk-averse.",
+        "Must be clean, well-tested, and justify its existence.",
+      ],
+      [
+        "The Feedback",
+        "Polite, structured, sometimes vague.",
+        "Direct, brutally honest, but almost always educational.",
+      ],
+      [
+        "The Reward",
+        "Paycheck and maybe a 'good job' on Slack.",
+        "A 'thank you' from a stranger and your name in the `git log`.",
+      ],
+    ],
+  }}
+/>
+
+### My Personal R&D Department
+
+I'll be blunt: a huge part of this is about career self-preservation. The tech world moves at a terrifying speed. The framework that's hot today is legacy tomorrow. Your company isn't going to halt production for six months so everyone can learn the new "Next.js killer."
+
+So, you have two choices: become a dinosaur or run your own R&D department on nights and weekends.
+
+At work, if I want to introduce a new library, it involves a proposal, three meetings, a security review, and a presentation to an architectural committee. On my side project? It's `yarn add cool-new-lib` and I'm testing it 30 seconds later. I can figure out if it's genius or garbage on my own time.
+
+This interactive component captures the essence of those late-night coding sessions - tracking commits, coffee consumption, and that unique productivity that comes with coding in the quiet hours:
+
+<LiveCode mode="preview" fileNames={["LateNightCoding.js"]} template="react" />
+
+This isn't just "learning." It's hands-on, practical research. It's how I form opinions that are based on experience, not just on a Hacker News comment thread. It’s my hedge against stagnation.
+
+### So, Is It Really Worth It?
+
+This all sounds great, but let's not romanticize it. This lifestyle is a double-edged sword. It demands real sacrifice.
+
+<ProConsComparison
+  pros={[
+    "You learn new tech way faster than at any job.",
+    "You have total creative and technical control.",
+    "It builds a portfolio that proves you're passionate.",
+    "It's genuinely fun if you're a puzzle-solver.",
+    "You can connect with awesome people in open source.",
+  ]}
+  cons={[
+    "Burnout is a massive, ever-present risk.",
+    "It eats into your free time for other hobbies and life.",
+    "The 'always-on' mindset can be unhealthy as hell.",
+    "Your projects folder becomes a graveyard of good intentions.",
+    "Explaining 'yak shaving' to a non-tech friend is impossible.",
+  ]}
+/>
+
+That "graveyard of unfinished projects" isn't a failure, though. It's a library of lessons. Each one taught me something before I got distracted by the next shiny thing. That's a feature, not a bug.<Footnote id={1} text="Or so I tell myself to sleep at night." />
+
+So, why am I still sitting here at 11 PM, staring at a screen?
+
+It’s not some grand, poetic calling. It’s simpler. The day job is where I apply my skills. My side projects are where I forge them. It’s how I stay curious, how I keep from getting cynical, and how I remind myself that I don't just sling code for a paycheck—I genuinely love this stuff.
+
+Okay, this has been a solid bit of procrastination. But this Rust compiler isn't going to argue with itself. Back to it.
+
+<FootnoteList />

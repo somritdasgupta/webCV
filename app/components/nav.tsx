@@ -1,72 +1,183 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import SocialLinks from "./SocialLinks";
 
 const navItems = {
-  "/": {
-    name: "home",
-  },
-  "/blog": {
-    name: "blog",
-  },
-  "/projects": {
-    name: "projects",
-  },
+  "/": { name: "about" },
+  "/blog": { name: "writing" },
+  "/activity": { name: "activity" },
+  "/bookmarks": { name: "bookmarked" },
+};
+
+// Optimized animation variants
+const desktopVariants = {
+  hidden: { opacity: 0, x: 18 },
+  visible: { opacity: 1, x: 0 },
+};
+
+const mobileVariants = {
+  hidden: { opacity: 0, y: -30 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -24 },
+};
+
+const linkVariants = {
+  hover: { scale: 1.03 },
+  tap: { scale: 0.985 },
 };
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [activityView, setActivityView] = useState(0);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
   const pathname = usePathname();
+  const router = useRouter();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+  // Stable scroll handler using refs + useCallback for better performance
+  const handleScroll = useCallback(() => {
+    if (ticking.current) return;
 
-    window.addEventListener("scroll", handleScroll);
+    ticking.current = true;
+    requestAnimationFrame(() => {
+      const currentScrollY = window.scrollY;
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+
+      setIsScrolled(currentScrollY > 20);
+      lastScrollY.current = currentScrollY;
+      ticking.current = false;
+    });
   }, []);
 
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
   return (
-    <aside
-      className={`sticky top-2 left-0 z-100 rounded-xl h-12 w-fit transition-all ease duration-300 ${
-        isScrolled
-          ? "mb-6 px-2 bg-[var(--nav-pill)]/85 backdrop-blur-sm border-3 border-[var(--bronzer)]/50 transform hover:-translate-y-0.2"
-          : "bg-transparent border-transparent mb-6"
-      }`}
-    >
-      <nav
-        className="flex flex-row items-center -ml-[12px] text-[var(--text-p)]"
-        id="nav"
-      >
-        <div className="flex flex-row">
-          {Object.entries(navItems).map(([path, { name }]) => {
-            const isActive = pathname === path;
-            return (
-              <Link
-                key={path}
-                href={path}
-                className={`transition-all duration-300 relative py-1 px-2 m-1 ${
-                  isActive ? "font-black" : ""
-                } ${
+    <>
+      <AnimatePresence mode="wait">
+        {isVisible && (
+          <motion.div
+            className="fixed top-2 left-0 right-0 z-50 flex justify-center"
+            variants={mobileVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            transition={{ duration: 0.28, ease: "easeOut" }}
+          >
+            <div className="w-full px-4 md:px-8 mx-auto max-w-8xl">
+              <div
+                className={`nav-shimmer bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-2xl px-3 py-1 shadow-xl transition-all duration-150 overflow-hidden ${
                   isScrolled
-                    ? "hover:text-[var(--text-p)]/80 hover:font-semibold active:transform active:translate-y-0.5 ease duration-300"
-                    : "hover:text-[var(--text-p)]/80 hover:font-semibold active:transform active:translate-y-0 ease duration-300"
+                    ? "shadow-black/10 dark:shadow-black/40"
+                    : "shadow-black/5 dark:shadow-black/20"
                 }`}
               >
-                {name}
-              </Link>
-            );
-          })}
-          <ThemeSwitcher className="ml-1" />
-        </div>
-      </nav>
-    </aside>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    {Object.entries(navItems).map(([path, { name }]) => {
+                      const isActive = pathname === path || (pathname === "/bookmarks" && path === "/activity");
+                      
+                      if (path === "/activity" && (pathname === "/activity" || pathname === "/bookmarks")) {
+                        const views = ["projects", "commits", "bookmarked"];
+                        const routes = ["/activity", "/activity", "/bookmarks"];
+                        const currentIndex = pathname === "/bookmarks" ? 2 : activityView;
+                        
+                        const handleToggle = () => {
+                          const nextIndex = (currentIndex + 1) % 3;
+                          setActivityView(nextIndex);
+                          if (nextIndex === 2) {
+                            router.push("/bookmarks");
+                          } else {
+                            router.push("/activity");
+                            window.dispatchEvent(new CustomEvent("activityViewChange", { detail: nextIndex }));
+                          }
+                        };
+                        
+                        return (
+                          <motion.button
+                            key={path}
+                            onClick={handleToggle}
+                            className="flex items-center gap-2 px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity"
+                          >
+                            <span className="text-[var(--nav-text-active)] font-extrabold text-xs lowercase">{views[currentIndex]}</span>
+                            <div className="flex gap-1">
+                              {[0, 1, 2].map((i) => (
+                                <div
+                                  key={i}
+                                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                    i === currentIndex ? "bg-[var(--nav-text-active)] scale-125" : "bg-[var(--nav-text)]/30"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </motion.button>
+                        );
+                      }
+                      
+                      if (path === "/bookmarks") return null;
+                      
+                      return (
+                        <motion.div
+                          key={path}
+                          variants={linkVariants}
+                          whileHover="hover"
+                          whileTap="tap"
+                          transition={{ duration: 0.12, ease: "easeOut" }}
+                        >
+                          <Link
+                            href={path}
+                            aria-current={isActive ? "page" : undefined}
+                            className={`flex items-center justify-center px-2 py-0.5 rounded-md transition-all duration-150 relative ${
+                              isActive
+                                ? "text-[var(--nav-text-active)] font-extrabold text-sm scale-[1.02]"
+                                : "text-[var(--nav-text)] hover:text-[var(--nav-text-hover)]"
+                            }`}
+                          >
+                            <span className="relative z-10 lowercase text-xs">
+                              {name}
+                            </span>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <a
+                      href="/Resume.pdf"
+                      className="hidden sm:inline-flex items-center justify-center h-6 px-2 text-[var(--nav-text)]/75 hover:text-[var(--nav-text-active)] transition-colors duration-150 rounded-md text-xs"
+                    >
+                      resume
+                    </a>
+                    <div className="ml-2">
+                      <ThemeSwitcher compact />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div
+        className={
+          pathname === "/" ? "h-8 md:h-10 lg:h-8" : "h-12 md:h-16 lg:h-12"
+        }
+      />
+    </>
   );
 }

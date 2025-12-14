@@ -1,4 +1,0 @@
-ignoredBuiltDependencies:
-  - '@vercel/speed-insights'
-  - es5-ext
-  - sharp

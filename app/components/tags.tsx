@@ -20,16 +20,17 @@ const Tags: React.FC<TagsProps> = ({
       onTagsSelect(tag);
     };
 
-  // Determine if "All" should be selected
   const isAllSelected = selectedTags === null || selectedTags === "";
 
   return (
     <div className="flex flex-wrap gap-2 py-2 px-0 mb-4">
       <Link
         href="/blog"
-        className={`text-xs px-3 py-1 rounded-md transition-all ease ${
-          isAllSelected ? "bg-[var(--bronzer)]/30" : "bg-[#6169793f]"
-        } transition-colors ease cursor-pointer`}
+        className={`text-xs px-3 py-1 rounded border transition-colors ${
+          isAllSelected
+            ? "bg-[var(--text-color)] text-[var(--bg-color)] border-[var(--text-color)]"
+            : "text-[var(--text-p)] border-[var(--callout-border)] hover:border-[var(--bronzer)]"
+        }`}
         onClick={handleClick(null)}
       >
         All
@@ -40,9 +41,11 @@ const Tags: React.FC<TagsProps> = ({
           <Link
             key={tag}
             href={`/blog?tag=${encodeURIComponent(tag)}`}
-            className={`text-xs px-2 py-1 rounded-md transition-all  hover:scale-105 ease ${
-              selectedTags === tag ? "bg-[var(--bronzer)]/30" : "bg-[#6169793f]"
-            } transition-colors ease cursor-pointer`}
+            className={`text-xs px-2 py-1 rounded border transition-colors ${
+              selectedTags === tag
+                ? "bg-[var(--text-color)] text-[var(--bg-color)] border-[var(--text-color)]"
+                : "text-[var(--text-p)] border-[var(--callout-border)] hover:border-[var(--bronzer)]"
+            }`}
             onClick={handleClick(tag)}
           >
             {tag} {count > 0 && `(${count})`}

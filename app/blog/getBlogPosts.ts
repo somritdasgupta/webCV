@@ -52,7 +52,6 @@ async function getMDXFiles(dir: string): Promise<string[]> {
       (file) => path.extname(file) === ".mdx"
     );
   } catch (error) {
-    console.error(`Error reading directory ${dir}:`, error);
     return [];
   }
 }
@@ -64,7 +63,6 @@ async function readMDXFile(
     const rawContent = await fs.readFile(filePath, "utf-8");
     return parseFrontmatter(rawContent);
   } catch (error) {
-    console.error(`Error reading file ${filePath}:`, error);
     return { metadata: {} as Metadata, content: "" };
   }
 }
@@ -81,5 +79,11 @@ export async function getBlogPosts(): Promise<
       return { metadata, slug, content };
     })
   );
-  return posts;
+
+  // Sort posts by publishedAt date in descending order (newest first)
+  return posts.sort((a, b) => {
+    const dateA = new Date(a.metadata.publishedAt);
+    const dateB = new Date(b.metadata.publishedAt);
+    return dateB.getTime() - dateA.getTime();
+  });
 }

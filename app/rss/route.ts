@@ -1,8 +1,7 @@
 import { getBlogPosts } from "app/blog/getBlogPosts";
-import { baseUrl } from "app/sitemap";
-import MarkdownIt from "markdown-it"; // Added Markdown parser
+import { baseUrl } from "app/lib/constants";
+import MarkdownIt from "markdown-it";
 
-// Initialize Markdown parser
 const markdownParser = new MarkdownIt();
 
 interface Metadata {
@@ -29,7 +28,6 @@ interface Post {
 export async function GET() {
   let allBlogs: Post[] = await getBlogPosts();
 
-  // Generate RSS Feed
   const rssFeed = `<?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
@@ -63,7 +61,7 @@ export async function GET() {
             : "";
           const content = post.content
             ? `<content:encoded><![CDATA[${markdownParser.render(post.content)}]]></content:encoded>`
-            : ""; // Convert Markdown to HTML
+            : "";
           const image = post.metadata.image
             ? `<media:thumbnail url="${escapeXml(post.metadata.image)}" />`
             : "";
@@ -78,7 +76,7 @@ export async function GET() {
             ? post.metadata.tags
                 .map((tag) => `<category>${escapeXml(tag)}</category>`)
                 .join("")
-            : ""; // Tags
+            : "";
 
           return `<item>
             <title>${title}</title>
@@ -105,7 +103,6 @@ export async function GET() {
   });
 }
 
-// Utility function to escape XML special characters
 function escapeXml(unsafe: string) {
   return unsafe
     .replace(/&/g, "&amp;")

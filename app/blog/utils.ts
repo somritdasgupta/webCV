@@ -1,4 +1,8 @@
 export function formatDate(date: string, includeRelative = false): string {
+  if (!date) {
+    return "";
+  }
+
   const currentDate = new Date();
   let formattedDate = "";
 

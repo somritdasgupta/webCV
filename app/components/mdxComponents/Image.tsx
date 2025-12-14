@@ -11,9 +11,9 @@ interface ImageProps {
 }
 
 const commonStyles =
-  "w-full h-auto rounded-lg shadow-md transition-transform transform hover:scale-105 relative bg-white";
+  "w-full h-auto transition-transform transform hover:scale-[1.02] relative bg-transparent my-8 rounded-lg";
 const altTextStyles =
-  "absolute bottom-0 right-0 bg-[var(--bronzer)]/60 text-white text-xs italic p-0.5 rounded-tl-lg rounded-br-lg";
+  "absolute bottom-2 right-2 bg-[var(--bronzer)]/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm";
 
 const Image: React.FC<ImageProps> = ({ src, alt, width, height }) => {
   const [imgDimensions, setImgDimensions] = useState<{
@@ -46,7 +46,7 @@ const Image: React.FC<ImageProps> = ({ src, alt, width, height }) => {
           alt={alt}
           width={finalWidth}
           height={finalHeight}
-          className="w-full h-auto rounded-lg bg-white"
+          className="w-full h-auto bg-transparent rounded-lg shadow-sm"
           loading="lazy"
         />
       ) : (
@@ -55,7 +55,7 @@ const Image: React.FC<ImageProps> = ({ src, alt, width, height }) => {
           alt={alt}
           width={finalWidth}
           height={finalHeight}
-          className="w-full h-auto rounded-lg bg-white"
+          className="w-full h-auto bg-transparent rounded-lg shadow-sm"
         />
       )}
       <div className={altTextStyles}>{alt}</div>

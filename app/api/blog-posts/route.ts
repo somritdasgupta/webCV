@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getBlogPosts } from "../../blog/getBlogPosts";
 
+// Revalidate every hour to ensure fresh content
+export const revalidate = 3600;
+
 // This handler will respond to GET requests to /api/blog-posts
 export async function GET(request: Request) {
   const url = new URL(request.url);

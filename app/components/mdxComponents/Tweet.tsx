@@ -14,7 +14,6 @@ const TweetContent = async ({ id, components, onError }: TweetProps) => {
         if (onError) {
           error = onError(err);
         } else {
-          console.error(err);
           error = err;
         }
       })
@@ -32,10 +31,12 @@ export const ReactTweet = (props: TweetProps) => <TweetContent {...props} />;
 
 export async function TweetComponent({ id }: { id: string }) {
   return (
-    <div className="flex justify-center">
-      <Suspense fallback={<TweetSkeleton />}>
-        <ReactTweet id={id} />
-      </Suspense>
+    <div className="my-12 w-full flex justify-center">
+      <div className="w-full max-w-2xl">
+        <Suspense fallback={<TweetSkeleton />}>
+          <ReactTweet id={id} />
+        </Suspense>
+      </div>
     </div>
   );
 }

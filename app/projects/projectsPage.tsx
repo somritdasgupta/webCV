@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { RiArrowRightUpLine } from "react-icons/ri";
 import { FiExternalLink } from "react-icons/fi";
 import { MdRocketLaunch } from "react-icons/md";
+import BoxLoader from "../components/BoxLoader";
 
 const Resume = () => (
   <div className="flex ml-4 mt-2 text-xs">
@@ -11,9 +12,9 @@ const Resume = () => (
       href="/Resume.pdf"
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center text-violet-400 font-medium hover:scale-105 transition-all duration-300 ease"
+      className="flex items-center text-[var(--bronzer)] font-medium hover:underline transition-colors"
     >
-      <RiArrowRightUpLine className="animate-pulse" />
+      <RiArrowRightUpLine />
       <span>RESUME</span>
     </a>
   </div>
@@ -63,82 +64,53 @@ export default function ProjectsPage() {
 
   return (
     <div className="text-white">
-      <div className="flex items-center mb-4">
-        <h1 className="bg-color font-extrabold text-3xl tracking-tight">
-          my background
-        </h1>
-        <Resume />
-      </div>
-      <section className="mb-8 border-b border-[var(--callout-border)]">
-        <div className="space-y-4 mb-4">
-          <p className="!text-[var(--text-p)]/80">
-            I completed my schooling at St. Stephens School, where I developed
-            an{" "}
-            <u>
-              <b>interest</b>
-            </u>{" "}
-            in computers and programming.
-          </p>
-          <p className="!text-[var(--text-p)]/80">
-            Afterwards, I earned a{" "}
-            <u>
-              <b>B.Tech</b>
-            </u>{" "}
-            in Computer Science and Engineering from Maulana Abul Kalam Azad
-            University of Technology, where I learned low-level programming
-            using java. Since then, I've worked on some personal projects, and
-            I'd{" "}
-            <u>
-              <b>love</b>
-            </u>{" "}
-            for you to check them out.
-          </p>
-        </div>
-      </section>
       <section className="mb-4">
         {error && <p className="text-red-500">{error}</p>}
-        <div className="space-y-8">
+        <div className="space-y-6">
           {repos.length > 0 ? (
             repos.map((repo: any) => (
-              <div key={repo.id} className="flex items-start lg:items-center">
+              <div
+                key={repo.id}
+                className="border-l-4 border-[var(--callout-border)] pl-4 py-3"
+              >
                 <div className="flex-1">
-                  <h3 className="text-2xl font-semibold flex items-center flex-wrap gap-2">
-                    {repo.name}
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-semibold text-[var(--text-color)]">
+                      {repo.name}
+                    </h3>
                     <div className="flex items-center gap-2">
                       <a
                         href={repo.html_url}
-                        className="text-xs !font-medium text-violet-400 hover:scale-105 flex items-center transition-all duration-300 ease"
+                        className="text-xs font-medium text-[var(--bronzer)] hover:underline transition-colors"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <RiArrowRightUpLine className="text-xs animate-pulse" />
-                        <span>GITHUB</span>
+                        GitHub
                       </a>
                       {repo.homepage && (
                         <a
                           href={repo.homepage}
-                          className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full
-                            bg-emerald-400/10 text-emerald-400 border border-emerald-400/20
-                            hover:bg-emerald-400/20 transition-all duration-300 ease-in-out transform hover:scale-105"
+                          className="text-xs font-medium px-2 py-1 bg-[var(--text-color)] text-[var(--bg-color)] rounded hover:opacity-80 transition-opacity"
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <span className="flex items-center gap-1">
-                            <MdRocketLaunch size={12} />
-                          </span>
+                          Live Demo
                         </a>
                       )}
                     </div>
-                  </h3>
+                  </div>
                   {repo.description && (
-                    <p className="!text-[var(--text-p)]/80 mb-2">
+                    <p className="text-[var(--text-p)] mb-3">
                       {repo.description}
                     </p>
                   )}
-                  {repo.topics && (
-                    <div className="mt-2 flex flex-wrap gap-2">
+                  {repo.topics && repo.topics.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
                       {repo.topics.map((topic: string, index: number) => (
-                        <span key={index} className="custom-topic-pill">
+                        <span
+                          key={index}
+                          className="text-xs px-2 py-1 text-[var(--text-p)] bg-[var(--callout-bg)] border border-[var(--callout-border)] rounded"
+                        >
                           {topic}
                         </span>
                       ))}
@@ -149,7 +121,7 @@ export default function ProjectsPage() {
             ))
           ) : (
             <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+              <BoxLoader />
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@
 title: "The markdownX guide"
 publishedAt: "2023-01-01"
 summary: "A detailed demonstration of various MDX features including callouts, tables, live code examples, and more supported in the blog"
-tags: [guides, open source]
+tags: [guides, development]
 ---
 
 This is certainly more fun than I had expected, in this post I will be shortly guiding you to the amazing MDX **_(that X in here is for React-Components)_** features and also custom MDX components that I can use to compose those interesting blog posts that I do rarely write 😂
@@ -49,17 +49,16 @@ _This is how italic text looks like_
 
 ### BlockQuote
 
-> “The best part of beauty is that which no picture can express”– Francis Bacon
+> "The best part of beauty is that which no picture can express"– Francis Bacon
 
 <Image
   src="https://picsum.photos/900/600"
   alt="This is an auto-image example from picsum"
 />
 
-
 ### Table
 
-Tables are useful for presenting structured data in a clear, organized manner. Here’s an example of a table I use to display various levels of experience, learning appetite, project sizes, and solutions:
+Tables are useful for presenting structured data in a clear, organized manner. Here's an example of a table I use to display various levels of experience, learning appetite, project sizes, and solutions:
 
 <Table
   data={{
@@ -123,13 +122,17 @@ export default Greeting;
 
 ### Live Code
 
-Live code allows interactive code snippets and their outputs directly in my webpage. Here’s how I use a live code block with the Angular template:
+Live code allows interactive code snippets and their outputs directly in my webpage. Here's an interactive MDX editor that demonstrates the power of mixing markdown with React components:
 
-<LiveCode mode="preview" fileName={["App.js"]} template="angular" />
+<LiveCode
+  mode="preview"
+  fileNames={["MDXDemo.js", "MDXComponents.js"]}
+  template="react"
+/>
 
 <Callout emoji="💡">
   **Callout:** Alright this block is a callout block to highlight essential
-  information that readers shouldn’t overlook. Below is how the tweet card looks
+  information that readers shouldn't overlook. Below is how the tweet card looks
   like.
 </Callout>
 

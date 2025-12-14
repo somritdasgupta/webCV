@@ -1,4 +1,3 @@
-// Import React and MDXRemote
 import React from "react";
 import { MDXRemote } from "next-mdx-remote/rsc";
 

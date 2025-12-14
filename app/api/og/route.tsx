@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            position: "relative", // Making the parent container position relative
+            position: "relative",
             backgroundImage: `url(${baseUrl}/og.png)`,
             backgroundSize: "cover",
             padding: "50px",
@@ -39,7 +39,6 @@ export async function GET(req: NextRequest) {
             overflow: "hidden",
           }}
         >
-          {/* Dark overlay */}
           <div
             style={{
               position: "absolute",
@@ -53,7 +52,7 @@ export async function GET(req: NextRequest) {
               justifyContent: "center",
               backgroundSize: "cover",
               overflow: "hidden",
-              backgroundColor: "rgba(0, 0, 0, 0.25)", // Dark overlay with 25% opacity
+              backgroundColor: "rgba(0, 0, 0, 0.25)",
               zIndex: -1,
             }}
           />
@@ -99,7 +98,6 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("Error generating OG image:", error);
     return new Response("Failed to generate image", { status: 500 });
   }
 }

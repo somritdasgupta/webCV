@@ -9,7 +9,6 @@ import {
   FiShare2,
 } from "react-icons/fi";
 import { TbRewindBackward10, TbRewindForward10 } from "react-icons/tb";
-import { RiSpeedLine } from "react-icons/ri";
 
 interface Heading {
   id: string;
@@ -22,7 +21,7 @@ export function BlogHeader() {
   const [activeId, setActiveId] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
   const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
   const [pitch, setPitch] = useState(1);
   const utteranceRef = useRef<{
@@ -31,32 +30,110 @@ export function BlogHeader() {
     position: number;
   } | null>(null);
   const [currentPosition, setCurrentPosition] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
   const [readingTime, setReadingTime] = useState("");
+  const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // More specific voice selection
+  // For AI-powered voices (optional upgrade):
+  // Consider using ElevenLabs, PlayHT, or Google Cloud TTS for more natural reading
+  // These services offer emotion-aware, context-sensitive speech synthesis
+
+  // Extract only readable content from article, excluding metadata and schema
+  const extractReadableContent = (): string => {
+    const article = document.querySelector("article");
+    if (!article) return "";
+
+    const articleClone = article.cloneNode(true) as HTMLElement;
+
+    // Remove all metadata, schema, and non-readable elements
+    const selectorsToRemove = [
+      "script",
+      "style",
+      "noscript",
+      "iframe",
+      "object",
+      "embed",
+      "svg",
+      '[type="application/ld+json"]',
+      "[itemtype]",
+      "[itemscope]",
+      "meta",
+      "link",
+      "head",
+      "nav",
+      'header[role="banner"]',
+      "aside",
+      "button",
+      '[aria-hidden="true"]',
+      "[data-schema]",
+      '[class*="schema"]',
+      '[class*="metadata"]',
+      '[class*="hidden"]',
+      "time[datetime]",
+      "[data-nosnippet]",
+      ".sr-only",
+      "[hidden]",
+    ];
+
+    selectorsToRemove.forEach((selector) => {
+      try {
+        articleClone.querySelectorAll(selector).forEach((el) => el.remove());
+      } catch (e) {
+        // Ignore selector errors
+      }
+    });
+
+    // Get text only from content paragraphs, headings, and lists
+    const readableElements = articleClone.querySelectorAll(
+      "p, h1, h2, h3, h4, h5, h6, li, blockquote, td, th, figcaption, dd, dt"
+    );
+
+    let content = "";
+    readableElements.forEach((el) => {
+      const text = el.textContent || "";
+      const trimmed = text.trim();
+      // Skip very short text that might be labels or metadata
+      if (trimmed && trimmed.length > 3) {
+        content += trimmed + " ";
+      }
+    });
+
+    // Fallback to full article text if no content found
+    return content.trim() || article.textContent || "";
+  };
+
   useEffect(() => {
     const initVoices = () => {
       const voices = window.speechSynthesis.getVoices();
 
-      // First try to get Daniel (male) or Samantha (female) for consistency
+      // Prioritize high-quality, natural-sounding voices
       const preferredVoice =
+        // First preference: Premium/Natural voices
         voices.find(
           (v) =>
-            v.lang === "en-US" &&
-            (v.name.includes("Daniel") || v.name.includes("Samantha"))
-        ) ||
-        // Fallback to any English voice with these keywords
-        voices.find(
-          (v) =>
-            v.lang === "en-US" &&
+            v.lang.startsWith("en") &&
             (v.name.includes("Premium") ||
-              v.name.includes("Enhanced") ||
-              v.name.includes("Natural"))
+              v.name.includes("Natural") ||
+              v.name.includes("Neural") ||
+              v.name.includes("Enhanced"))
         ) ||
-        // Final fallback to any English voice
-        voices.find((v) => v.lang === "en-US");
+        // Second preference: Specific high-quality voices
+        voices.find(
+          (v) =>
+            v.lang.startsWith("en") &&
+            (v.name.includes("Samantha") ||
+              v.name.includes("Daniel") ||
+              v.name.includes("Karen") ||
+              v.name.includes("Alex"))
+        ) ||
+        // Third preference: Any US English voice
+        voices.find((v) => v.lang === "en-US") ||
+        // Fallback: Any English voice
+        voices.find((v) => v.lang.startsWith("en")) ||
+        // Last resort: First available voice
+        voices[0];
 
-      setVoice(preferredVoice || voices[0]);
+      setVoice(preferredVoice);
     };
 
     if (typeof speechSynthesis !== "undefined") {
@@ -68,39 +145,96 @@ export function BlogHeader() {
       if (typeof speechSynthesis !== "undefined") {
         speechSynthesis.cancel();
       }
+      if (keepAliveIntervalRef.current) {
+        clearInterval(keepAliveIntervalRef.current);
+      }
     };
   }, []);
 
-  // Simplified text processing without SSML tags
   const processTextForSpeech = (text: string): string => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    let processed = text;
 
-    // Clean text and add basic punctuation spacing
-    let processed = text
-      // Remove code blocks and special characters
-      .replace(/```[\s\S]*?```/g, "")
-      .replace(/`.*?`/g, "")
-      .replace(/\[.*?\]/g, "")
-      .replace(/\(.*?\)/g, "")
-      .replace(/[#*`~|<>{}\[\]\\\/]/g, "")
-      .replace(/&[^;]+;/g, "")
+    // Remove schema.org and metadata patterns
+    processed = processed
+      .replace(/https?:\/\/schema\.org\/\w+/gi, " ") // Remove schema.org URLs
+      .replace(
+        /\b(context|type|itemtype|itemprop|itemscope|headline|datePublished|author|creator)\b/gi,
+        " "
+      ) // Remove schema keywords
+      .replace(/BlogPosting|Article|Person|Organization|WebPage/gi, " "); // Remove schema types
 
-      // Add basic punctuation spacing
-      .replace(/([.!?])\s+/g, "$1 ")
-      .replace(/([,;:])\s+/g, "$1 ")
-      .replace(/(\n\n|\r\n\r\n)/g, " ")
-      .replace(/(-|\u2014|\u2013)\s+/g, " ")
-      .replace(/\s+\(\s*/g, " ")
-      .replace(/\s*\)\s+/g, " ")
+    // Remove code blocks and inline code
+    processed = processed
+      .replace(/```[\s\S]*?```/g, " ") // Remove code blocks
+      .replace(/`[^`]+`/g, " "); // Remove inline code
 
-      // Clean up excessive whitespace
-      .replace(/\s+/g, " ")
+    // Remove HTML tags and entities
+    processed = processed
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, " ") // Remove scripts
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, " ") // Remove styles
+      .replace(/<[^>]+>/g, " ") // Remove all HTML tags
+      .replace(/&nbsp;/gi, " ") // Replace non-breaking spaces
+      .replace(/&quot;/gi, '"') // Replace quotes
+      .replace(/&apos;/gi, "'") // Replace apostrophes
+      .replace(/&amp;/gi, "and") // Replace ampersands
+      .replace(/&lt;/gi, "") // Remove less than
+      .replace(/&gt;/gi, "") // Remove greater than
+      .replace(/&[a-z]+;/gi, " "); // Remove other entities
+
+    // Remove markdown syntax
+    processed = processed
+      .replace(/^#+\s+/gm, "") // Remove heading markers
+      .replace(/\*\*([^*]+)\*\*/g, "$1") // Remove bold
+      .replace(/\*([^*]+)\*/g, "$1") // Remove italic
+      .replace(/~~([^~]+)~~/g, "$1") // Remove strikethrough
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // Keep link text only
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, "") // Remove images
+      .replace(/^[*-]\s+/gm, "") // Remove list markers
+      .replace(/^\d+\.\s+/gm, ""); // Remove numbered list markers
+
+    // Remove URLs
+    processed = processed
+      .replace(/https?:\/\/[^\s]+/gi, " ") // Remove all URLs
+      .replace(/www\.[^\s]+/gi, " "); // Remove www URLs
+
+    // Remove special characters and symbols
+    processed = processed
+      .replace(/[#*`~|<>{}\[\]\\\/]/g, " ") // Remove special chars
+      .replace(/[_]/g, " "); // Remove underscores
+
+    // Handle punctuation for natural pauses
+    processed = processed
+      .replace(/([.!?])\s*/g, "$1 ") // Space after sentence endings
+      .replace(/([,;:])\s*/g, "$1 ") // Space after commas, semicolons, colons
+      .replace(/\.\.\./g, "...") // Preserve ellipsis
+      .replace(/([.!?])\1+/g, "$1") // Remove duplicate punctuation
+      .replace(/\s*-\s*/g, " ") // Replace dashes with spaces
+      .replace(/\s*—\s*/g, ". ") // Replace em-dashes with period for pause
+      .replace(/\s*–\s*/g, ". "); // Replace en-dashes with period for pause
+
+    // Clean up parentheses and brackets
+    processed = processed
+      .replace(/\([^)]*\)/g, "") // Remove parenthetical content
+      .replace(/\[[^\]]*\]/g, ""); // Remove bracketed content
+
+    // Normalize whitespace and newlines
+    processed = processed
+      .replace(/\n{3,}/g, ". ") // Multiple newlines = pause
+      .replace(/\n{2}/g, ". ") // Double newline = sentence break
+      .replace(/\n/g, " ") // Single newline = space
+      .replace(/\s{2,}/g, " ") // Multiple spaces to single
+      .replace(/\s+([.!?,;:])/g, "$1") // Remove space before punctuation
+      .trim();
+
+    // Remove any remaining unwanted characters
+    processed = processed
+      .replace(/[^\w\s.!?,;:'"()-]/g, " ") // Keep only alphanumeric and basic punctuation
+      .replace(/\s+/g, " ") // Final whitespace cleanup
       .trim();
 
     return processed;
   };
 
-  // Enhanced speech configuration
   useEffect(() => {
     const article = document.querySelector("article");
     if (!article) return;
@@ -134,50 +268,158 @@ export function BlogHeader() {
 
     elements.forEach((elem) => observer.observe(elem));
 
-    const text = processTextForSpeech(article.textContent || "");
-    const utterance = new SpeechSynthesisUtterance(text);
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const text = processTextForSpeech(extractReadableContent());
 
-    // Base configuration
-    utterance.rate = isMobile ? speed * 0.75 : speed * 0.85; // Slightly slower for more natural speech
-    utterance.pitch = 1.0;
-    utterance.volume = 1;
-    utterance.lang = "en-US";
-    if (voice) utterance.voice = voice;
+    // Split text into sentences for dynamic speech variation
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
 
-    // Dynamic speech adjustments with breathing patterns
-    utterance.onboundary = (event) => {
-      if (event.name === "sentence") {
-        const nextSentence = utterance.text.slice(event.charIndex);
+    // Analyze sentence and determine natural speech parameters
+    const analyzeSentence = (sentence: string, index: number) => {
+      const trimmed = sentence.trim();
+      let pitch = 1.0;
+      let rate = 1; // Fixed normal speed
+      let pauseAfter = 200; // ms
 
-        // Pattern-based rate and pitch adjustments
-        if (nextSentence.match(/^[^.!?]*\?/)) {
-          utterance.pitch = isMobile ? 1.15 : 1.2; // Questions
-          utterance.rate = speed * 0.8;
-        } else if (nextSentence.match(/^[^.!?]*!/)) {
-          utterance.pitch = isMobile ? 1.2 : 1.25; // Excitement
-          utterance.rate = speed * 0.9;
-        } else if (nextSentence.match(/^[A-Z][A-Z\s]+/)) {
-          utterance.pitch = 1.1; // Emphasis
-          utterance.rate = speed * 0.85;
-        } else if (nextSentence.length > 100) {
-          utterance.rate = speed * 0.8; // Slow down for long sentences
-        } else {
-          utterance.pitch = 1.0;
-          utterance.rate = isMobile ? speed * 0.75 : speed * 0.85;
-        }
+      // Add micro-variation to avoid monotony
+      const microVariation = (Math.random() - 0.5) * 0.06; // ±0.03
+      pitch += microVariation;
+      rate += microVariation * 0.1;
 
-        // Add micro-pauses for breathing
-        if (Math.random() < 0.3) {
-          // 30% chance of a subtle breath
-          speechSynthesis.pause();
-          setTimeout(() => speechSynthesis.resume(), 200);
-        }
+      // Questions: Rising intonation
+      if (trimmed.includes("?")) {
+        pitch += 0.15;
+        rate *= 0.92;
+        pauseAfter = 350;
+      }
+      // Exclamations: Emphasis and energy
+      else if (trimmed.includes("!")) {
+        pitch += 0.18;
+        rate *= 1.05;
+        pauseAfter = 400;
+      }
+      // Commas or lists: Brief pauses
+      else if ((trimmed.match(/,/g) || []).length > 2) {
+        rate *= 0.94;
+        pauseAfter = 250;
+      }
+      // Parenthetical remarks: Lower tone
+      else if (trimmed.includes("(") || trimmed.includes("—")) {
+        pitch -= 0.08;
+        rate *= 0.96;
+      }
+      // Quotes: Character voice variation
+      else if (trimmed.includes('"') || trimmed.includes("'")) {
+        pitch += 0.1;
+        rate *= 0.98;
+      }
+      // ALL CAPS words: Emphasis
+      else if (trimmed.match(/\b[A-Z]{3,}\b/)) {
+        pitch += 0.12;
+        rate *= 0.9;
+        pauseAfter = 300;
+      }
+      // Numbers or technical terms: Clarity
+      else if (
+        trimmed.match(/\d+|[A-Z]{2,}[a-z]+/) ||
+        trimmed.includes("API") ||
+        trimmed.includes("HTTP")
+      ) {
+        rate *= 0.88;
+        pauseAfter = 280;
+      }
+      // Long sentences: Slower for comprehension
+      else if (trimmed.length > 120) {
+        rate *= 0.92;
+        pauseAfter = 320;
+      }
+      // Short sentences: Crisp delivery
+      else if (trimmed.length < 40) {
+        rate *= 1.02;
+        pauseAfter = 180;
+      }
+
+      // Paragraph rhythm: Fresh tone every few sentences
+      if (index % 4 === 0 && index > 0) {
+        pitch += 0.05;
+        pauseAfter = 450; // Breathing pause
+      }
+
+      // Sentence endings: Natural falling pitch
+      if (trimmed.endsWith(".") && !trimmed.endsWith("...")) {
+        pitch -= 0.03;
+      }
+
+      // Constrain values to reasonable ranges
+      pitch = Math.max(0.8, Math.min(1.3, pitch));
+      rate = Math.max(0.5, Math.min(2.0, rate));
+      pauseAfter = Math.max(100, Math.min(600, pauseAfter));
+
+      return { pitch, rate, pauseAfter };
+    };
+
+    // Create utterance queue with analyzed parameters
+    const utteranceQueue = sentences.map((sentence, index) => ({
+      text: sentence,
+      params: analyzeSentence(sentence, index),
+    }));
+
+    // Start with first sentence
+    const firstUtterance = new SpeechSynthesisUtterance(utteranceQueue[0].text);
+    const firstParams = utteranceQueue[0].params;
+    firstUtterance.rate = firstParams.rate;
+    firstUtterance.pitch = firstParams.pitch;
+    firstUtterance.volume = 1.0;
+    firstUtterance.lang = "en-US";
+    if (voice) firstUtterance.voice = voice;
+
+    let currentSentenceIndex = 0;
+    let charOffset = 0;
+
+    firstUtterance.onboundary = (event) => {
+      if (event.name === "word") {
+        charOffset =
+          utteranceQueue
+            .slice(0, currentSentenceIndex)
+            .reduce((sum, u) => sum + u.text.length, 0) + event.charIndex;
+      }
+    };
+
+    firstUtterance.onend = () => {
+      currentSentenceIndex++;
+
+      if (currentSentenceIndex < utteranceQueue.length && !isPaused) {
+        // Natural pause between sentences
+        setTimeout(
+          () => {
+            if (!isPaused) {
+              const nextUtterance = new SpeechSynthesisUtterance(
+                utteranceQueue[currentSentenceIndex].text
+              );
+              const params = utteranceQueue[currentSentenceIndex].params;
+
+              nextUtterance.rate = params.rate;
+              nextUtterance.pitch = params.pitch;
+              nextUtterance.volume = 1.0;
+              nextUtterance.lang = "en-US";
+              if (voice) nextUtterance.voice = voice;
+
+              nextUtterance.onboundary = firstUtterance.onboundary;
+              nextUtterance.onend = firstUtterance.onend;
+
+              speechSynthesis.speak(nextUtterance);
+            }
+          },
+          utteranceQueue[currentSentenceIndex - 1].params.pauseAfter
+        );
+      } else {
+        setIsPlaying(false);
+        setIsPaused(false);
+        setCharIndex(0);
       }
     };
 
     utteranceRef.current = {
-      utterance,
+      utterance: firstUtterance,
       text,
       position: 0,
     };
@@ -185,11 +427,13 @@ export function BlogHeader() {
     return () => {
       observer.disconnect();
       speechSynthesis.cancel();
+      if (keepAliveIntervalRef.current) {
+        clearInterval(keepAliveIntervalRef.current);
+      }
     };
-  }, [speed, voice]);
+  }, [voice]);
 
   useEffect(() => {
-    // Calculate reading time
     const article = document.querySelector("article");
     if (article) {
       const words = article.textContent?.split(/\s+/).length || 0;
@@ -198,69 +442,88 @@ export function BlogHeader() {
     }
   }, []);
 
-  // Modified play/pause handler with adjusted mobile speech
   const handlePlayPause = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-    if (isPlaying) {
+    // Handle pause - use cancel for instant stop
+    if (isPlaying && speechSynthesis.speaking) {
       speechSynthesis.cancel();
       setIsPlaying(false);
+      setIsPaused(true);
+      if (keepAliveIntervalRef.current) {
+        clearInterval(keepAliveIntervalRef.current);
+      }
       return;
     }
 
+    // Handle play/resume
     if (utteranceRef.current && voice) {
       try {
         speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(
-          utteranceRef.current.text
-        );
 
-        // Unified configuration with mobile adjustments
-        utterance.rate = isMobile ? speed * 0.8 : speed;
-        utterance.pitch = 1.0;
+        const textToRead =
+          isPaused && charIndex > 0
+            ? utteranceRef.current.text.slice(charIndex)
+            : utteranceRef.current.text;
+
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+
+        // Configure for natural speech (fixed rate since speed control removed)
+        utterance.rate = 0.95;
+        utterance.pitch = 1.05;
         utterance.voice = voice;
-        utterance.volume = 1;
+        utterance.volume = 1.0;
         utterance.lang = "en-US";
 
-        // Keep-alive mechanism (important for iOS)
-        const keepAlive = setInterval(() => {
-          if (speechSynthesis.speaking) {
+        // Track position for resume functionality
+        utterance.onboundary = (event) => {
+          if (event.name === "word") {
+            setCharIndex(
+              isPaused && charIndex > 0
+                ? charIndex + event.charIndex
+                : event.charIndex
+            );
+          }
+        };
+
+        // Keep-alive for longer texts
+        keepAliveIntervalRef.current = setInterval(() => {
+          if (speechSynthesis.speaking && !speechSynthesis.paused) {
             speechSynthesis.pause();
             speechSynthesis.resume();
-          } else {
-            clearInterval(keepAlive);
+          } else if (!speechSynthesis.speaking) {
+            if (keepAliveIntervalRef.current) {
+              clearInterval(keepAliveIntervalRef.current);
+            }
           }
         }, 14000);
 
         utterance.onend = () => {
-          clearInterval(keepAlive);
+          if (keepAliveIntervalRef.current) {
+            clearInterval(keepAliveIntervalRef.current);
+          }
           setIsPlaying(false);
+          setIsPaused(false);
+          setCharIndex(0);
         };
 
-        utterance.onerror = () => {
-          clearInterval(keepAlive);
+        utterance.onerror = (event) => {
+          console.error("Speech synthesis error:", event);
+          if (keepAliveIntervalRef.current) {
+            clearInterval(keepAliveIntervalRef.current);
+          }
           setIsPlaying(false);
+          setIsPaused(false);
         };
 
         speechSynthesis.speak(utterance);
         setIsPlaying(true);
+        setIsPaused(false);
       } catch (error) {
-        console.error("Speech synthesis failed:", error);
+        console.error("Error starting speech:", error);
         setIsPlaying(false);
+        setIsPaused(false);
       }
-    }
-  };
-
-  // Simplified speed change handler
-  const handleSpeedChange = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const speeds = [0.75, 1, 1.25, 1.5];
-    const nextSpeed = speeds[(speeds.indexOf(speed) + 1) % speeds.length];
-    setSpeed(nextSpeed);
-
-    if (isPlaying) {
-      handlePlayPause(e); // Restart with new speed
     }
   };
 
@@ -271,7 +534,6 @@ export function BlogHeader() {
         url: window.location.href,
       });
     } catch (err) {
-      // Fallback to copy to clipboard
       navigator.clipboard.writeText(window.location.href);
     }
   };
@@ -299,15 +561,6 @@ export function BlogHeader() {
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? <FiPause size={16} /> : <FiPlay size={16} />}
-          </button>
-
-          {/* Speed control */}
-          <button
-            onClick={handleSpeedChange}
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--bronzer)]/5 hover:bg-[var(--bronzer)]/10 transition-all duration-300"
-          >
-            <RiSpeedLine size={14} />
-            <span className="text-xs font-medium">{speed}x</span>
           </button>
 
           <span className="inline text-xs text-[var(--text-p)]/80">

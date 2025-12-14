@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 const FILTERED_REPO_IDS = [
-  917047238, 818561625, 482468668, 638619916, 946629942, 620773103,
+  1062808930, 1071044727, 917047238, 818561625, 482468668, 638619916, 946629942,
+  620773103,
 ];
 
 export async function POST(request: Request) {
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
     includeTopics = true,
     includeName = true,
     includeHtmlUrl = true,
-    includeHomepage = true, // Add this parameter
+    includeHomepage = true,
   } = await request.json();
 
   const token = process.env.GITHUB_TOKEN;
