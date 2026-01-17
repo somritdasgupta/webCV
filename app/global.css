@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@layer utilities {
+  .border-bronzer {
+    border-color: var(--bronzer);
+  }
+
+  .border-callout {
+    border-color: var(--callout-border);
+  }
+
+  .bg-bronzer {
+    background-color: var(--bronzer);
+  }
+}
+
 /* =========================
    CSS CUSTOM PROPERTIES
    ========================= */
@@ -157,8 +171,6 @@ strong {
    UTILITY CLASSES
    ========================= */
 
-
-
 /* =========================
    SCROLLBAR STYLES
    ========================= */
@@ -195,7 +207,6 @@ strong {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   opacity: 0.6;
 }
-
 
 .scrollbar-hide {
   scrollbar-width: none;
@@ -396,6 +407,7 @@ strong {
 .nav-shimmer {
   position: relative;
   overflow: hidden;
+  outline: none !important;
 }
 
 .nav-shimmer::before {
@@ -404,7 +416,7 @@ strong {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  padding: 2px;
+  padding: 3px;
   background: linear-gradient(
     to right,
     rgba(167, 139, 250, 0.7) 0%,
@@ -447,7 +459,7 @@ strong {
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
-  background: var(--nav-bg)/95;
+  background: var(--nav-bg) / 95;
   backdrop-filter: blur(12px);
   border: 1px solid var(--nav-border);
   border-radius: 0.75rem;

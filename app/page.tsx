@@ -28,19 +28,19 @@ export default function Home() {
           <SectionHeader
             title="highlights"
             icon={
-              <RiVerifiedBadgeLine className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
+              <RiVerifiedBadgeLine className="inline w-8 h-8 ml-2 text-(--bronzer)" />
             }
           />
 
-          <div className="nav-shimmer bg-[var(--nav-bg)]/95 backdrop-blur-md border border-[var(--nav-border)] rounded-2xl p-6 lg:p-8">
+          <div className="nav-shimmer bg-(--nav-bg)/95 backdrop-blur-md border border-(--nav-border) rounded-2xl p-6 lg:p-8">
             {error && (
               <div className="text-center p-8">
                 <p className="text-red-500 mb-4">{error}</p>
-                <p className="text-[var(--text-p)]">
+                <p className="text-(--text-p)">
                   Check out my{" "}
                   <a
                     href="https://github.com/somritdasgupta"
-                    className="text-[var(--bronzer)] hover:text-[var(--bronzer)]/80 underline"
+                    className="text-(--bronzer) hover:text-(--bronzer)/80 underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -64,10 +64,10 @@ export default function Home() {
           <SectionHeader
             title="recent"
             icon={
-              <HiArrowTrendingUp className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
+              <HiArrowTrendingUp className="inline w-8 h-8 ml-2 text-(--bronzer)" />
             }
           />
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--nav-border)] to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-(--nav-border) to-transparent" />
 
           <div>
             <BlogPosts
@@ -87,7 +87,7 @@ export default function Home() {
           <SectionHeader
             title="bookmarked"
             icon={
-              <HiOutlineBookmark className="inline w-8 h-8 ml-2 text-[var(--bronzer)]" />
+              <HiOutlineBookmark className="inline w-8 h-8 ml-2 text-(--bronzer)" />
             }
           />
 

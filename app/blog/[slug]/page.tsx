@@ -69,6 +69,9 @@ export async function generateMetadata({
         },
       ],
     },
+    other: {
+      "fediverse:creator": "@somritdasgupta@mastodon.social",
+    },
   };
 }
 
@@ -117,7 +120,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
           {/* Back button - styled to match tags */}
           <Link
             href="/blog"
-            className="flex-shrink-0 px-3 py-0.5 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:bg-[var(--bronzer)]/10 hover:text-[var(--bronzer)] transition-all duration-200 flex items-center gap-1.5 group text-sm font-medium"
+            className="shrink-0 px-3 py-0.5 rounded-full bg-(--callout-bg) border border-(--callout-border) text-(--text-p) hover:border-(--bronzer) hover:bg-(--bronzer)/10 hover:text-(--bronzer) transition-all duration-200 flex items-center gap-1.5 group text-sm font-medium"
             title="Back to posts"
           >
             <svg
@@ -144,7 +147,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
                   <Link
                     key={tag}
                     href={`/blog?tag=${encodeURIComponent(tag)}`}
-                    className="flex-shrink-0 text-xs px-3 py-1 rounded-full bg-[var(--callout-bg)] border border-[var(--callout-border)] text-[var(--text-p)] hover:border-[var(--bronzer)] hover:bg-[var(--bronzer)]/10 hover:text-[var(--bronzer)] transition-all duration-200 whitespace-nowrap font-medium"
+                    className="shrink-0 text-xs px-3 py-1 rounded-full bg-(--callout-bg) border border-(--callout-border) text-(--text-p) hover:border-(--bronzer) hover:bg-(--bronzer)/10 hover:text-(--bronzer) transition-all duration-200 whitespace-nowrap font-medium"
                   >
                     {tag}
                   </Link>
@@ -158,21 +161,21 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       {/* Article Header */}
       <header className="mb-12">
         <div className="space-y-6">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-[var(--text-p)]">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-(--text-p)">
             {post.metadata.title}
           </h1>
 
           {post.metadata.summary && (
-            <p className="text-lg md:text-xl text-[var(--text-p)]/70 leading-relaxed">
+            <p className="text-lg md:text-xl text-(--text-p)/70 leading-relaxed">
               {post.metadata.summary}
             </p>
           )}
 
           {/* Meta Information */}
-          <ScaleIntro className="flex flex-col gap-4 pt-4 border-t border-[var(--callout-border)]/30" delay={200}>
+          <ScaleIntro className="flex flex-col gap-4 pt-4 border-t border-(--callout-border)/30" delay={200}>
             {/* Mobile: Date and Author side by side */}
             <div className="flex items-center justify-between sm:hidden">
-              <time className="text-sm font-medium text-[var(--bronzer)]">
+              <time className="text-sm font-medium text-(--bronzer)">
                 {formatDate(post.metadata.publishedAt)}
               </time>
               <AuthorInfo />
@@ -180,7 +183,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
 
             {/* Desktop: Date and Author */}
             <div className="hidden sm:flex sm:items-center sm:gap-6">
-              <time className="text-sm font-medium text-[var(--bronzer)]">
+              <time className="text-sm font-medium text-(--bronzer)">
                 {formatDate(post.metadata.publishedAt)}
               </time>
               <AuthorInfo />
@@ -202,7 +205,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
       </main>
 
       {/* Article Footer */}
-      <footer className="mt-16 pt-8 border-t border-[var(--callout-border)]">
+      <footer className="mt-16 pt-8 border-t border-(--callout-border)">
         <div className="mb-8">
           <ShareButtons
             title={post.metadata.title}

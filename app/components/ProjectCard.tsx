@@ -14,10 +14,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-xl lg:text-2xl font-semibold text-[var(--text-color)] mb-2">
+        <h3 className="text-xl lg:text-2xl font-semibold text-(--text-color) mb-2">
           {project.name}
         </h3>
-        <p className="text-sm lg:text-base text-[var(--text-p)] leading-relaxed">
+        <p className="text-sm lg:text-base text-(--text-p) leading-relaxed">
           {project.description}
         </p>
       </div>
@@ -25,7 +25,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       <div className="flex flex-col sm:flex-row gap-2">
         <a
           href={project.html_url}
-          className="inline-flex items-center justify-center px-4 py-2.5 text-[var(--text-secondary)] border border-[var(--nav-border)] rounded-xl font-medium hover:text-[var(--text-primary)] hover:border-[var(--accent)] transition-all duration-200"
+          className="inline-flex items-center justify-center px-4 py-2.5 text-(--text-secondary) border border-(--nav-border) rounded-xl font-medium hover:text-(--text-primary) hover:border-(--accent) transition-all duration-200"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -36,7 +36,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         {project.homepage && (
           <a
             href={project.homepage}
-            className="inline-flex items-center justify-center px-4 py-2.5 bg-[var(--accent)] text-white rounded-xl font-medium hover:opacity-90 transition-all duration-200"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-(--accent) text-white rounded-xl font-medium hover:opacity-90 transition-all duration-200"
             target="_blank"
             rel="noopener noreferrer"
           >

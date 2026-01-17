@@ -10,7 +10,6 @@ import Footer from "./components/footer";
 import { baseUrl } from "./lib/constants";
 import { SandpackCSS } from "./blog/[slug]/sandpack";
 import Script from "next/script";
-import AnimatedGrid from "./components/AnimatedGrid";
 
 export const revalidate = 43200;
 
@@ -91,6 +90,7 @@ export default function RootLayout({
     >
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="me" href="https://mastodon.social/@somritdasgupta" />
         <link
           rel="icon"
           href="/favicon.ico"
@@ -293,8 +293,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased mx-4 mt-2 lg:mx-auto font-sans">
-        <AnimatedGrid />
+      <body className="antialiased mx-4 mt-2 lg:mx-auto font-sans bg-(--bg-color)">
         <main className="max-w-8xl mx-auto w-full flex-auto min-w-0 mt-4 lg:mt-6 flex flex-col px-2 md:px-8 lg:pr-8 xl:pr-12 relative z-10 pb-20 lg:pb-8">
           <Navbar />
           <GAAnalytics />
