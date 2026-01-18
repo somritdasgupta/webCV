@@ -22,8 +22,8 @@ export const cvData = {
   // TECHNICAL SKILLS
   // ============================================
   skills: {
-    "AI Ecosystem": [
-      "AWS Bedrock (Knowledge Bases, Agents, Guardrails)",
+    "Generative AI": [
+      "AWS Bedrock (Knowledge Bases/Agents/Guardrails)",
       "OpenAI/Gemini SDKs",
       "LangGraph",
       "HuggingFace",
@@ -41,9 +41,9 @@ export const cvData = {
       "Go",
       "SQL (PostgreSQL)",
       "WebSockets",
-      "Drizzle ORM",
+      "Prisma",
     ],
-    DevOps: ["Docker", "GitHub Actions (CI/CD)", "Linux", "AWS CDK"],
+    "CI/CD": ["Docker", "GitHub Actions", "Linux Shell Scripting", "AWS CDK"],
   },
 
   // ============================================
@@ -117,7 +117,7 @@ export const cvData = {
       isShown: true,
       name: "paperpaste",
       tech: "Encrypted Content Syncing Platform",
-      link: "https://paperpaste.in",
+      link: "https://paperpaste.vercel.app",
       description: [
         "Built an app to send text and files between a phone and a computer without using a middleman like email or Slack.",
         "Used End-to-End Encryption so that the data is scrambled before it leaves the device, meaning no one—not even the server—can read it.",
@@ -129,7 +129,7 @@ export const cvData = {
       isShown: true,
       name: "queFork",
       tech: "API Testing Platform",
-      link: "https://quefork.dev",
+      link: "https://quefork.vercel.app",
       description: [
         "Made a web tool for testing how apps talk to servers, specifically for 'live' features like chat or stock updates (WebSockets).",
         "Built it so it runs entirely in the browser without needing an install, which helps developers start testing their code in seconds.",

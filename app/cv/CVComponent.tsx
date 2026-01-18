@@ -9,10 +9,8 @@ import { ChatInterface } from "../components/ChatInterface";
 
 export default function CVComponent() {
   const [activeSection, setActiveSection] = useState("summary");
-  const [isDownloading, setIsDownloading] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const cvRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
@@ -82,100 +80,6 @@ export default function CVComponent() {
       top: 0,
       behavior: "smooth",
     });
-  };
-
-  const downloadPDF = async () => {
-    setIsDownloading(true);
-    try {
-      const html2pdf = (await import("html2pdf.js")).default;
-
-      const pdfElement = document.getElementById("cv-pdf-content");
-      if (!pdfElement) {
-        console.error("PDF content not found");
-        setIsDownloading(false);
-        return;
-      }
-
-      console.log("PDF Element found:", pdfElement);
-      console.log("Content length:", pdfElement.innerHTML.length);
-
-      // Make visible for capturing - use setAttribute for reliability
-      pdfElement.setAttribute(
-        "style",
-        `
-        position: fixed !important;
-        left: 50% !important;
-        top: 0 !important;
-        transform: translateX(-50%) !important;
-        width: 210mm;
-        min-height: 297mm;
-        background-color: #fff;
-        padding: 8mm 12mm 8mm 8mm;
-        box-sizing: border-box;
-        z-index: 10000;
-        visibility: visible !important;
-        opacity: 1 !important;
-        display: block !important;
-      `,
-      );
-
-      // Force browser to render
-      pdfElement.scrollIntoView();
-
-      // Force reflow by accessing computed styles
-      const computedStyle = window.getComputedStyle(pdfElement);
-      console.log(
-        "Computed dimensions:",
-        computedStyle.width,
-        computedStyle.height,
-      );
-
-      // Wait longer for styles to apply and render
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      console.log(
-        "After style change:",
-        pdfElement.style.position,
-        pdfElement.style.left,
-      );
-
-      const opt = {
-        margin: [-6, 4, 0, 0] as [number, number, number, number],
-        filename: "Somrit_Dasgupta_CV.pdf",
-        image: { type: "jpeg" as const, quality: 1 },
-        html2canvas: {
-          scale: 1.5,
-          useCORS: true,
-          logging: true,
-          backgroundColor: "#ffffff",
-          width: 794, // A4 width in pixels at 96 DPI (210mm)
-          height: 1123, // A4 height in pixels at 96 DPI (297mm)
-        },
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait" as const,
-        },
-      };
-
-      console.log("Generating PDF...");
-      const pdfBlob = await html2pdf().set(opt).from(pdfElement).output("blob");
-      console.log("PDF blob size:", pdfBlob.size);
-
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `Somrit_Dasgupta_CV_${new Date().toISOString().split("T")[0]}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
-    } finally {
-      setIsDownloading(false);
-    }
   };
 
   return (
@@ -263,48 +167,27 @@ export default function CVComponent() {
             </svg>
           </button>
 
-          <button
-            onClick={downloadPDF}
-            disabled={isDownloading}
-            className="nav-shimmer flex items-center justify-center w-10 h-10 bg-bronzer/90 backdrop-blur-xl border-2 border-bronzer rounded-xl hover:scale-105 hover:bg-bronzer disabled:opacity-50 disabled:cursor-not-allowed transition-all text-(--bg-color) shadow-lg group"
-            title="Download PDF"
+          <a
+            href="https://rxresu.me/somritdasgupta/somrits-resume"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="nav-shimmer flex items-center justify-center w-10 h-10 bg-bronzer/90 backdrop-blur-xl border-2 border-bronzer rounded-xl hover:scale-105 hover:bg-bronzer transition-all text-(--bg-color) shadow-lg group"
+            title="View Resume"
           >
-            {isDownloading ? (
-              <svg
-                className="w-5 h-5 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            )}
-          </button>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </a>
 
           {/* Back to Top - Shows after 40% scroll */}
           {showBackToTop && (
@@ -380,54 +263,28 @@ export default function CVComponent() {
               <span className="hidden sm:inline">Chat</span>
             </button>
 
-            <button
-              onClick={downloadPDF}
-              disabled={isDownloading}
-              className="nav-shimmer flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-bronzer/90 backdrop-blur-xl border border-bronzer rounded-xl hover:scale-105 hover:bg-bronzer disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs sm:text-sm font-semibold text-(--bg-color) shadow-lg"
+            <a
+              href="https://rxresu.me/somritdasgupta/somrits-resume"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-shimmer flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-bronzer/90 backdrop-blur-xl border border-bronzer rounded-xl hover:scale-105 hover:bg-bronzer transition-all text-xs sm:text-sm font-semibold text-(--bg-color) shadow-lg"
             >
-              {isDownloading ? (
-                <>
-                  <svg
-                    className="w-4 h-4 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span className="hidden sm:inline">Generating...</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  <span className="hidden sm:inline">View PDF</span>
-                  <span className="sm:hidden">PDF</span>
-                </>
-              )}
-            </button>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <span className="hidden sm:inline">View Resume</span>
+              <span className="sm:hidden">Resume</span>
+            </a>
           </div>
         </div>
 
@@ -456,7 +313,6 @@ export default function CVComponent() {
         {/* CV Content - Web Version */}
         <div
           id="cv-print-content"
-          ref={cvRef}
           className="bg-(--card-bg)/40 backdrop-blur-sm rounded-2xl border border-(--nav-border) shadow-xl p-6 sm:p-8 lg:p-12 space-y-8 sm:space-y-12"
         >
           {/* Header */}
@@ -847,422 +703,27 @@ export default function CVComponent() {
               </svg>
             </button>
 
-            <button
-              onClick={downloadPDF}
-              disabled={isDownloading}
-              className="nav-shimmer flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-bronzer/90 backdrop-blur-xl border-2 border-bronzer rounded-xl hover:scale-105 hover:bg-bronzer disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-semibold text-(--bg-color) shadow-lg"
+            <a
+              href="https://rxresu.me/somritdasgupta/somrits-resume"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-shimmer flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-bronzer/90 backdrop-blur-xl border-2 border-bronzer rounded-xl hover:scale-105 hover:bg-bronzer transition-all text-sm font-semibold text-(--bg-color) shadow-lg"
             >
-              {isDownloading ? (
-                <>
-                  <svg
-                    className="w-4 h-4 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span>Generating...</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  <span>View PDF</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Hidden PDF-optimized version */}
-      <div
-        id="cv-pdf-content"
-        style={{
-          position: "fixed",
-          left: "-9999px",
-          top: "-9999px",
-          width: "210mm",
-          minHeight: "297mm",
-          backgroundColor: "#fff",
-          padding: "8mm 12mm 8mm 8mm",
-          boxSizing: "border-box",
-          visibility: "hidden",
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "'Arial', sans-serif",
-            fontSize: "12px",
-            lineHeight: "1.5",
-            color: "#000",
-          }}
-        >
-          {/* PDF Header */}
-          <div
-            style={{
-              textAlign: "center",
-              marginBottom: "16px",
-              paddingBottom: "10px",
-              borderBottom: "2px solid #8B4513",
-            }}
-          >
-            <h1
-              style={{
-                fontSize: "30px",
-                fontWeight: "bold",
-                margin: "0 0 6px 0",
-                color: "#000",
-              }}
-            >
-              {cvData.header.name}
-            </h1>
-            <p
-              style={{
-                fontSize: "16px",
-                fontWeight: "600",
-                margin: "0 0 8px 0",
-                color: "#8B4513",
-              }}
-            >
-              {cvData.header.title}
-            </p>
-            <div style={{ fontSize: "12px", color: "#444", lineHeight: "1.6" }}>
-              <span>{cvData.header.location}</span>
-              <span style={{ margin: "0 6px" }}>•</span>
-              <span>{cvData.header.email}</span>
-              <span style={{ margin: "0 6px" }}>•</span>
-              <span>{cvData.header.website}</span>
-              <span style={{ margin: "0 6px" }}>•</span>
-              <span>GitHub</span>
-              <span style={{ margin: "0 6px" }}>•</span>
-              <span>LinkedIn</span>
-            </div>
-          </div>
-
-          {/* PDF Summary */}
-          <div style={{ marginBottom: "12px" }}>
-            <h2
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "6px",
-                color: "#8B4513",
-                borderLeft: "3px solid #8B4513",
-                paddingLeft: "8px",
-              }}
-            >
-              SUMMARY
-            </h2>
-            <p
-              style={{
-                fontSize: "11px",
-                lineHeight: "1.5",
-                margin: "0",
-                color: "#333",
-              }}
-            >
-              {cvData.summary}
-            </p>
-          </div>
-
-          {/* PDF Skills */}
-          <div style={{ marginBottom: "12px" }}>
-            <h2
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "6px",
-                color: "#8B4513",
-                borderLeft: "3px solid #8B4513",
-                paddingLeft: "8px",
-              }}
-            >
-              TECHNICAL SKILLS
-            </h2>
-            <div>
-              {Object.entries(cvData.skills).map(([category, skills]) => (
-                <div key={category} style={{ marginBottom: "4px" }}>
-                  <strong style={{ fontSize: "10px", color: "#000" }}>
-                    {category}:
-                  </strong>
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      color: "#444",
-                      marginLeft: "4px",
-                    }}
-                  >
-                    {skills.join(", ")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* PDF Experience */}
-          <div style={{ marginBottom: "12px" }}>
-            <h2
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "6px",
-                color: "#8B4513",
-                borderLeft: "3px solid #8B4513",
-                paddingLeft: "8px",
-              }}
-            >
-              WORK EXPERIENCE
-            </h2>
-            {cvData.experience
-              .filter((exp) => exp.isShown)
-              .sort((a, b) => a.order - b.order)
-              .map((exp, idx) => (
-                <div key={idx} style={{ marginBottom: "8px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "3px",
-                    }}
-                  >
-                    <div>
-                      <strong style={{ fontSize: "10px", color: "#000" }}>
-                        {exp.role}
-                      </strong>
-                      <span
-                        style={{
-                          fontSize: "10px",
-                          color: "#8B4513",
-                          marginLeft: "4px",
-                        }}
-                      >
-                        | {exp.company}
-                      </span>
-                    </div>
-                    <span style={{ fontSize: "9px", color: "#666" }}>
-                      {exp.period}
-                    </span>
-                  </div>
-                  <ul
-                    style={{
-                      margin: "0",
-                      paddingLeft: "12px",
-                      listStyle: "disc",
-                    }}
-                  >
-                    {exp.achievements.map((achievement, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          fontSize: "9px",
-                          lineHeight: "1.4",
-                          color: "#333",
-                          marginBottom: "2px",
-                        }}
-                      >
-                        {achievement}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-          </div>
-
-          {/* PDF Projects */}
-          <div style={{ marginBottom: "12px" }}>
-            <h2
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "6px",
-                color: "#8B4513",
-                borderLeft: "3px solid #8B4513",
-                paddingLeft: "8px",
-              }}
-            >
-              PROJECTS
-            </h2>
-            {cvData.projects
-              .filter((project) => project.isShown)
-              .sort((a, b) => a.order - b.order)
-              .map((project, idx) => (
-                <div key={idx} style={{ marginBottom: "8px" }}>
-                  <div style={{ marginBottom: "3px" }}>
-                    <strong style={{ fontSize: "10px", color: "#000" }}>
-                      {project.link ? (
-                        <a
-                          href={project.link}
-                          style={{ color: "#000", textDecoration: "underline" }}
-                        >
-                          {project.name}
-                        </a>
-                      ) : (
-                        project.name
-                      )}
-                    </strong>
-                    <span
-                      style={{
-                        fontSize: "9px",
-                        color: "#8B4513",
-                        marginLeft: "4px",
-                      }}
-                    >
-                      | {project.tech}
-                    </span>
-                  </div>
-                  <ul
-                    style={{
-                      margin: "0",
-                      paddingLeft: "12px",
-                      listStyle: "disc",
-                    }}
-                  >
-                    {project.description.map((desc, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          fontSize: "9px",
-                          lineHeight: "1.4",
-                          color: "#333",
-                          marginBottom: "2px",
-                        }}
-                      >
-                        {desc}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-          </div>
-
-          {/* PDF Education */}
-          <div style={{ marginBottom: "12px" }}>
-            <h2
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "6px",
-                color: "#8B4513",
-                borderLeft: "3px solid #8B4513",
-                paddingLeft: "8px",
-              }}
-            >
-              EDUCATION
-            </h2>
-            <div>
-              <strong
-                style={{ fontSize: "10px", color: "#000", display: "block" }}
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                {cvData.education.degree}
-              </strong>
-              <span
-                style={{
-                  fontSize: "9px",
-                  color: "#8B4513",
-                  display: "block",
-                }}
-              >
-                {cvData.education.cgpa}
-              </span>
-              <span
-                style={{ fontSize: "9px", color: "#444", display: "block" }}
-              >
-                {cvData.education.institution}
-              </span>
-              <span style={{ fontSize: "9px", color: "#666" }}>
-                {cvData.education.period}
-              </span>
-            </div>
-          </div>
-
-          {/* PDF Certifications */}
-          <div style={{ marginBottom: "12px" }}>
-            <h2
-              style={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                marginBottom: "6px",
-                color: "#8B4513",
-                borderLeft: "3px solid #8B4513",
-                paddingLeft: "8px",
-              }}
-            >
-              CERTIFICATIONS
-            </h2>
-            {cvData.certifications
-              .filter((cert) => cert.isShown)
-              .sort((a, b) => a.order - b.order)
-              .map((cert, idx) => (
-                <div key={idx} style={{ marginBottom: "6px" }}>
-                  <strong
-                    style={{
-                      fontSize: "10px",
-                      color: "#000",
-                      display: "block",
-                      marginBottom: "2px",
-                    }}
-                  >
-                    {cert.category}:
-                  </strong>
-                  <ul
-                    style={{
-                      margin: "0",
-                      paddingLeft: "12px",
-                      listStyle: "disc",
-                    }}
-                  >
-                    {cert.certs.map((c, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          fontSize: "9px",
-                          color: "#333",
-                          marginBottom: "2px",
-                        }}
-                      >
-                        {c.link ? (
-                          <a
-                            href={c.link}
-                            style={{
-                              color: "#333",
-                              textDecoration: "underline",
-                            }}
-                          >
-                            {c.title}
-                          </a>
-                        ) : (
-                          c.title
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <span>View Resume</span>
+            </a>
           </div>
         </div>
       </div>
