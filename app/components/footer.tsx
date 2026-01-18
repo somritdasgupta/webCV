@@ -12,7 +12,7 @@ export default function Footer() {
       const innerH = window.innerHeight;
       const docH = Math.max(
         document.documentElement.scrollHeight,
-        document.body.scrollHeight
+        document.body.scrollHeight,
       );
       const nearEnd = innerH + scrollY >= docH - 72;
       setAtEnd(nearEnd);
@@ -37,10 +37,10 @@ export default function Footer() {
               © {new Date().getFullYear()} somritdasgupta
             </p>
             <a
-              href="/Resume.pdf"
+              href="/cv"
               className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-[var(--bronzer)] transition-colors"
             >
-              resume
+              cv
             </a>
           </div>
         </div>
@@ -61,10 +61,10 @@ export default function Footer() {
               </span>
               <span className="text-[var(--nav-text)]/50">•</span>
               <a
-                href="/Resume.pdf"
+                href="/cv"
                 className="text-xs text-[var(--nav-text)] hover:text-[var(--nav-text-active)] transition-colors duration-150 whitespace-nowrap"
               >
-                resume
+                cv
               </a>
             </div>
           </div>

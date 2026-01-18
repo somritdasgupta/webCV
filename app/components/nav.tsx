@@ -216,12 +216,12 @@ export function Navbar() {
                       </svg>
                       ask
                     </button>
-                    <a
-                      href="/Resume.pdf"
+                    <Link
+                      href="/cv"
                       className="hidden sm:inline-flex items-center justify-center h-6 px-2 text-(--nav-text)/75 hover:text-(--nav-text-active) transition-colors duration-150 rounded-md text-xs"
                     >
-                      resume
-                    </a>
+                      cv
+                    </Link>
                     <div className="ml-2">
                       <ThemeSwitcher compact />
                     </div>

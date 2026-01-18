@@ -26,6 +26,9 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [thinkingStatus, setThinkingStatus] = useState<string>("");
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [countdownDestination, setCountdownDestination] = useState<string>("");
   const [profileData, setProfileData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -74,6 +77,16 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
     };
   }, []);
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (countdown !== null && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
   const keywords = {
     profile: [
       "who",
@@ -93,7 +106,16 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
       "developed",
       "repo",
     ],
-    blog: ["blog", "article", "post", "write", "written", "read", "latest"],
+    blog: [
+      "blog",
+      "article",
+      "post",
+      "write",
+      "written",
+      "read",
+      "latest",
+      "author",
+    ],
     skills: [
       "skill",
       "technology",
@@ -116,6 +138,53 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
     thanks: ["thanks", "thank you", "appreciate", "awesome", "great"],
   };
 
+  // Smart fuzzy matching helper
+  const fuzzyMatch = (text: string, patterns: string[]): boolean => {
+    const cleanText = text.toLowerCase().replace(/[^a-z0-9\s]/g, "");
+    const words = cleanText.split(/\s+/).filter((w) => w.length > 2);
+
+    return patterns.some((pattern) => {
+      const patternWords = pattern.toLowerCase().split(/\s+/);
+      return patternWords.some((pw) =>
+        words.some((w) => w.includes(pw) || pw.includes(w)),
+      );
+    });
+  };
+
+  // Extract meaningful keywords from query
+  const extractKeywords = (query: string): string[] => {
+    const stopWords = [
+      "what",
+      "does",
+      "he",
+      "she",
+      "the",
+      "a",
+      "an",
+      "is",
+      "are",
+      "can",
+      "do",
+      "did",
+    ];
+    return query
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "")
+      .split(/\s+/)
+      .filter((word) => word.length > 2 && !stopWords.includes(word));
+  };
+
+  // Navigation helper with countdown
+  const navigateWithCountdown = (path: string, description: string) => {
+    setCountdownDestination(description);
+    setCountdown(3);
+
+    setTimeout(() => {
+      onClose();
+      router.push(path);
+    }, 3000);
+  };
+
   const getResponse = useCallback(
     async (query: string): Promise<Message> => {
       const lowerQuery = query.toLowerCase();
@@ -123,17 +192,17 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
       // Greeting responses (check first)
       if (/^(hi|hello|hey|greetings|sup)(\s|$)/i.test(lowerQuery)) {
         const greetings = [
-          "Hey there! 👋 I'm here to help you explore Somrit's work. What would you like to know?",
-          "Hello! Feel free to ask me about projects, blog posts, skills, or anything else!",
-          "Hi! I can tell you about experience, projects, blog, or how to reach out. What interests you?",
+          "Hey! 👋 What would you like to know about me?",
+          "Hi there! Feel free to ask me anything!",
+          "Hello! What brings you here today?",
         ];
         return {
           role: "assistant",
           content: greetings[Math.floor(Math.random() * greetings.length)],
           suggestions: [
-            "Tell me about Somrit",
-            "Show me projects",
-            "What does he write about?",
+            "Who are you?",
+            "Show your projects",
+            "What do you write about?",
           ],
         };
       }
@@ -144,9 +213,9 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
           role: "assistant",
           content: "You're welcome! Anything else you'd like to know? 😊",
           suggestions: [
-            "Show me projects",
-            "View blog posts",
-            "What are your skills?",
+            "Show your projects",
+            "What do you write?",
+            "Tell me about your skills",
           ],
         };
       }
@@ -159,10 +228,12 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
         lowerQuery.includes("explain") ||
         lowerQuery.includes("tell me about")
       ) {
+        setThinkingStatus("Analyzing query and searching posts...");
         try {
           const response = await fetch("/api/blog-posts");
           const data = await response.json();
           const posts = data.posts || [];
+          setThinkingStatus("Finding the best match...");
 
           // Extract the subject (remove question words)
           const subject = lowerQuery
@@ -173,34 +244,58 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
             .replace(/explain (the |a )?/g, "")
             .trim();
 
-          // Try to find matching post
+          // Try to find matching post with improved fuzzy matching
           const matchingPost = posts.find((p: any) => {
             const slug = p.slug?.toLowerCase() || "";
             const title = p.metadata?.title?.toLowerCase() || "";
+            const summary = p.metadata?.summary?.toLowerCase() || "";
 
             // Split slug and subject into words
             const slugWords = slug.split("-");
-            const subjectWords = subject.split(" ").filter((w) => w.length > 2); // Ignore short words
+            const titleWords = title.split(/\s+/);
+            const subjectWords = subject
+              .split(/\s+/)
+              .filter((w) => w.length > 2);
 
-            // Count matching words
-            const matchCount = subjectWords.filter((sw) =>
-              slugWords.some(
-                (slugWord) => slugWord.includes(sw) || sw.includes(slugWord),
-              ),
+            // Single word matching - check if any subject word matches slug/title words
+            const singleWordMatch = subjectWords.some(
+              (sw) =>
+                slugWords.some(
+                  (slugWord) => slugWord.includes(sw) || sw.includes(slugWord),
+                ) ||
+                titleWords.some(
+                  (titleWord) =>
+                    titleWord.includes(sw) || sw.includes(titleWord),
+                ),
+            );
+
+            // Count matching words for better scoring
+            const matchCount = subjectWords.filter(
+              (sw) =>
+                slugWords.some(
+                  (slugWord) => slugWord.includes(sw) || sw.includes(slugWord),
+                ) ||
+                titleWords.some(
+                  (titleWord) =>
+                    titleWord.includes(sw) || sw.includes(titleWord),
+                ),
             ).length;
 
             return (
-              matchCount >= 2 || // At least 2 significant words match
+              matchCount >= 1 || // At least 1 word match (improved from 2)
+              singleWordMatch || // Single word match
               slug.includes(subject.replace(/\s+/g, "-")) || // Direct slug match
               subject.includes(slug.replace(/-/g, " ")) || // Reverse match
-              title.includes(subject)
-            ); // Title contains subject
+              title.includes(subject) || // Title contains subject
+              summary.includes(subject) // Summary contains subject
+            );
           });
 
           if (matchingPost) {
+            setThinkingStatus("");
             return {
               role: "assistant",
-              content: `"${matchingPost.metadata?.title}"\n\n${matchingPost.metadata?.summary || "An insightful article."}\n\nPublished: ${matchingPost.metadata?.publishedAt ? new Date(matchingPost.metadata.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Recently"}`,
+              content: `✨ **Found it!**\n\n**"${matchingPost.metadata?.title}"**\n\n📝 ${matchingPost.metadata?.summary || "An insightful article exploring this topic."}\n\n📅 Published: ${matchingPost.metadata?.publishedAt ? new Date(matchingPost.metadata.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Recently"}`,
               data: { postSlug: matchingPost.slug },
               suggestions: [
                 "Read full article",
@@ -209,9 +304,10 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
               ],
             };
           } else {
+            setThinkingStatus("");
             return {
               role: "assistant",
-              content: `I couldn't find a post about "${subject}". Here are all recent articles:`,
+              content: `I couldn't find a specific post matching "${subject}", but here are all recent articles you might find interesting:`,
               card: "blog",
               data: posts.slice(0, 4),
               suggestions: [
@@ -222,6 +318,7 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
             };
           }
         } catch (error) {
+          setThinkingStatus("");
           return {
             role: "assistant",
             content:
@@ -235,31 +332,45 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
         }
       }
 
-      // PRIORITY 2: "What does he write about" - show blog posts
+      // PRIORITY 2: Smart blog content detection - handles "what does he write" etc.
+      const queryKeywords = extractKeywords(lowerQuery);
+      const hasBlogIntent = fuzzyMatch(lowerQuery, [
+        "write",
+        "wrote",
+        "writing",
+        "author",
+        "blog",
+        "article",
+        "post",
+        "publish",
+        "content",
+        "topics",
+      ]);
+
+      // Check if query is asking about blog/writing content
       if (
-        (lowerQuery.includes("write") ||
-          lowerQuery.includes("wrote") ||
-          lowerQuery.includes("writing")) &&
-        (lowerQuery.includes("about") ||
-          lowerQuery.includes("blog") ||
-          lowerQuery.includes("post") ||
-          lowerQuery.includes("article"))
+        hasBlogIntent &&
+        !lowerQuery.includes("what is") &&
+        !lowerQuery.includes("summarize")
       ) {
+        setThinkingStatus("Searching through blog posts...");
         try {
           const response = await fetch("/api/blog-posts");
           const data = await response.json();
+          setThinkingStatus("");
           return {
             role: "assistant",
-            content: "Here's what I've been writing about recently:",
+            content: "📝 Here's what I've been writing about:",
             card: "blog",
             data: data.posts?.slice(0, 4) || [],
             suggestions: [
-              "Summarize a post",
-              "Show me projects",
-              "What are your skills?",
+              "Tell me about a specific post",
+              "Show me your projects",
+              "What skills do you have?",
             ],
           };
         } catch (error) {
+          setThinkingStatus("");
           return {
             role: "assistant",
             content: "Unable to fetch blog posts. Try checking projects!",
@@ -339,8 +450,88 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
         }
       }
 
+      // PRIORITY: Specific project queries - check if asking about a particular project
+      const projectKeywords = [
+        "project",
+        "repo",
+        "repository",
+        "code",
+        "github",
+      ];
+      if (
+        projectKeywords.some((kw) => lowerQuery.includes(kw)) &&
+        (lowerQuery.includes("about") ||
+          lowerQuery.includes("what is") ||
+          lowerQuery.includes("tell me") ||
+          lowerQuery.includes("explain") ||
+          lowerQuery.includes("show me"))
+      ) {
+        setThinkingStatus("Searching through GitHub projects...");
+        try {
+          const response = await fetch("/api/github", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+          const projects = await response.json();
+          setThinkingStatus("Finding the best match...");
+
+          if (Array.isArray(projects)) {
+            // Extract the project name from query
+            const projectQuery = lowerQuery
+              .replace(/what is (the |a )?/g, "")
+              .replace(/tell me about (the |a )?/g, "")
+              .replace(/explain (the |a )?/g, "")
+              .replace(/show me (the |a )?/g, "")
+              .replace(/project|repo|repository|code|github/g, "")
+              .trim();
+
+            // Find matching project
+            const matchingProject = projects.find((p: any) => {
+              const name = p.name?.toLowerCase() || "";
+              const description = p.description?.toLowerCase() || "";
+              const nameWords = name.split(/[-_\s]+/);
+              const queryWords = projectQuery
+                .split(/\s+/)
+                .filter((w) => w.length > 2);
+
+              // Single word or multi-word matching
+              const wordMatch = queryWords.some((qw) =>
+                nameWords.some((nw) => nw.includes(qw) || qw.includes(nw)),
+              );
+
+              return (
+                wordMatch ||
+                name.includes(projectQuery) ||
+                projectQuery.includes(name) ||
+                description.includes(projectQuery)
+              );
+            });
+
+            if (matchingProject) {
+              setThinkingStatus("");
+              return {
+                role: "assistant",
+                content: `✨ **Found it!**\n\n**${matchingProject.name}**\n\n📝 ${matchingProject.description || "An interesting project exploring various technologies."}\n\n🌟 Stars: ${matchingProject.stargazers_count || 0}\n💻 Language: ${matchingProject.language || "Multiple"}\n\n${matchingProject.topics?.length ? `**Tech Stack:** ${matchingProject.topics.slice(0, 5).join(", ")}` : ""}`,
+                data: { link: matchingProject.html_url },
+                suggestions: [
+                  "View on GitHub",
+                  "Show more projects",
+                  "What do you write about?",
+                ],
+              };
+            }
+          }
+
+          setThinkingStatus("");
+        } catch (error) {
+          setThinkingStatus("");
+        }
+      }
+
       // Projects queries
       if (keywords.projects.some((kw) => lowerQuery.includes(kw))) {
+        setThinkingStatus("Fetching projects from GitHub...");
         const response = await fetch("/api/github", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -348,6 +539,7 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
         })
           .then((r) => r.json())
           .catch(() => []);
+        setThinkingStatus("");
 
         const projects = Array.isArray(response)
           ? response.map((p: any) => ({
@@ -361,10 +553,10 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
 
         const context =
           lowerQuery.includes("latest") || lowerQuery.includes("recent")
-            ? "Here are the most recent projects"
+            ? "💻 Here's what I've been working on recently:"
             : lowerQuery.includes("popular") || lowerQuery.includes("best")
-              ? "Here are the featured projects"
-              : "Here are some highlighted projects from GitHub";
+              ? "🌟 Here are some of my featured projects:"
+              : "🚀 Here are some projects I've built:";
 
         return {
           role: "assistant",
@@ -379,8 +571,94 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
         };
       }
 
+      // PRIORITY: Specific skill queries - check if asking about a particular skill/technology
+      const skillQueryTerms = [
+        "skill",
+        "technology",
+        "tech",
+        "language",
+        "framework",
+        "tool",
+      ];
+      if (
+        skillQueryTerms.some((term) => lowerQuery.includes(term)) &&
+        (lowerQuery.includes("about") ||
+          lowerQuery.includes("with") ||
+          lowerQuery.includes("use") ||
+          lowerQuery.includes("know"))
+      ) {
+        setThinkingStatus("Analyzing technology expertise...");
+        try {
+          const projectsRes = await fetch("/api/github", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+          const projects = await projectsRes.json();
+
+          if (Array.isArray(projects)) {
+            // Extract the skill/tech name from query
+            const skillQuery = lowerQuery
+              .replace(
+                /what|about|with|do you|know|use|skill|technology|tech|language|framework|tool/g,
+                "",
+              )
+              .trim();
+
+            // Find projects using that technology
+            const relatedProjects = projects.filter((p: any) => {
+              const topics = (p.topics || []).map((t: string) =>
+                t.toLowerCase(),
+              );
+              const language = (p.language || "").toLowerCase();
+              const name = (p.name || "").toLowerCase();
+              const description = (p.description || "").toLowerCase();
+
+              return (
+                topics.some(
+                  (t: string) =>
+                    t.includes(skillQuery) || skillQuery.includes(t),
+                ) ||
+                language.includes(skillQuery) ||
+                skillQuery.includes(language) ||
+                name.includes(skillQuery) ||
+                description.includes(skillQuery)
+              );
+            });
+
+            if (relatedProjects.length > 0) {
+              setThinkingStatus("");
+              const skillName =
+                skillQuery.charAt(0).toUpperCase() + skillQuery.slice(1);
+              const projectList = relatedProjects
+                .slice(0, 3)
+                .map(
+                  (p: any) =>
+                    `• **${p.name}** - ${p.description || "Exploring this technology"}`,
+                )
+                .join("\n");
+
+              return {
+                role: "assistant",
+                content: `💡 **Expertise in ${skillName}**\n\nI've worked with ${skillName} across ${relatedProjects.length} project${relatedProjects.length > 1 ? "s" : ""}:\n\n${projectList}\n\nThis technology is actively used in production projects.`,
+                suggestions: [
+                  "Show all projects",
+                  "What else do you know?",
+                  "Tell me about your work",
+                ],
+              };
+            }
+          }
+
+          setThinkingStatus("");
+        } catch (error) {
+          setThinkingStatus("");
+        }
+      }
+
       // Skills with enhanced info
       if (keywords.skills.some((kw) => lowerQuery.includes(kw))) {
+        setThinkingStatus("Analyzing skills from projects...");
         try {
           const projectsRes = await fetch("/api/github", {
             method: "POST",
@@ -396,16 +674,17 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
             : [];
 
           const context = lowerQuery.includes("what")
-            ? "The tech stack includes:"
+            ? "🛠️ Here's my tech stack:"
             : lowerQuery.includes("all") || lowerQuery.includes("list")
-              ? "Here's a comprehensive list of technologies:"
-              : "Working with various technologies:";
+              ? "📋 Here are the technologies I work with:"
+              : "💡 I work with these technologies:";
 
           const skillsText =
             skills.length > 0
-              ? `${context}\n\n${skills.map((s) => `• ${s}`).join("\n")}\n\nBased on GitHub projects and real-world experience.`
-              : "Specializes in web development, AI/ML, cloud technologies, and full-stack engineering. Check out the projects to see technologies in action!";
+              ? `${context}\n\n${skills.map((s) => `• ${s}`).join("\n")}\n\nBased on my GitHub projects and real-world experience.`
+              : "I specialize in web development, AI/ML, cloud technologies, and full-stack engineering. Check out my projects to see these technologies in action!";
 
+          setThinkingStatus("");
           return {
             role: "assistant",
             content: skillsText,
@@ -416,6 +695,7 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
             ],
           };
         } catch (error) {
+          setThinkingStatus("");
           return {
             role: "assistant",
             content:
@@ -437,8 +717,8 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
           lowerQuery.includes("work") ||
           lowerQuery.includes("opportunity");
         const context = isHiring
-          ? "Great to hear you're interested! Here's how to get in touch:"
-          : "Let's connect! Here are the best ways to reach out:";
+          ? "📬 Great to hear! Here's how you can reach me:"
+          : "💬 Let's connect! Here's how to reach out:";
 
         const contactInfo = profileData
           ? `${context}\n\n• Email: ${profileData.email}\n• LinkedIn: ${profileData.linkedin}\n• GitHub: ${profileData.github}\n• Instagram: ${profileData.instagram}\n\n${isHiring ? "Looking forward to discussing opportunities!" : "Always happy to connect and chat!"}`
@@ -466,12 +746,12 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
       ) {
         return {
           role: "assistant",
-          content: "Let me introduce you to Somrit:",
+          content: "👋 Let me introduce myself:",
           card: "profile",
           suggestions: [
-            "Show me projects",
-            "What does he write about?",
-            "What are his skills?",
+            "Show your projects",
+            "What do you write about?",
+            "What are your skills?",
           ],
         };
       }
@@ -482,10 +762,10 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
         lowerQuery.includes("commit") ||
         lowerQuery.includes("recent work")
       ) {
-        router.push("/activity");
+        navigateWithCountdown("/activity", "GitHub Activity");
         return {
           role: "assistant",
-          content: "Taking you to GitHub activity...",
+          content: "📊 Taking you to my GitHub activity...",
           suggestions: [
             "Show me projects",
             "What do you write?",
@@ -500,10 +780,11 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
         lowerQuery.includes("recommend") ||
         lowerQuery.includes("suggest")
       ) {
-        router.push("/bookmarks");
+        navigateWithCountdown("/bookmarks", "Bookmarks & Recommendations");
         return {
           role: "assistant",
-          content: "Opening curated bookmarks and tool recommendations...",
+          content:
+            "🔖 Opening my curated bookmarks and tool recommendations...",
           suggestions: [
             "Show projects",
             "What do you write?",
@@ -520,19 +801,19 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
         !lowerQuery.includes("blog") &&
         !lowerQuery.includes("post")
       ) {
-        const pageMap: Record<string, string> = {
-          activity: "/activity",
-          bookmarks: "/bookmarks",
-          projects: "/projects",
-          home: "/",
+        const pageMap: Record<string, { path: string; label: string }> = {
+          activity: { path: "/activity", label: "GitHub Activity" },
+          bookmarks: { path: "/bookmarks", label: "Bookmarks" },
+          projects: { path: "/projects", label: "Projects" },
+          home: { path: "/", label: "Home" },
         };
 
-        for (const [key, path] of Object.entries(pageMap)) {
+        for (const [key, { path, label }] of Object.entries(pageMap)) {
           if (lowerQuery.includes(key)) {
-            router.push(path);
+            navigateWithCountdown(path, label);
             return {
               role: "assistant",
-              content: `Taking you to ${key}...`,
+              content: `🚀 Taking you to ${label}...`,
               suggestions: ["Come back to chat", "Tell me more", "What else?"],
             };
           }
@@ -548,14 +829,13 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
       ) {
         return {
           role: "assistant",
-          content:
-            "I'd love to help! Could you be more specific? I can assist with:",
+          content: "🤔 I'd love to help! What would you like to know?",
           suggestions: [
-            "Tell me about Somrit",
-            "Show me projects",
-            "What does he write about?",
-            "What are his skills?",
-            "How can I contact him?",
+            "Who are you?",
+            "Show your projects",
+            "What do you write about?",
+            "What are your skills?",
+            "How can I reach you?",
           ],
         };
       }
@@ -564,13 +844,13 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
       return {
         role: "assistant",
         content:
-          "I'm not quite sure what you're looking for. I can help you explore:",
+          "🤷 Hmm, I'm not sure what you're asking. Here's what I can help with:",
         suggestions: [
-          "Tell me about Somrit",
-          "Show me his projects",
-          "What does he write about?",
-          "What's his tech stack?",
-          "How can I contact him?",
+          "Who are you?",
+          "Show your projects",
+          "What do you write about?",
+          "What's your tech stack?",
+          "How can I reach you?",
         ],
       };
     },
@@ -666,14 +946,12 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
           >
             View Profile
           </Link>
-          <a
-            href="/Resume.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/cv"
             className="nav-shimmer flex-1 text-center px-4 py-2.5 bg-(--callout-bg) border-2 border-callout text-(--text-color) rounded-xl hover:scale-105 hover:bg-bronzer/20 hover:border-bronzer transition-all text-sm font-semibold shadow-md"
           >
-            Download CV
-          </a>
+            View CV
+          </Link>
         </div>
       </motion.div>
     );
@@ -809,10 +1087,10 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
               >
                 <div>
                   <h3 className="text-3xl font-bold text-(--text-color) mb-3">
-                    How can I help you today?
+                    👋 Hi, what do you want to know about me?
                   </h3>
                   <p className="text-(--text-p) text-lg">
-                    Ask me anything about Somrit's work, skills, or background
+                    Feel free to ask about my work, projects, or anything else!
                   </p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
@@ -843,8 +1121,10 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
                       animate={{ opacity: 1, x: 0 }}
                       className="flex justify-end"
                     >
-                      <div className="max-w-[75%] nav-shimmer bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-2xl px-5 py-3 shadow-md">
-                        <p className="text-sm font-medium">{msg.content}</p>
+                      <div className="max-w-[75%] bg-gradient-to-br from-bronzer to-bronzer/90 text-white rounded-[20px] rounded-tr-sm px-6 py-3.5 shadow-lg shadow-bronzer/20">
+                        <p className="text-sm font-medium leading-relaxed">
+                          {msg.content}
+                        </p>
                       </div>
                     </motion.div>
                   )}
@@ -853,65 +1133,108 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="space-y-4"
+                      className="flex gap-3 items-start"
                     >
-                      <div className="max-w-[75%] bg-(--card-bg) rounded-2xl px-5 py-3 shadow-sm nav-shimmer">
-                        <p className="text-sm text-(--text-color) whitespace-pre-line">
-                          {msg.content}
-                        </p>
-                      </div>
-
-                      {msg.card === "profile" && <ProfileCard />}
-                      {msg.card === "projects" && msg.data && (
-                        <ProjectsCard projects={msg.data} />
-                      )}
-                      {msg.card === "blog" && msg.data && (
-                        <BlogCard posts={msg.data} />
-                      )}
-
-                      {msg.data?.navigate && (
-                        <Link
-                          href={msg.data.navigate}
-                          onClick={onClose}
-                          className="nav-shimmer inline-block px-5 py-2.5 bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-xl hover:scale-105 transition-transform text-sm font-semibold shadow-lg"
-                        >
-                          Go to Page →
-                        </Link>
-                      )}
-
-                      {msg.data?.postSlug && (
-                        <Link
-                          href={`/blog/${msg.data.postSlug}`}
-                          onClick={onClose}
-                          className="nav-shimmer inline-block px-5 py-2.5 bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-xl hover:scale-105 transition-transform text-sm font-semibold shadow-lg"
-                        >
-                          Read Full Article →
-                        </Link>
-                      )}
-
-                      {msg.data?.link && (
-                        <Link
-                          href={msg.data.link}
-                          onClick={onClose}
-                          className="nav-shimmer inline-block px-5 py-2.5 bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-xl hover:scale-105 transition-transform text-sm font-semibold shadow-lg"
-                        >
-                          View Page →
-                        </Link>
-                      )}
-
-                      {msg.suggestions && msg.suggestions.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {msg.suggestions.map((suggestion, i) => (
-                            <button
-                              key={i}
-                              onClick={() => handleSend(suggestion)}
-                              className="nav-shimmer px-3 py-1.5 bg-(--callout-bg) border-2 border-callout text-(--text-color) rounded-lg hover:bg-bronzer/20 hover:border-bronzer hover:scale-105 transition-all text-xs font-semibold shadow-sm"
-                            >
-                              {suggestion}
-                            </button>
-                          ))}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.1 }}
+                        className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-bronzer/20 mt-1"
+                      >
+                        <Image
+                          src={profileData?.avatar || "/somritdasgupta.jpg"}
+                          alt="Somrit"
+                          fill
+                          className="object-cover"
+                        />
+                      </motion.div>
+                      <div className="flex-1 space-y-4">
+                        <div className="max-w-[85%] bg-gradient-to-br from-(--card-bg) to-(--card-bg)/80 backdrop-blur-sm rounded-[20px] rounded-tl-sm px-6 py-3.5 shadow-lg shadow-black/5">
+                          <p className="text-sm text-(--text-color) whitespace-pre-line leading-relaxed">
+                            {msg.content}
+                          </p>
                         </div>
-                      )}
+
+                        {msg.card === "profile" && <ProfileCard />}
+                        {msg.card === "projects" && msg.data && (
+                          <ProjectsCard projects={msg.data} />
+                        )}
+                        {msg.card === "blog" && msg.data && (
+                          <BlogCard posts={msg.data} />
+                        )}
+
+                        {msg.data?.navigate && (
+                          <button
+                            onClick={() => {
+                              const pageName =
+                                msg.data.navigate.split("/").pop() || "Page";
+                              navigateWithCountdown(
+                                msg.data.navigate,
+                                pageName.charAt(0).toUpperCase() +
+                                  pageName.slice(1),
+                              );
+                            }}
+                            className="nav-shimmer inline-block px-5 py-2.5 bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-xl hover:scale-105 transition-transform text-sm font-semibold shadow-lg cursor-pointer"
+                          >
+                            Go to Page →
+                          </button>
+                        )}
+
+                        {msg.data?.postSlug && (
+                          <button
+                            onClick={() => {
+                              const postTitle =
+                                messages
+                                  .find(
+                                    (m) =>
+                                      m.data?.postSlug === msg.data.postSlug,
+                                  )
+                                  ?.content.match(/"([^"]+)"/)?.[1] ||
+                                "Blog Post";
+                              navigateWithCountdown(
+                                `/blog/${msg.data.postSlug}`,
+                                postTitle,
+                              );
+                            }}
+                            className="nav-shimmer inline-block px-5 py-2.5 bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-xl hover:scale-105 transition-transform text-sm font-semibold shadow-lg cursor-pointer"
+                          >
+                            Read Full Article →
+                          </button>
+                        )}
+
+                        {msg.data?.link && (
+                          <button
+                            onClick={() => {
+                              const isGitHub =
+                                msg.data.link.includes("github.com");
+                              if (isGitHub) {
+                                window.open(msg.data.link, "_blank");
+                              } else {
+                                navigateWithCountdown(msg.data.link, "Page");
+                              }
+                            }}
+                            className="nav-shimmer inline-block px-5 py-2.5 bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-xl hover:scale-105 transition-transform text-sm font-semibold shadow-lg cursor-pointer"
+                          >
+                            {msg.data.link.includes("github.com")
+                              ? "View on GitHub →"
+                              : "View Page →"}
+                          </button>
+                        )}
+
+                        {msg.suggestions && msg.suggestions.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {msg.suggestions.map((suggestion, i) => (
+                              <button
+                                key={i}
+                                onClick={() => handleSend(suggestion)}
+                                className="px-4 py-2 bg-(--callout-bg)/50 backdrop-blur-sm text-(--text-color) rounded-full hover:bg-bronzer/30 hover:scale-105 transition-all text-xs font-medium shadow-sm"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </motion.div>
                   )}
                 </div>
@@ -919,28 +1242,49 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
 
               {isTyping && (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex justify-start"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex gap-3 items-start"
                 >
-                  <div className="bg-(--card-bg) rounded-2xl px-5 py-3 shadow-sm nav-shimmer">
-                    <div className="flex gap-1.5">
-                      <span
-                        className="w-2 h-2 bg-(--text-p) rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <span
-                        className="w-2 h-2 bg-(--text-p) rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <span
-                        className="w-2 h-2 bg-(--text-p) rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-bronzer/20 mt-1"
+                  >
+                    <Image
+                      src={profileData?.avatar || "/somritdasgupta.jpg"}
+                      alt="Somrit"
+                      fill
+                      className="object-cover"
+                    />
+                  </motion.div>
+                  <div className="flex-1 space-y-2">
+                    <div className="max-w-[85%] bg-gradient-to-br from-(--card-bg) to-(--card-bg)/80 backdrop-blur-sm rounded-[20px] rounded-tl-sm px-6 py-3.5 shadow-lg shadow-black/5">
+                      <div className="flex gap-1.5">
+                        <span
+                          className="w-2 h-2 bg-bronzer rounded-full animate-bounce"
+                          style={{ animationDelay: "0ms" }}
+                        />
+                        <span
+                          className="w-2 h-2 bg-bronzer rounded-full animate-bounce"
+                          style={{ animationDelay: "150ms" }}
+                        />
+                        <span
+                          className="w-2 h-2 bg-bronzer rounded-full animate-bounce"
+                          style={{ animationDelay: "300ms" }}
+                        />
+                      </div>
                     </div>
+                    {thinkingStatus && (
+                      <span className="text-xs text-(--text-p) italic animate-pulse ml-2">
+                        {thinkingStatus}
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               )}
+
               <div ref={messagesEndRef} />
             </div>
           </div>
@@ -1028,10 +1372,10 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
                 >
                   <div>
                     <h3 className="text-2xl font-bold text-(--text-color) mb-2">
-                      How can I help you today?
+                      👋 Hi, what do you want to know?
                     </h3>
                     <p className="text-(--text-p) text-sm">
-                      Ask me anything about Somrit's work, skills, or background
+                      Ask me about my work, projects, or anything!
                     </p>
                   </div>
                   <div className="grid grid-cols-1 gap-3">
@@ -1062,8 +1406,10 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
                         animate={{ opacity: 1, x: 0 }}
                         className="flex justify-end"
                       >
-                        <div className="max-w-[75%] nav-shimmer bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-2xl px-5 py-3 shadow-md">
-                          <p className="text-sm font-medium">{msg.content}</p>
+                        <div className="max-w-[75%] bg-gradient-to-br from-bronzer to-bronzer/90 text-white rounded-[20px] rounded-tr-sm px-5 py-3 shadow-lg shadow-bronzer/20">
+                          <p className="text-sm font-medium leading-relaxed">
+                            {msg.content}
+                          </p>
                         </div>
                       </motion.div>
                     )}
@@ -1072,45 +1418,69 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="space-y-4"
+                        className="flex gap-2.5 items-start"
                       >
-                        <div className="max-w-[75%] bg-(--card-bg) border-2 border-callout rounded-2xl px-5 py-3 shadow-sm nav-shimmer">
-                          <p className="text-sm text-(--text-color) whitespace-pre-line">
-                            {msg.content}
-                          </p>
-                        </div>
-
-                        {msg.card === "profile" && <ProfileCard />}
-                        {msg.card === "projects" && msg.data && (
-                          <ProjectsCard projects={msg.data} />
-                        )}
-                        {msg.card === "blog" && msg.data && (
-                          <BlogCard posts={msg.data} />
-                        )}
-
-                        {msg.data?.link && (
-                          <Link
-                            href={msg.data.link}
-                            onClick={onClose}
-                            className="nav-shimmer inline-block px-5 py-2.5 bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-xl hover:scale-105 transition-transform text-sm font-semibold shadow-lg"
-                          >
-                            View Page →
-                          </Link>
-                        )}
-
-                        {msg.suggestions && msg.suggestions.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {msg.suggestions.map((suggestion, i) => (
-                              <button
-                                key={i}
-                                onClick={() => handleSend(suggestion)}
-                                className="nav-shimmer px-3 py-1.5 bg-(--callout-bg) border-2 border-callout text-(--text-color) rounded-lg hover:bg-bronzer/20 hover:border-bronzer hover:scale-105 transition-all text-xs font-semibold shadow-sm"
-                              >
-                                {suggestion}
-                              </button>
-                            ))}
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.1 }}
+                          className="relative w-7 h-7 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-bronzer/20 mt-0.5"
+                        >
+                          <Image
+                            src={profileData?.avatar || "/somritdasgupta.jpg"}
+                            alt="Somrit"
+                            fill
+                            className="object-cover"
+                          />
+                        </motion.div>
+                        <div className="flex-1 space-y-4">
+                          <div className="max-w-[90%] bg-gradient-to-br from-(--card-bg) to-(--card-bg)/80 backdrop-blur-sm rounded-[20px] rounded-tl-sm px-5 py-3 shadow-lg shadow-black/5">
+                            <p className="text-sm text-(--text-color) whitespace-pre-line">
+                              {msg.content}
+                            </p>
                           </div>
-                        )}
+
+                          {msg.card === "profile" && <ProfileCard />}
+                          {msg.card === "projects" && msg.data && (
+                            <ProjectsCard projects={msg.data} />
+                          )}
+                          {msg.card === "blog" && msg.data && (
+                            <BlogCard posts={msg.data} />
+                          )}
+
+                          {msg.data?.link && (
+                            <button
+                              onClick={() => {
+                                const isGitHub =
+                                  msg.data.link.includes("github.com");
+                                if (isGitHub) {
+                                  window.open(msg.data.link, "_blank");
+                                } else {
+                                  navigateWithCountdown(msg.data.link, "Page");
+                                }
+                              }}
+                              className="nav-shimmer inline-block px-5 py-2.5 bg-bronzer border-2 border-bronzer text-(--bg-color) rounded-xl hover:scale-105 transition-transform text-sm font-semibold shadow-lg cursor-pointer"
+                            >
+                              {msg.data.link.includes("github.com")
+                                ? "View on GitHub →"
+                                : "View Page →"}
+                            </button>
+                          )}
+
+                          {msg.suggestions && msg.suggestions.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {msg.suggestions.map((suggestion, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => handleSend(suggestion)}
+                                  className="px-3 py-1.5 bg-(--callout-bg)/50 backdrop-blur-sm text-(--text-color) rounded-full hover:bg-bronzer/30 hover:scale-105 transition-all text-xs font-medium shadow-sm"
+                                >
+                                  {suggestion}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </motion.div>
                     )}
                   </div>
@@ -1122,20 +1492,27 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
                     animate={{ opacity: 1 }}
                     className="flex justify-start"
                   >
-                    <div className="bg-(--card-bg) border-2 border-callout rounded-2xl px-5 py-3 shadow-sm nav-shimmer">
-                      <div className="flex gap-1.5">
-                        <span
-                          className="w-2 h-2 bg-(--text-p) rounded-full animate-bounce"
-                          style={{ animationDelay: "0ms" }}
-                        />
-                        <span
-                          className="w-2 h-2 bg-(--text-p) rounded-full animate-bounce"
-                          style={{ animationDelay: "150ms" }}
-                        />
-                        <span
-                          className="w-2 h-2 bg-(--text-p) rounded-full animate-bounce"
-                          style={{ animationDelay: "300ms" }}
-                        />
+                    <div className="bg-gradient-to-br from-(--card-bg) to-(--card-bg)/80 backdrop-blur-sm rounded-[20px] rounded-tl-sm px-5 py-3 shadow-lg shadow-black/5">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex gap-1.5">
+                          <span
+                            className="w-2 h-2 bg-bronzer rounded-full animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          />
+                          <span
+                            className="w-2 h-2 bg-bronzer rounded-full animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          />
+                          <span
+                            className="w-2 h-2 bg-bronzer rounded-full animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          />
+                        </div>
+                        {thinkingStatus && (
+                          <span className="text-xs text-(--text-p) italic animate-pulse">
+                            {thinkingStatus}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -1201,6 +1578,59 @@ export function ChatInterface({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </motion.div>
+
+      {/* Countdown Overlay */}
+      <AnimatePresence>
+        {countdown !== null && countdown > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[110] bg-(--bg-color)/95 backdrop-blur-xl flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-center space-y-6"
+            >
+              <motion.div
+                key={countdown}
+                initial={{ scale: 1.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                className="text-8xl font-bold text-bronzer"
+              >
+                {countdown}
+              </motion.div>
+              <div className="space-y-2">
+                <p className="text-2xl font-semibold text-(--text-color)">
+                  Taking you to
+                </p>
+                <p className="text-xl text-bronzer font-bold">
+                  {countdownDestination}
+                </p>
+              </div>
+              <div className="flex gap-1.5 justify-center">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                  className="w-2 h-2 bg-bronzer rounded-full"
+                />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
+                  className="w-2 h-2 bg-bronzer rounded-full"
+                />
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}
+                  className="w-2 h-2 bg-bronzer rounded-full"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

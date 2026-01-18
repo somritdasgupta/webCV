@@ -15,7 +15,7 @@ export const socialLinks = [
     href: "https://www.instagram.com/somritdasgupta",
     external: true,
   },
-  { name: "resume", href: "/Resume.pdf", external: true },
+  { name: "cv", href: "/cv", external: false },
 ];
 
 // Footer links including email
@@ -24,5 +24,5 @@ export const footerLinks = [
   { href: "https://github.com/somritdasgupta", label: "github" },
   { href: "https://www.linkedin.com/in/somritdasgupta", label: "linkedin" },
   { href: "https://www.instagram.com/somritdasgupta", label: "instagram" },
-  { href: "/Resume.pdf", label: "resume" },
+  { href: "/cv", label: "cv" },
 ];

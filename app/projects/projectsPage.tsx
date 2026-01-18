@@ -5,18 +5,17 @@ import { RiArrowRightUpLine } from "react-icons/ri";
 import { FiExternalLink } from "react-icons/fi";
 import { MdRocketLaunch } from "react-icons/md";
 import BoxLoader from "../components/BoxLoader";
+import Link from "next/link";
 
-const Resume = () => (
+const CVButton = () => (
   <div className="flex ml-4 mt-2 text-xs">
-    <a
-      href="/Resume.pdf"
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href="/cv"
       className="flex items-center text-[var(--bronzer)] font-medium hover:underline transition-colors"
     >
       <RiArrowRightUpLine />
-      <span>RESUME</span>
-    </a>
+      <span>VIEW CV</span>
+    </Link>
   </div>
 );
 
