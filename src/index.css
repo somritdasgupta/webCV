@@ -1,0 +1,397 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   DESIGN SYSTEM — All tokens HSL. Edit here, not in components.
+   Aesthetic: editorial minimal, light + dark, mono accents.
+   ========================================================= */
+
+@layer base {
+  :root {
+    --background: 40 30% 98%;
+    --foreground: 0 0% 9%;
+
+    --card: 40 30% 99%;
+    --card-foreground: 0 0% 9%;
+
+    --popover: 40 30% 99%;
+    --popover-foreground: 0 0% 9%;
+
+    --primary: 0 0% 9%;
+    --primary-foreground: 40 30% 98%;
+
+    --secondary: 40 15% 94%;
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 40 15% 94%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 18 90% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 70% 38%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 9%;
+
+    --border: 40 10% 88%;
+    --input: 40 10% 88%;
+    --ring: 0 0% 9%;
+
+    --radius: 0.625rem;
+
+    /* surfaces */
+    --surface-1: 40 25% 96%;
+    --surface-2: 40 20% 92%;
+
+    /* gradients */
+    --gradient-fade: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-1)) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(18 90% 55%) 0%, hsl(340 85% 55%) 100%);
+
+    /* shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
+    --shadow-md: 0 4px 16px -4px hsl(0 0% 0% / 0.08);
+    --shadow-lg: 0 24px 48px -16px hsl(0 0% 0% / 0.12);
+
+    /* motion */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+    --sidebar-background: 40 30% 98%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary-foreground: 40 30% 98%;
+    --sidebar-accent: 40 15% 94%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 40 10% 88%;
+    --sidebar-ring: 0 0% 9%;
+  }
+
+  .dark {
+    --background: 0 0% 6%;
+    --foreground: 40 20% 95%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 40 20% 95%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 40 20% 95%;
+
+    --primary: 40 20% 95%;
+    --primary-foreground: 0 0% 6%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 40 20% 95%;
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 40 5% 60%;
+
+    --accent: 18 90% 60%;
+    --accent-foreground: 0 0% 6%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 40 20% 95%;
+
+    --success: 142 60% 45%;
+    --success-foreground: 0 0% 6%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 6%;
+
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 40 20% 95%;
+
+    --surface-1: 0 0% 9%;
+    --surface-2: 0 0% 12%;
+
+    --gradient-fade: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-1)) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(18 90% 60%) 0%, hsl(340 85% 60%) 100%);
+
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+    --shadow-md: 0 4px 16px -4px hsl(0 0% 0% / 0.5);
+    --shadow-lg: 0 24px 48px -16px hsl(0 0% 0% / 0.6);
+
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 40 20% 95%;
+    --sidebar-primary-foreground: 0 0% 6%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 0 0% 16%;
+    --sidebar-ring: 40 20% 95%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply antialiased;
+    font-feature-settings: "ss01", "cv11";
+    scroll-behavior: smooth;
+  }
+
+  html {
+    @apply bg-background;
+  }
+  body {
+    @apply text-foreground font-sans;
+    background: transparent;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::selection {
+    @apply bg-foreground text-background;
+  }
+
+  /* nicer focus ring */
+  :focus-visible {
+    @apply outline-none ring-2 ring-foreground ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer components {
+  /* Fluid containers — scale gracefully from mobile to ultrawide.
+     Reading content stays comfortable; wide content uses the viewport. */
+  .container-prose {
+    width: min(100% - 2rem, 72ch);
+    margin-inline: auto;
+  }
+  @screen sm {
+    .container-prose { width: min(100% - 3rem, 75ch); }
+  }
+  .container-wide {
+    width: min(100% - 2rem, clamp(64rem, 92vw, 96rem));
+    margin-inline: auto;
+  }
+  @screen sm {
+    .container-wide { width: min(100% - 3rem, clamp(64rem, 92vw, 96rem)); }
+  }
+  /* Fluid type helpers */
+  .fluid-h1 { font-size: clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem); line-height: 1.04; letter-spacing: -0.02em; }
+  .fluid-h2 { font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem); line-height: 1.1; letter-spacing: -0.015em; }
+  .fluid-lead { font-size: clamp(1rem, 0.9rem + 0.4vw, 1.15rem); }
+
+  /* page-enter animation utility */
+  .page-enter {
+    animation: page-enter 0.5s var(--ease-out-expo) both;
+  }
+
+  /* subtle text gradient for hero */
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* ===========================================================
+     Code blocks (rehype-pretty-code) — modern dark surface,
+     consistent across light + dark site themes.
+     =========================================================== */
+  [data-rehype-pretty-code-figure] {
+    @apply relative my-7;
+  }
+  [data-rehype-pretty-code-figure] pre {
+    background: linear-gradient(180deg, hsl(220 13% 10%) 0%, hsl(220 13% 7%) 100%);
+    border: 1px solid hsl(220 13% 18%);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.04) inset,
+      0 12px 32px -16px hsl(0 0% 0% / 0.5),
+      0 2px 6px -2px hsl(0 0% 0% / 0.3);
+    @apply overflow-x-auto rounded-xl py-5 text-[13px] leading-[1.65];
+    color: hsl(220 14% 88%);
+    font-feature-settings: "calt", "liga";
+  }
+  [data-rehype-pretty-code-figure] pre code {
+    @apply grid w-full;
+    counter-reset: line;
+    background: transparent;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  [data-rehype-pretty-code-figure] [data-line] {
+    @apply px-5 border-l-2 border-transparent;
+    min-height: 1.65em;
+  }
+  /* Optional line numbers when [data-line-numbers] is set on <code> */
+  [data-rehype-pretty-code-figure] code[data-line-numbers] [data-line]::before {
+    counter-increment: line;
+    content: counter(line);
+    @apply mr-4 inline-block w-5 text-right text-[11px];
+    color: hsl(220 8% 40%);
+  }
+  [data-rehype-pretty-code-figure] [data-highlighted-line] {
+    border-left-color: hsl(var(--accent));
+    background: hsl(var(--accent) / 0.08);
+  }
+  [data-rehype-pretty-code-figure] mark[data-highlighted-chars] {
+    background: hsl(var(--accent) / 0.18);
+    color: inherit;
+    border-radius: 3px;
+    padding: 1px 3px;
+    box-shadow: 0 0 0 1px hsl(var(--accent) / 0.25);
+  }
+  /* Title bar above the code block (```ts title="file.ts") */
+  [data-rehype-pretty-code-title] {
+    background: hsl(220 13% 13%);
+    border: 1px solid hsl(220 13% 18%);
+    border-bottom: 0;
+    color: hsl(220 9% 65%);
+    @apply rounded-t-xl px-5 py-2.5 font-mono text-[11px] tracking-wide;
+    /* tiny mac-style traffic lights */
+    position: relative;
+    padding-left: 4.25rem;
+  }
+  [data-rehype-pretty-code-title]::before {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5rem;
+    height: 0.625rem;
+    background:
+      radial-gradient(circle at 0.3125rem 50%, hsl(0 70% 60%) 0 0.3125rem, transparent 0.34rem),
+      radial-gradient(circle at 1.25rem 50%, hsl(40 90% 55%) 0 0.3125rem, transparent 0.34rem),
+      radial-gradient(circle at 2.1875rem 50%, hsl(140 60% 50%) 0 0.3125rem, transparent 0.34rem);
+  }
+  [data-rehype-pretty-code-title] + pre {
+    @apply rounded-t-none;
+    border-top: 0;
+  }
+  /* Inline code — keep theme-aware */
+  :not(pre) > code {
+    background: hsl(var(--surface-2));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    @apply rounded-md px-1.5 py-0.5 font-mono text-[0.85em];
+  }
+}
+
+/* ===== Custom thin scrollbars (global) ===== */
+@layer base {
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--foreground) / 0.18) transparent;
+  }
+  /* WebKit */
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--foreground) / 0.18);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--foreground) / 0.35);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  /* Opt-out helper */
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ===== Print styles for /cv =====
+   Render the CV cleanly on A4 in either color scheme. */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: white !important; }
+  header, footer, [data-print-hide] { display: none !important; }
+  .cv-paper { color: black !important; background: white !important; }
+  .cv-paper * { color: inherit !important; background: transparent !important; box-shadow: none !important; }
+  .cv-paper a { text-decoration: none !important; color: black !important; }
+}
+
+/* ===== Ambient site-wide smoke — very subtle, fixed behind everything ===== */
+@keyframes ambient-1 {
+  0%   { transform: translate3d(-8%, -4%, 0) scale(1); }
+  50%  { transform: translate3d(10%, 6%, 0) scale(1.12); }
+  100% { transform: translate3d(-8%, -4%, 0) scale(1); }
+}
+@keyframes ambient-2 {
+  0%   { transform: translate3d(12%, 8%, 0) scale(1.08); }
+  50%  { transform: translate3d(-10%, -8%, 0) scale(0.96); }
+  100% { transform: translate3d(12%, 8%, 0) scale(1.08); }
+}
+@keyframes ambient-3 {
+  0%   { transform: translate3d(-4%, 10%, 0) scale(0.94); }
+  50%  { transform: translate3d(6%, -8%, 0) scale(1.14); }
+  100% { transform: translate3d(-4%, 10%, 0) scale(0.94); }
+}
+
+.ambient-smoke {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ambient-smoke::before,
+.ambient-smoke::after,
+.ambient-smoke > span {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+  filter: blur(140px);
+  will-change: transform;
+  opacity: 1;
+}
+.ambient-smoke::before {
+  background: radial-gradient(45% 45% at 25% 30%, hsl(var(--accent) / 0.28), transparent 70%);
+  animation: ambient-1 38s ease-in-out infinite;
+}
+.ambient-smoke::after {
+  background: radial-gradient(50% 50% at 75% 65%, hsl(340 85% 60% / 0.22), transparent 70%);
+  animation: ambient-2 46s ease-in-out infinite;
+}
+.ambient-smoke > span {
+  background: radial-gradient(55% 55% at 50% 85%, hsl(220 90% 60% / 0.18), transparent 70%);
+  animation: ambient-3 54s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-smoke::before,
+  .ambient-smoke::after,
+  .ambient-smoke > span { animation: none; }
+}
+
+@media print {
+  .ambient-smoke { display: none !important; }
+}

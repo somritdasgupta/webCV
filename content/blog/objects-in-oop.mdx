@@ -1,0 +1,139 @@
+export const frontmatter = {
+  title: "Objects, the OOP way",
+  description: "Java and JavaScript both use objects, but they think about them very differently. Here's a side-by-side, no jargon.",
+  date: "2023-04-15",
+  tags: ["development", "guides", "opinions"],
+  readingTime: 6,
+};
+
+Objects are the building block I keep coming back to. They're how we model real things — a user, a car, a button — in code. Most languages do this, but they don't all do it the same way.
+
+I've been bouncing between Java and JavaScript a lot lately, and the difference in how they handle objects is bigger than people make it sound. Let me walk through it.
+
+## Almost everything is an object
+
+In **Java**, you start with a class. The class is the blueprint. The object is what you build from the blueprint.
+
+```java
+public class Person {
+    private String name;
+    private int age;
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public void introduce() {
+        System.out.println("Hi, I'm " + name + " and I'm " + age + " years old.");
+    }
+}
+```
+
+To actually use it:
+
+```java
+Person john = new Person("John", 30);
+john.introduce();
+```
+
+Pretty rigid. You can't add a `phone` field to `john` later. He has a name, he has an age, that's it.
+
+**JavaScript** is the opposite. No blueprint required. Just describe the thing inline:
+
+```javascript
+const person = {
+  name: "John",
+  age: 30,
+  introduce() {
+    console.log(`Hi, I'm ${this.name} and I'm ${this.age} years old.`);
+  },
+};
+
+person.introduce();
+```
+
+Want to add a phone number tomorrow? `person.phone = "..."`. Done. Nobody asked permission.
+
+<Callout type="tip">
+  Java treats objects like contracts. JavaScript treats them like sticky notes.
+</Callout>
+
+## The `this` keyword
+
+In Java, `this` always means "the object I'm sitting inside." Easy.
+
+In JavaScript, `this` means "whoever called me, mostly." That sounds harmless until it bites you:
+
+```javascript
+function showVar() {
+  console.log(this.globalVar);
+}
+
+const obj = {
+  globalVar: "from the object",
+  showVar,
+};
+
+showVar();      // undefined  — `this` is global
+obj.showVar();  // "from the object" — `this` is obj
+```
+
+Same function, two answers. Arrow functions sidestep this by capturing `this` from where they were written, not where they were called. That single rule fixes most of the `this` headaches.
+
+## Inheritance: classes vs prototypes
+
+Java uses classes. A subclass `extends` a parent and inherits its members. Clean hierarchy:
+
+```java
+public class ElectricCar extends Car {
+    private int batteryCapacity;
+    public ElectricCar(String model, int batteryCapacity) {
+        super(model);
+        this.batteryCapacity = batteryCapacity;
+    }
+}
+```
+
+JavaScript has classes too (since ES6), but underneath they're just sugar over **prototypes**. Every object points to another object. When you ask for a property and it's not there, JS walks up the chain until it finds it (or runs out).
+
+```javascript
+class ElectricCar extends Car {
+  constructor(model, batteryCapacity) {
+    super(model);
+    this.batteryCapacity = batteryCapacity;
+  }
+}
+```
+
+Looks identical. Behaves differently under the hood. The prototype chain is more flexible — you can attach behavior at runtime — but it's also where weird bugs come from.
+
+## Mutability
+
+Java objects are mutable by default. Want immutability? Use `final`:
+
+```java
+public final class ImmutablePerson {
+    private final String name;
+    public ImmutablePerson(String name) { this.name = name; }
+}
+```
+
+JavaScript objects are mutable, period. Want to lock one down? `Object.freeze()`:
+
+```javascript
+const person = Object.freeze({ name: "John", age: 30 });
+person.age = 31;       // silently ignored
+console.log(person.age); // 30
+```
+
+Note "silently ignored" — JS won't yell at you. In strict mode it throws, otherwise it just shrugs. Good to know before you ship.
+
+## So which one do I reach for?
+
+Honestly, neither is "better." They're built for different jobs.
+
+- **Java** is great when the shape of your data matters and a wrong field would be a disaster. Backends, financial systems, anything multi-team.
+- **JavaScript** is great when you want to move fast, iterate, and reshape things as you learn. Most product work, prototypes, anything in the browser.
+
+Knowing both makes you better at either one. The moment you understand *why* Java is strict and *why* JavaScript is loose, you stop fighting them.

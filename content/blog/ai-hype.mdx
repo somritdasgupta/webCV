@@ -1,0 +1,78 @@
+export const frontmatter = {
+  title: "So, everything is 'AI-powered' now?",
+  description: "A reality check on the AI hype cycle. What's real, what's marketing, and how to tell the difference.",
+  date: "2025-09-07",
+  tags: ["ai", "opinions", "industry"],
+  readingTime: 5,
+};
+
+You can't escape it. Every press release, every product launch, every coffee maker is suddenly "AI-powered." It's the new "organic" or "gluten-free" — a magic phrase you slap on a product to sound futuristic and justify a 20% price hike. I'm waiting for the AI-powered toothbrush that "optimizes my brushing strategy."
+
+The whole industry is in a full-blown AI frenzy, and it's hard not to feel like we're being run over by a hype machine.
+
+> "AI-powered is tech's meaningless equivalent of all-natural."  
+> — Devin Coldewey, TechCrunch
+
+That quote nailed it years ago. It's only gotten worse.
+
+## Real quick: what 'AI' actually means
+
+Before going further, a sanity check. As devs, we know "AI" isn't pixie dust. The genuinely impressive stuff is systems making decisions from patterns in data, not a pile of `if`-statements with a fancy name.
+
+On one end you've got large language models with billions of parameters, or neural networks that can spot tumors in MRIs. On the other end you've got a script that suggests a playlist based on the weather. One is statistical modeling at scale. The other is a switch statement in a trench coat. Guess which one gets called "AI" in a launch tweet.
+
+<Callout>
+  "AI" has become a catch-all for everything from real machine learning to basic automation that's been around for two decades. Spotting the difference is part of the job now.
+</Callout>
+
+## The hype is the product
+
+Marketing figured out that the letters A and I print money. "Automated" sounds boring. "AI-powered" sounds like *Blade Runner*. So now your email client has AI to sort spam, your CRM has AI to score leads, and your food app has AI to recommend tacos. Again.
+
+The features aren't always bad. The problem is the label sets an expectation the reality can't meet. That's where it crosses into being dishonest.
+
+## The Nvidia rocket ship
+
+If you want a flashing neon sign that screams *hype*, look at the stock market. Nvidia makes the GPUs that train and run all the models, so they're selling shovels in the gold rush. The stock went up roughly 800% in a stupidly short window.
+
+<Callout emoji="🚀">
+  That's a real testament to the tech, no doubt. It's also a flashing signal of speculative frenzy. When one hardware company's market cap rivals the GDP of small countries, the market is high on something.
+</Callout>
+
+It's not just Nvidia. Money is flowing into anything with an AI label, regardless of whether there's a real product behind it.
+
+## The 'automation' trick wearing an AI hat
+
+The line marketing teams blur on purpose:
+
+- **Traditional automation.** A dumb robot doing exactly what you told it. A cron job that backs up a database every hour. Predictable, scripted, reliable.
+- **Actual AI.** A system that learns from data and changes its behavior over time. Predicting churn, generating text, recommending the next action.
+
+A lot of "AI features" right now are the dumb robot with the smart robot's photo on the box. Classic bait-and-switch.
+
+## The hard parts nobody puts in the press release
+
+As engineers, we know real ML has limits the marketing team conveniently leaves out:
+
+- **Garbage in, garbage out.** Models eat enormous amounts of clean, labeled data. The reality is usually "biased garbage in, confidently wrong garbage out — at scale."
+- **Bias is a feature, not a bug.** Models mirror the data they were trained on. A biased dataset produces a biased product, faster.
+- **The black box.** Ask why my sorting algorithm works and I can walk you through it. Ask a deep model why it denied a loan and the honest answer is "the weights say so." That's a problem when stakes are high.
+
+## How to cut through the noise
+
+How do we, as devs and reasonably skeptical humans, not get played?
+
+> "These technologies are still early. There's significant uncertainty about how they'll evolve. Embryonic technologies present greater risks for deployment, but potentially greater benefits for early adopters."  
+> — Melissa Davis, Gartner
+
+Gartner's polite way of saying "it's chaos, walk carefully." Mine is shorter:
+
+1. **Ask "so what?"** Does the AI feature solve a real problem, or does it just add complexity? My "AI-powered" fridge telling me I'm out of milk is useless if it doesn't *also* order milk.
+2. **Demand the "how."** If the company can't explain in plain language what the model is doing, it's marketing fluff.
+3. **Follow the money.** Is the AI core to the product, or a premium add-on designed to push you up a tier? The answer usually tells you whether it's actually essential.
+
+## The bottom line
+
+Real AI is genuinely changing things. The progress in the last few years is wild and isn't slowing down. But the current landscape is also full of marketing fluff and inflated promises.
+
+Calling a simple algorithm "AI" is the tech version of calling a puddle an ocean. The job, for those of us who actually build this stuff, is to stay skeptical, ask the hard questions, and remember: if a product's best feature is the AI label itself, it probably doesn't have any features.

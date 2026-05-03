@@ -1,0 +1,62 @@
+export const frontmatter = {
+  title: "Developers' co-pilot",
+  description: "How AI assistants — especially the ones with retrieval — are quietly changing the day-to-day of writing software.",
+  date: "2023-05-11",
+  tags: ["ai", "development", "opinions"],
+  readingTime: 5,
+};
+
+Let's talk about the co-pilot thing. AI assistants have moved past the "neat trick that finishes a sentence" stage. They're now genuinely useful for the daily work — boilerplate, debugging, writing tests, even reviewing code. Coding looks a little different than it did two years ago, and I've felt it firsthand.
+
+Think about what most of a developer day used to be: setting up scaffolding, writing the same kind of CRUD code for the hundredth time, formatting, writing test stubs. Necessary, but it's not what makes the product good. That's where assistants like GitHub Copilot quietly take over. It's like having a colleague next to you who can sort of hear what you're trying to do. Not always right, but right often enough that you keep using it.
+
+I've had moments where I was deep in a refactor, halfway through a function, and Copilot dropped in pretty much the exact thing I was about to type. Not magic — it has my file open and saw the pattern — but useful.
+
+<Callout emoji="💡">
+  These tools shine on the boring parts. They free up the brain for the parts that actually matter — design, trade-offs, naming things.
+</Callout>
+
+I'm not the only one feeling this. Most devs I've talked to use them for docs, test scaffolding, writing one-liners they already know but don't want to type. The question stopped being "is this useful?" — it's now "how do I use it well?"
+
+## Where RAG actually changes things
+
+Here's where it gets interesting. Plain AI assistants are good. AI assistants that can *look things up* are a different tier.
+
+Retrieval-Augmented Generation (RAG) means the AI doesn't only rely on what it was trained on — it can pull from a database, your docs, your codebase, an API spec. Instead of generic suggestions, the answer is shaped by the exact thing you're working on.
+
+I had a project recently using a niche API with almost no online docs. Normally that's hours of forum-diving. With a RAG-backed tool, it pulled snippets from the official docs and example code from similar projects, and stitched together something I could actually use. I still tweaked it, but it cut the research time in half.
+
+## Real places this helps
+
+1. **Debugging.** Paste an error, get back fixes that match your stack, not someone else's.
+2. **Writing tests.** The AI reads your function and drafts the obvious test cases. You add the tricky ones.
+3. **Documentation.** The thing nobody wants to write — and the AI is happy to draft.
+4. **Code review.** Some tools now flag issues before you even open a PR. Cleaner reviews, fewer round trips.
+5. **Learning new tech.** Drop into an unfamiliar framework, ask questions in your own words, see real examples.
+
+<ProsCons
+  pros={[
+    "Removes the boring repetitive bits.",
+    "Suggestions usually fit the surrounding code.",
+    "Faster debugging when error messages are noisy.",
+    "Tests and docs finally get written.",
+  ]}
+  cons={[
+    "Sometimes confidently wrong.",
+    "Easy to over-rely on and stop thinking.",
+    "Can introduce bugs if you don't actually read the suggestion.",
+    "Generic answers when it doesn't have enough context.",
+  ]}
+/>
+
+## Where it falls down
+
+It's not all good. AI assistants get things wrong, sometimes funny-wrong, sometimes "almost-right-but-broken-in-production-wrong." If you don't read the suggestion, you'll ship something you didn't actually mean.
+
+There's also a real privacy question. Sending proprietary code to a hosted model isn't always allowed, or wise. For sensitive work, on-device or self-hosted setups matter.
+
+## What I actually think
+
+These tools aren't replacing developers. They're not even trying to. What they *are* doing is letting us spend less time on the parts of the job nobody enjoys, and more on the parts that need a brain.
+
+The simple version: devs who learn to work with these tools well will out-pace devs who don't. Not because the AI is doing the hard part — because they've offloaded the easy part and saved their attention for the actual problems. That's where the next few years are going.

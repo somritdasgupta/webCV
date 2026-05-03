@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <!-- Defaults; overridden per route by <Seo /> using BASE_URL from src/site.config.ts -->
+    <title>Somrit Dasgupta — Engineer x Extraordinaire</title>
+    <meta name="description" content="Personal site of Somrit Dasgupta. Writing on engineering, projects, and live activity from GitHub.">
+    <meta name="author" content="Somrit Dasgupta" />
+
+    <link rel="canonical" href="__SITE_URL__/" />
+
+    
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:site_name" content="Somrit Dasgupta" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:creator" content="@somritdasgupta" />
+
+    <!-- Apply saved theme before paint to avoid flash -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          if (t === 'dark') document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+  <meta property="og:image" content="__SITE_URL__/og.png">
+  <meta name="twitter:image" content="__SITE_URL__/og.png">
+  <meta property="og:title" content="Somrit Dasgupta — Engineer x Extraordinaire">
+  <meta name="twitter:title" content="Somrit Dasgupta — Engineer x Extraordinaire">
+  <meta property="og:description" content="Personal site of Somrit Dasgupta. Writing on engineering, projects, and live activity from GitHub.">
+  <meta name="twitter:description" content="Personal site of Somrit Dasgupta. Writing on engineering, projects, and live activity from GitHub.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+</head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

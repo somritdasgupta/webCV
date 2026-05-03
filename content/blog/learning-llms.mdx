@@ -1,0 +1,97 @@
+export const frontmatter = {
+  title: "How I learned to build with LLMs without losing my mind",
+  description: "A small survival guide for self-teaching GenAI: the prompt-engineering pain, the first working RAG, and the framework that keeps me from rage-quitting.",
+  date: "2025-02-15",
+  tags: ["ai", "development", "guides", "career"],
+  readingTime: 7,
+};
+
+Sunday morning, scrolling. Another demo of someone's chatbot that talks to their entire codebase. Another tool that turns rough notes into a polished essay. LangChain, vector databases, agents — a whole new vocabulary that showed up overnight.
+
+And the same feeling washes over me: equal parts curiosity and tiredness. "Great, another huge thing I'm supposed to already be good at."
+
+This is the treadmill. A new paradigm shows up, the clock starts, standing still means falling behind.
+
+But how do you actually learn this stuff — which feels more like alchemy than engineering — without burning out? After a year deep in this, the answer isn't "be smarter." It's having a system. A repeatable way of learning.
+
+Here's how I worked through it.
+
+## Phase 1: the magic of the first API call
+
+Every new tech starts here. The "Hello, World" phase. You follow a tutorial, plug in your key, and it just works.
+
+For me it was a tiny LangChain script calling an OpenAI model. I asked, "Three fun facts about ISRO?" and a perfect answer streamed back. For a moment I felt like a wizard. "This is easy. I'll have my own Jarvis by next month."
+
+<Callout emoji="💡">
+  Always start with the official getting-started guide. The space moves so fast that any YouTube tutorial older than three months is probably already wrong. Official docs are the only thing that stays roughly true.
+</Callout>
+
+This phase builds momentum. The actual fight starts right after.
+
+## Phase 2: the RAG disaster
+
+This is where you stop following the script and try to use *your own* data. For me that was the classic "Chat with your PDF" — RAG, basically.
+
+I thought it'd be straightforward. Point a library at a PDF, ask questions. Three days later I was drowning in document loaders, text splitters, embedding models, vector stores, similarity search.
+
+My "simple" app was making things up confidently. Pulling answers from completely wrong sections. Or just hallucinating clean prose that referenced nothing in the document. And every test run made me check my OpenAI bill.
+
+```python
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import Chroma
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain.chains import RetrievalQA
+
+loader = PyPDFLoader("my_document.pdf")
+docs = loader.load()
+
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=20)
+splits = splitter.split_documents(docs)
+
+vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
+
+qa = RetrievalQA.from_chain_type(
+    llm=ChatOpenAI(),
+    chain_type="stuff",
+    retriever=vectorstore.as_retriever(),
+)
+
+print(qa.invoke({"query": "What was the key finding on page 12?"}))
+```
+
+The breakthrough wasn't a big insight. I just printed the chunks the retriever was returning and saw they were being cut mid-sentence. Useless vectors. Fixed the chunking strategy, suddenly the retriever pulled the *right* paragraph and the model summarized it cleanly.
+
+That moment was the best feeling I'd had in a month. It stopped being magic and became engineering.
+
+## Phase 3: my "how to not quit" framework
+
+After surviving a few of these battles, I noticed I'd unconsciously built a routine. Here it is, named:
+
+1. **Scope down to a micro-project.** "Learn AI" is a recipe for failure. Make it brutal: "Build a CLI that answers questions about *one* specific 20-page PDF." Finite, finishable.
+
+2. **Build something stupid but real.** My PDF chat had no business value. But it forced me to touch every part of the RAG pipeline — loading, chunking, embedding, retrieving, prompting. The point is reps, not a portfolio piece.
+
+3. **Read good code.** Once you've got your hands dirty, find a respected open-source project on GitHub and just read it. How do they structure prompts? Chain calls? Handle conversation history? It's a free masterclass.
+
+4. **Explain it to a rubber duck.** When I'm stuck on something like vector embeddings, I open a text file and try to explain it like I'm teaching a beginner. Articulating it forces my brain to actually connect the pieces, and instantly shows me what I don't understand.
+
+## The snowball effect
+
+Here's the secret nobody tells you: the *specific* library you learn doesn't matter that much. The real skill is the process.
+
+Once you've wrestled one RAG pipeline, you've internalized the pattern. You start to see that most GenAI apps are variations on a theme — data prep, retrieval, prompt engineering. LangChain, LlamaIndex, raw API calls — same brain.
+
+A side effect I didn't expect: prompt engineering made me a better communicator with humans. Being precise, giving context, defining the output you want, anticipating misinterpretation — turns out that's just good writing.
+
+The "trough of sorrow" is still there for every new tech. My visits just keep getting shorter. The frustration isn't a sign I'm dumb. It's a sign I'm learning something real.
+
+## The thing actually worth getting good at
+
+Forget mastering every new AI library on your feed. That's a guaranteed burnout path.
+
+The thing worth getting good at is your own learning process.
+
+Next time something drops and you feel that mix of dread and curiosity, run the framework. Scope down, build something tiny and stupid, read other people's code, explain it back to yourself. You're not learning a tool. You're leveling up the one skill that doesn't get deprecated.
+
+Now go build a useless chatbot. Honestly, the smartest thing you can do.

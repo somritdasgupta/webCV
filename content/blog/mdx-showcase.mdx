@@ -1,0 +1,412 @@
+export const frontmatter = {
+  title: "The MDX Showcase",
+  description:
+    "Every custom MDX component on this blog — with the exact source you paste into your post and the rendered result side by side.",
+  date: "2025-01-15",
+  tags: ["mdx", "guide", "components"],
+  readingTime: 6,
+};
+
+A walk-through of every custom component available in this blog. Each section shows **the MDX source you write** and **the rendered output**. Copy the source, paste into a new `.mdx` file in `content/blog/`, tweak.
+
+> Components are auto-imported — no `import` statements needed in your MDX.
+
+## Headings & basic formatting
+
+```mdx
+This is **bold**, *italic*, ~~strikethrough~~, and `inline code`.
+Links look [like this](https://somritdasgupta.in).
+
+### Heading level 3
+#### Heading level 4
+```
+
+**Renders as:**
+
+This is **bold**, *italic*, ~~strikethrough~~, and `inline code`. Links look [like this](https://somritdasgupta.in).
+
+### Heading level 3
+#### Heading level 4
+
+## Lists
+
+```mdx
+1. First
+2. Second
+
+- One
+- Two
+```
+
+1. First
+2. Second
+3. Third
+
+- One
+- Two
+- Three
+
+## Blockquote
+
+```mdx
+<Quote author="Francis Bacon">
+  The best part of beauty is that which no picture can express.
+</Quote>
+```
+
+<Quote author="Francis Bacon">
+  The best part of beauty is that which no picture can express.
+</Quote>
+
+## Callouts
+
+```mdx
+<Callout type="note" title="Note">A neutral aside.</Callout>
+<Callout type="tip" emoji="💡">Pro tip.</Callout>
+<Callout type="warning" title="Heads up">Be careful.</Callout>
+<Callout type="danger" title="Don't">Never commit secrets.</Callout>
+<Callout type="success" title="Nice">Build passed.</Callout>
+```
+
+<Callout type="note" title="Note">
+  This is a neutral callout — useful for asides or extra context.
+</Callout>
+
+<Callout type="tip" emoji="💡">
+  Pro tip: callouts make your content scannable and friendly.
+</Callout>
+
+<Callout type="warning" title="Heads up">
+  Be careful — this changes how your build works.
+</Callout>
+
+<Callout type="danger" title="Don't do this">
+  Never commit secrets to public repositories.
+</Callout>
+
+<Callout type="success" title="Nice">
+  Your build passed. Ship it.
+</Callout>
+
+## Pros & Cons
+
+```mdx
+<ProsCons
+  pros={["SSR for SEO", "Static generation", "TypeScript support"]}
+  cons={["Complex setup", "Steep learning curve"]}
+/>
+```
+
+<ProsCons
+  pros={[
+    "Server-side rendering boosts SEO and performance.",
+    "Static generation enables faster page loads.",
+    "Built-in routing and API routes.",
+    "Strong TypeScript support out of the box."
+  ]}
+  cons={[
+    "Complex setup for very large apps.",
+    "Frequent updates require maintenance.",
+    "Steep learning curve for advanced features.",
+    "SSR can increase server load."
+  ]}
+/>
+
+## Tables
+
+```mdx
+| Experience | Project size | Recommended |
+| --- | --- | --- |
+| Beginner | Small | useState |
+| Advanced | Large | Redux Toolkit |
+```
+
+| Experience | Appetite | Project size | Recommended solution |
+| --- | --- | --- | --- |
+| Beginner | Low | Small | `useState` |
+| Beginner | Medium | Small to Medium | `useContext` + `useReducer` |
+| Intermediate | High | Large | Redux Toolkit |
+| Advanced | High | Medium to Large | Jotai, Valtio |
+
+## Code block (with title + syntax highlight)
+
+````mdx
+```tsx title="greeting.tsx"
+export const Greeting = () => <h1>Hello</h1>;
+```
+````
+
+```tsx title="greeting.tsx"
+import { useEffect } from "react";
+
+export const Greeting = () => {
+  useEffect(() => {
+    console.log("Hello, world!");
+  }, []);
+  return <h1>Check the console</h1>;
+};
+```
+
+## Live, interactive code (Sandpack)
+
+```mdx
+<LiveCode
+  template="react"
+  files={{
+    "/App.js": `export default function App() {
+  return <h2>Hello 👋</h2>;
+}`
+  }}
+/>
+```
+
+<LiveCode
+  template="react"
+  files={{
+    "/App.js": `export default function App() {
+  return (
+    <div style={{ fontFamily: "system-ui", padding: 24 }}>
+      <h2>Hello from Sandpack 👋</h2>
+      <p>Edit me on the left and see the result update live.</p>
+    </div>
+  );
+}`
+  }}
+/>
+
+## Tweet embed
+
+```mdx
+<Tweet id="1683920951807971329" />
+```
+
+<Tweet id="1683920951807971329" />
+
+## Keyboard
+
+```mdx
+Press <Kbd>⌘</Kbd> + <Kbd>K</Kbd> to open the palette.
+```
+
+Press <Kbd>⌘</Kbd> + <Kbd>K</Kbd> to open the command palette.
+
+---
+
+## Charts
+
+Pass a `data` array; series are auto-detected. Hover for tooltips. Supports `line`, `bar` (with optional `stacked`), `area`, `pie`, `radar`.
+
+```mdx
+<Chart
+  type="line"
+  title="Weekly active users"
+  data={[
+    { week: "W1", users: 120 },
+    { week: "W2", users: 180 },
+    { week: "W3", users: 240 },
+  ]}
+/>
+```
+
+<Chart
+  type="line"
+  title="Weekly active users"
+  data={[
+    { week: "W1", users: 120, premium: 24 },
+    { week: "W2", users: 180, premium: 41 },
+    { week: "W3", users: 240, premium: 60 },
+    { week: "W4", users: 305, premium: 88 },
+    { week: "W5", users: 410, premium: 132 },
+    { week: "W6", users: 520, premium: 178 },
+  ]}
+/>
+
+<Chart
+  type="bar"
+  stacked
+  title="Errors by service"
+  data={[
+    { day: "Mon", api: 12, web: 4, jobs: 2 },
+    { day: "Tue", api: 7,  web: 3, jobs: 5 },
+    { day: "Wed", api: 18, web: 6, jobs: 1 },
+    { day: "Thu", api: 9,  web: 2, jobs: 3 },
+    { day: "Fri", api: 14, web: 5, jobs: 6 },
+  ]}
+/>
+
+<Chart
+  type="area"
+  title="Latency (p50 / p95)"
+  data={[
+    { t: "10:00", p50: 80,  p95: 210 },
+    { t: "10:05", p50: 90,  p95: 250 },
+    { t: "10:10", p50: 110, p95: 320 },
+    { t: "10:15", p50: 95,  p95: 280 },
+    { t: "10:20", p50: 105, p95: 240 },
+  ]}
+/>
+
+<Chart
+  type="pie"
+  title="Stack share"
+  data={[
+    { name: "TypeScript", value: 48 },
+    { name: "Python",     value: 22 },
+    { name: "Go",         value: 18 },
+    { name: "Rust",       value: 12 },
+  ]}
+/>
+
+<Chart
+  type="radar"
+  title="Skills"
+  data={[
+    { area: "Backend",  me: 90, team: 75 },
+    { area: "Frontend", me: 80, team: 85 },
+    { area: "AI",       me: 70, team: 60 },
+    { area: "DevOps",   me: 65, team: 70 },
+    { area: "Design",   me: 55, team: 80 },
+  ]}
+/>
+
+## Stats
+
+```mdx
+<Stats cols={3} items={[
+  { label: "Posts", value: "42", change: 8 },
+  { label: "Repos", value: "120", change: 3, hint: "active this month" },
+  { label: "Build time", value: "1.4s", change: -22, changeSuffix: "%" },
+]} />
+```
+
+<Stats cols={3} items={[
+  { label: "Posts", value: "42", change: 8 },
+  { label: "Repos", value: "120", change: 3, hint: "active this month" },
+  { label: "Build time", value: "1.4s", change: -22, changeSuffix: "%" },
+]} />
+
+## Tabs
+
+````mdx
+<Tabs>
+  <Tab label="npm">
+    ```bash
+    npm install somrit-ui
+    ```
+  </Tab>
+  <Tab label="bun">
+    ```bash
+    bun add somrit-ui
+    ```
+  </Tab>
+</Tabs>
+````
+
+<Tabs>
+  <Tab label="npm">
+    ```bash
+    npm install somrit-ui
+    ```
+  </Tab>
+  <Tab label="pnpm">
+    ```bash
+    pnpm add somrit-ui
+    ```
+  </Tab>
+  <Tab label="bun">
+    ```bash
+    bun add somrit-ui
+    ```
+  </Tab>
+</Tabs>
+
+## Steps
+
+```mdx
+<Steps>
+  <Step title="Install">Run `bun install`.</Step>
+  <Step title="Configure">Copy `.env.example` to `.env`.</Step>
+  <Step title="Run">Run `bun dev`.</Step>
+</Steps>
+```
+
+<Steps>
+  <Step title="Install dependencies">
+    Run `bun install` at the project root.
+  </Step>
+  <Step title="Set environment variables">
+    Copy `.env.example` to `.env` and fill in the keys.
+  </Step>
+  <Step title="Start the dev server">
+    Run `bun dev` and open the printed URL.
+  </Step>
+</Steps>
+
+## Accordion (FAQ)
+
+```mdx
+<Accordion>
+  <AccordionItem title="Question?" defaultOpen>
+    Answer.
+  </AccordionItem>
+</Accordion>
+```
+
+<Accordion>
+  <AccordionItem title="What is this site built with?" defaultOpen>
+    React, Vite, MDX, Tailwind, and Recharts. No backend.
+  </AccordionItem>
+  <AccordionItem title="Can I reuse the components?">
+    Yes — they're plain React components in `src/components/mdx`.
+  </AccordionItem>
+</Accordion>
+
+## Video
+
+```mdx
+<Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" caption="Caption" />
+```
+
+<Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" caption="YouTube embed example" />
+
+## File tree
+
+```mdx
+<FileTree
+  tree={[
+    { name: "src", type: "folder", children: [
+      { name: "main.tsx" },
+    ]},
+    { name: "package.json" },
+  ]}
+/>
+```
+
+<FileTree
+  tree={[
+    { name: "src", type: "folder", children: [
+      { name: "components", type: "folder", children: [
+        { name: "mdx", type: "folder", note: "all the rich blocks" },
+      ]},
+      { name: "pages", type: "folder" },
+      { name: "main.tsx" },
+    ]},
+    { name: "content/blog", type: "folder", note: "your posts" },
+    { name: "package.json" },
+  ]}
+/>
+
+## Inline badges
+
+```mdx
+<Badge tone="success">stable</Badge>
+<Badge tone="warn">beta</Badge>
+<Badge tone="danger">deprecated</Badge>
+<Badge tone="info">new</Badge>
+```
+
+Status: <Badge tone="success">stable</Badge> <Badge tone="warn">beta</Badge> <Badge tone="danger">deprecated</Badge> <Badge tone="info">new</Badge>
+
+---
+
+That's the full toolkit. Drop a new `.mdx` file in `/content/blog/` and start writing — or use the in-browser admin editor at `/admin`, where every component above is one click away in the **Insert** menu.

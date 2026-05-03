@@ -1,0 +1,158 @@
+export const frontmatter = {
+  title: "The URL is quietly dying, and almost nobody is mourning it",
+  description:
+    "Everyone's arguing about AI replacing search. Meanwhile the address bar — the most democratic primitive the web ever shipped — is being hollowed out by apps, share sheets, and AI summaries. Here's what we lose when links stop mattering.",
+  date: "2026-05-02",
+  tags: ["web", "perspective", "rant"],
+  readingTime: 6,
+};
+
+There's a tab open in front of you right now. You can copy the URL. You can paste it into a message and the person on the other side will land on the same thing you're looking at. You can save it for ten years. You can email it to your past self.
+
+We treat this as ordinary. It is not ordinary. It is one of the most radical primitives ever shipped to a billion people, and we are letting it die in plain sight.
+
+## The thing nobody is talking about
+
+Every think-piece this year is about AI replacing search. Will Google die, will ChatGPT eat the SERP, will Perplexity win, will the open web survive. Fine. But there's a quieter story underneath it that I haven't seen anyone connect, and it bothers me more.
+
+The **URL** — not the website, the URL itself — has been dying for about a decade, and AI is going to finish the job.
+
+<Callout type="note" title="What I mean by 'the URL is dying'">
+  Not that URLs literally vanish. They still exist under the hood. What's
+  dying is the URL as a *thing humans handle* — copy, paste, share, bookmark,
+  curate, link to.
+</Callout>
+
+Think about how you actually moved through the web in 2014:
+
+- You'd find an article in Twitter. You copied the URL. You sent it.
+- You'd discover a blog. You'd subscribe via RSS, or bookmark it.
+- You'd land on a forum thread from a Google search. You'd link your friend to a specific post via its anchor.
+- A specific game review you loved? You'd save the URL.
+
+Now think about how you move through the web in 2026:
+
+- An app surfaces something. You hit the share sheet. You don't see a URL — you see "Send to Sarah" and a tile.
+- TikTok shows you a recipe. There is no recipe page. There is no URL. There is the video. The URL of the video is functionally a coupon code: opaque, fragile, only works inside the app.
+- An AI assistant tells you the answer. There is no source you went to. There is no link you can re-find. The text was synthesised. Whatever was crawled is now smoothie.
+- You search YouTube for "how to fix my dishwasher" and get fifteen videos. Each video is a URL — but you don't *handle* it. You watch, you close the tab, you forget which channel it was from.
+
+The address bar still exists. We just stopped using it as a noun.
+
+## Why the URL was magical in the first place
+
+A URL is the smallest unit of "this exact thing, at this exact place, that I can hand to anyone." That sentence sounds boring until you realise nothing else in the digital world has all four properties at once.
+
+| Medium | Specific? | Portable? | Persistent? | Anyone-can-receive? |
+| --- | --- | --- | --- | --- |
+| URL | yes | yes | yes (mostly) | yes |
+| Tweet | yes | yes | until deleted | yes (if logged in) |
+| TikTok video | yes | only inside app | sort of | only inside app |
+| ChatGPT answer | no | no | no | no |
+| Instagram story | yes | no | 24h | only followers |
+| Discord message | yes | no | yes | only members |
+| App deep link | yes | only with app | yes | only with app |
+
+The URL is the only row where every column is "yes." Everything else trades portability for engagement, or persistence for novelty, or openness for monetisation. The URL refuses every trade.
+
+That refusal is precisely why platforms have been quietly trying to kill it for ten years.
+
+## How they killed it (without telling you)
+
+There was no announcement. Nobody held a funeral. The URL was strangled in five small, reasonable-sounding moves:
+
+<Steps>
+  <Step title="Hide it in the browser">
+    Chrome and Safari started chopping the visible URL years ago — first the
+    `www.`, then the path, then the protocol, until on mobile you basically
+    see the domain and a blur. "It's cleaner." Sure. It also means you
+    stopped reading them, which means you stopped trusting the address bar
+    as the source of truth about where you are.
+  </Step>
+  <Step title="Replace pages with feeds">
+    A feed item doesn't have a meaningful URL. It has an item-id inside an
+    infinite scroller. You can't really link to "the third post I scrolled
+    past in TikTok yesterday." So you stop trying. So content stops being
+    addressable. So creators stop optimising for being linked to. The whole
+    incentive shifts from "make a page worth bookmarking" to "make a unit
+    worth swiping."
+  </Step>
+  <Step title="Make share sheets the only verb">
+    Mobile OSes put a "share" button on everything. The button hides the
+    URL. It surfaces *destinations* — Messages, WhatsApp, Slack — not the
+    URL itself. You no longer know what you're sending. You're sending "this
+    thing" and trusting the share sheet to handle the diplomacy.
+  </Step>
+  <Step title="Deep links instead of web links">
+    Open a Reddit URL on mobile and watch what happens — it desperately tries
+    to bounce you into the app. Twitter does it. Instagram does it. The URL
+    is treated as a *fallback* for users who haven't installed the real
+    interface yet. The link is shame. The app is the truth.
+  </Step>
+  <Step title="AI as the final layer">
+    Now an LLM reads ten URLs for you and gives you one paragraph. The
+    paragraph has no URL of its own. The ten sources have URLs but you
+    didn't visit them. You can't bookmark the answer. You can't send the
+    answer to a friend with a stable link. The synthesis is the product
+    and the synthesis is unaddressable by design.
+  </Step>
+</Steps>
+
+Each step was sold as convenience. Each step was convenience. Convenience is also how every commons gets enclosed.
+
+## What we actually lose
+
+This is the part where I get accused of being a nostalgic crank, so let me be specific. The URL dying takes three things with it that I think we're going to miss the way you miss a kidney.
+
+**1. The right to refer.** When everything is inside an app or a synthesis, you lose the ability to *point*. Pointing is how knowledge accumulates. A scientist cites a paper. A journalist links a primary source. A redditor links a thread from 2008. A blogger quotes a blogger who quotes a blogger. The URL is the wire that the entire intellectual commons is made of. Replace it with "I saw this on TikTok somewhere" and the citation graph evaporates.
+
+**2. The right to leave a trail.** Bookmarks, link blogs, "see also" footers, blogrolls — these were the way the web remembered things. They were also how new things got *found*: not by an algorithm guessing, but by a human you trusted leaving a breadcrumb. A feed has no breadcrumbs. An AI answer has no breadcrumbs. We're swapping a thirty-year archaeological record for a stream that resets every refresh.
+
+**3. The right to be findable on your own terms.** If your work lives at a URL you control, you can be discovered, cited, hired, remembered. If your work lives only inside someone else's feed, you exist at the pleasure of their ranking algorithm. Ask any musician what happened when MySpace died. Now imagine that, but for everyone, all at once, with no warning, because the platform changed its monetisation model.
+
+<Quote author="me, ranting in a notes app at 2am">
+  A platform without addressable units is a platform you can't escape.
+</Quote>
+
+## The counter-argument, honestly
+
+The reasonable response is: *most people never used URLs anyway.* They typed "facebook" into Google and clicked the first result. They never bookmarked anything. They never copied a link that wasn't auto-generated by a share button. The URL was a power-user thing, and power users are 2% of the audience. We're not losing anything; we're losing a feature that 98% of humanity never noticed.
+
+This is true and it's also exactly the problem.
+
+The URL was load-bearing infrastructure that *most people benefited from without knowing.* The journalist who linked a primary source — the source was a URL. The Wikipedia citation — a URL. The Stack Overflow answer that fixed your bug — a URL someone shared with you. You didn't have to handle URLs to benefit from the world being made of them. You just had to live in a world where other people did.
+
+We're about to find out what that world is like when they stop.
+
+## What I'm doing about it (not enough)
+
+Honestly? Not much. I write here, on a domain I own, on URLs that look like `/blog/the-thing-I-wrote`, and I link to other people's blogs the way people did in 2008. It feels twee. I don't care. The act of *publishing at a stable URL* is now a small political statement, the same way running your own email server was in 2015 — slightly impractical, slightly stubborn, increasingly rare, and a tiny vote against the enclosure.
+
+If you have any kind of presence online, here's the underdog ask:
+
+- Have a personal site at a domain you own. Doesn't have to be fancy. Mine isn't.
+- When you find something good, link to it from a place with a URL. A blog post. A digital garden. A public README.
+- When you write, write at a stable URL. Substack counts. Medium counts (begrudgingly). A WordPress counts. A Notion page counts. Anything that survives a screenshot and lets a stranger in five years find you.
+- Bookmark things. Actually bookmark them. The browser still has the feature. It still works. It's still free.
+
+The URL doesn't need a new protocol to survive. It needs people to keep treating it as something worth handling. That's it. That's the whole defence.
+
+<Callout type="tip" title="An exercise">
+  Right now, try to send a friend the *exact* TikTok video you watched
+  yesterday morning. Not the creator. The video. By URL. With confidence
+  it'll still work in a year. I'll wait.
+</Callout>
+
+## The only honest ending
+
+I don't think this trend reverses. The economics of platforms are too good and the convenience is too real and the average user genuinely does not care. What I think happens instead is the URL becomes a kind of professional tool — like the command line, or RSS, or a soldering iron. Useful. Quietly powerful. Mostly invisible. Used by the people who build the things the rest of the world uses.
+
+Which is fine, sort of. The command line didn't die when GUIs won. It just stopped being where the population lived.
+
+But I want to be clear about the trade. We are giving up a thing that was, for thirty years, the most democratic noun on earth — *here, this exact thing, you can have it too* — in exchange for share sheets and AI summaries and infinite feeds.
+
+We are not getting a better web in return. We are getting a more profitable one.
+
+Those are not the same thing.
+
+— Somrit

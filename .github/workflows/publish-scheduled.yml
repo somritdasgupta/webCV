@@ -1,0 +1,26 @@
+name: Publish scheduled posts
+
+# Re-deploys the site every hour. Posts with a future `date` in frontmatter
+# stay hidden by the runtime filter in src/lib/posts.ts and become visible
+# automatically once their date is in the past — but only on the next build.
+# This action triggers that next build for you.
+#
+# This file is OPTIONAL. The blog works without it; you'll just need to push
+# any commit (or trigger a Vercel/Netlify rebuild) to roll a scheduled post live.
+
+on:
+  schedule:
+    - cron: "0 * * * *" # every hour, on the hour
+  workflow_dispatch: {}
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      # If hosted on Vercel, set DEPLOY_HOOK_URL secret to your Vercel deploy hook.
+      # If on Netlify, same idea with their build hook URL.
+      - name: Trigger deploy hook
+        if: env.DEPLOY_HOOK_URL != ''
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+        run: curl -fsSL -X POST "$DEPLOY_HOOK_URL"

@@ -1,0 +1,127 @@
+export const frontmatter = {
+  title: "The CrowdStrike fiasco",
+  description: "On July 19, 2024, one bad update broke airlines, hospitals, banks, and supermarkets. A walk through what happened and what we should learn from it.",
+  date: "2024-08-08",
+  tags: ["analysis", "industry", "events"],
+  readingTime: 7,
+};
+
+On **July 19, 2024**, CrowdStrike's Falcon platform took down a chunk of the world. With more than 23,000 enterprise customers affected, this is one of the biggest single security-software failures we've ever seen — bigger in reach than most outright cyberattacks.
+
+It started small: a few scattered crash reports. Within hours, Windows machines everywhere were stuck in boot loops with the dreaded blue screen. A routine update had become a global outage.
+
+## How big was it, actually
+
+The numbers do the talking:
+
+- **Markets.** Roughly $5.4B in market value was wiped from CrowdStrike's stock and dependent enterprises in 24 hours.
+- **Aviation.** 3,200+ flights delayed across 18 major airlines.
+- **Healthcare.** 76 hospitals reported critical system disruptions.
+- **Retail.** An estimated $312M in lost transactions globally.
+- **Manufacturing.** 142 production lines halted across automotive and electronics.
+
+<Callout emoji="📊">
+  The cascade hit 47 countries and over 1.2M endpoints simultaneously. The largest single-day impact of a security software malfunction in corporate history.
+</Callout>
+
+## What actually broke
+
+The chain of events, simplified:
+
+1. **The trigger.** A kernel-mode driver update shipped with an incompatible memory routine.
+2. **The cascade.** That driver caused a race condition deep in the Windows kernel.
+3. **The amplifier.** CrowdStrike's cloud-based auto-update pushed it everywhere, fast.
+4. **The result.** Mass blue-screens with `SYSTEM_THREAD_EXCEPTION_NOT_HANDLED`.
+
+```text
+Event ID: 1001
+Source: BugCheck
+Description: The computer has rebooted from a bugcheck.
+Bugcheck code: 0x1000007E
+```
+
+The painful part: each of those steps in isolation is fine. Auto-updates are good. Kernel-level security is good. But chained together with no staging gate, "good" became "globally catastrophic" in about ten minutes.
+
+## What it exposed
+
+A few uncomfortable truths the industry mostly knew but didn't want to admit:
+
+- **Cloud-only security is a single point of failure.** If updates ship instantly to everyone, one bad update breaks everyone.
+- **Auto-updates are a double-edged sword.** Same machinery that fixes things fast also breaks them fast.
+- **Most orgs have no offline recovery plan.** When the security agent itself is the thing crashing, you can't fix it remotely.
+
+<ProsCons
+  pros={[
+    "Pushed the industry to take staged rollouts seriously.",
+    "Sparked work on offline failsafe paths.",
+    "Made multi-vendor security a real conversation again.",
+    "Brought 'degraded mode' back into incident planning.",
+  ]}
+  cons={[
+    "Showed how concentrated security infrastructure has become.",
+    "Made clear how little kernel-mode code is end-to-end tested.",
+    "Highlighted the risk of one platform owning the perimeter.",
+    "Exposed weak business-continuity plans across most sectors.",
+  ]}
+/>
+
+## What changed after
+
+A few things actually shifted in the months after:
+
+```python
+class DriverDeployment:
+    def __init__(self):
+        self.testing_stages = {
+            "isolated_vm": True,
+            "kernel_compatibility": True,
+            "staged_rollout": True,
+            "rollback_capability": True,
+        }
+
+    def safe_to_ship(self):
+        return all(self.testing_stages.values())
+```
+
+A lot of orgs adopted recovery scripts that fall back to a baseline mode when the security agent itself dies:
+
+```bash
+#!/bin/bash
+if ! systemctl is-active --quiet csfalcon; then
+    systemctl start fallback-security
+    alert_ir_team "CrowdStrike failure detected"
+    systemctl start enhanced-monitoring
+fi
+```
+
+And staged-rollout policies finally became standard practice instead of "we'll get to it":
+
+```json
+{
+  "deployment_policy": {
+    "initial_deployment": "0.1%",
+    "monitoring_period": "1h",
+    "error_threshold": "0.001%",
+    "rollback_trigger": "automatic",
+    "geographic_distribution": "multi-region"
+  }
+}
+```
+
+## The blame game
+
+Of course there was speculation. A rogue intern? A nation-state? Sabotage? None of it landed. The cause was much more boring: a testing gap meeting a global auto-update pipe. The kind of failure that *should* be impossible at this scale, but isn't.
+
+A lot of people in the security community pushed for what they called a "no-fault culture" — treat the incident as a system failure, not a personal one, so the lessons actually get captured. That's the right call. Hunting for a scapegoat doesn't fix the next one; understanding why the system allowed it does.
+
+## What it actually means
+
+A few takeaways I keep coming back to:
+
+- **Mistakes are inevitable.** No matter how careful you are, a system this complex will eventually fail. The question is whether the blast radius is small or huge.
+- **Modern infra is intricate.** The more layers, the more places for one tiny thing to break a lot.
+- **Plans need to be tested, not written.** A continuity plan you've never run is closer to fiction than safety net.
+- **Critique should be constructive.** Some of the post-incident reactions from competitors weren't great. There's a line between "here's what we'd do differently" and dunking. The first builds the industry, the second doesn't.
+- **Security is a community problem.** The whole industry depends on each other. When one major vendor falls over, everyone gets a reminder of how shared this responsibility actually is.
+
+July 19, 2024 will sit in incident response slides for years. Hopefully we actually learn from it this time.
