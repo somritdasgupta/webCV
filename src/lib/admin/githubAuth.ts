@@ -29,7 +29,31 @@ export interface DeviceCode {
   interval: number;
 }
 
-const proxied = (url: string) => `${ADMIN.corsProxy}${encodeURIComponent(url)}`;
+/**
+ * Resolve a GitHub OAuth endpoint to a same-origin URL when possible.
+ * In production (Vercel) we use the rewrites in vercel.json:
+ *   /gh/login/device/code            -> https://github.com/login/device/code
+ *   /gh/login/oauth/access_token     -> https://github.com/login/oauth/access_token
+ * Same-origin = no CORS preflight, no third-party proxy outage risk.
+ *
+ * In local dev (vite, localhost) those rewrites don't exist, so we fall back
+ * to the configured public CORS proxy.
+ */
+const proxied = (url: string) => {
+  const isBrowser = typeof window !== "undefined";
+  const host = isBrowser ? window.location.hostname : "";
+  const isLocal =
+    host === "localhost" || host === "127.0.0.1" || host.endsWith(".local");
+
+  if (isBrowser && !isLocal) {
+    // Map github.com/login/* -> /gh/login/* on our own origin.
+    const u = new URL(url);
+    if (u.hostname === "github.com" && u.pathname.startsWith("/login/")) {
+      return `${window.location.origin}/gh${u.pathname}${u.search}`;
+    }
+  }
+  return `${ADMIN.corsProxy}${encodeURIComponent(url)}`;
+};
 
 /** Step 1: get a device + user code. Show user_code to the user. */
 export async function requestDeviceCode(): Promise<DeviceCode> {
