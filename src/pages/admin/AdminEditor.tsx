@@ -929,13 +929,13 @@ const AdminEditor = () => {
                 placeholder="tags, comma, separated"
                 className="min-w-[180px] flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 outline-none transition-colors focus:border-foreground/40"
               />
-              <label className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-muted-foreground">
+              <label className="group inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-muted-foreground transition-colors focus-within:border-foreground/40 hover:border-foreground/30">
                 <Calendar className="h-3.5 w-3.5" />
                 <input
                   type="datetime-local"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="bg-transparent text-foreground outline-none"
+                  className="bg-transparent text-foreground outline-none [color-scheme:dark] dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:invert"
                 />
               </label>
             </div>
