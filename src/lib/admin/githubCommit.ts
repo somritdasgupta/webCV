@@ -82,7 +82,21 @@ export async function commitFile(opts: {
   );
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`Commit failed: ${res.status} ${body}`);
+    let msg = body;
+    try {
+      const j = JSON.parse(body);
+      msg = j.message || body;
+      if (j.errors) msg += ` — ${JSON.stringify(j.errors)}`;
+    } catch { /* keep raw */ }
+    const hint =
+      res.status === 404
+        ? ` (Repo not found or token lacks access. Check ADMIN.repo in site.config.ts is "${ADMIN.repo.owner}/${ADMIN.repo.name}" and that you signed in as a user with write access.)`
+        : res.status === 403 || res.status === 401
+          ? ` (Token rejected. Your GitHub OAuth App may be missing the 'repo' scope or Device Flow may not be enabled. Re-create the OAuth App, enable Device Flow, sign out and back in.)`
+          : res.status === 422
+            ? ` (Validation failed — often a stale sha or branch protection rule.)`
+            : "";
+    throw new Error(`Commit failed (${res.status}): ${msg}${hint}`);
   }
   const data = await res.json();
   return {

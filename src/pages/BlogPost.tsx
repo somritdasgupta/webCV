@@ -5,7 +5,7 @@ import { Seo } from "@/components/Seo";
 import { getPostBySlug, getPostMeta } from "@/lib/posts";
 import { mdxComponents } from "@/components/mdx/mdxComponents";
 import { AUTHOR, SITE, absUrl } from "@/site.config";
-import { ArrowLeft, ArrowUpRight, Check, Copy, List } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, Copy, List, FileJson, Rss } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TocItem {
@@ -77,6 +77,57 @@ const BlogPost = () => {
     return () => observer.disconnect();
   }, [slug, post]);
 
+  // Add a copy button to every <pre> code block in the rendered article.
+  useEffect(() => {
+    const root = articleRef.current;
+    if (!root) return;
+    const pres = Array.from(root.querySelectorAll<HTMLPreElement>("pre"));
+    const cleanups: Array<() => void> = [];
+    pres.forEach((pre) => {
+      if (pre.dataset.copyAttached === "1") return;
+      pre.dataset.copyAttached = "1";
+      // Make sure pre is a positioning context for the absolute button.
+      const prevPos = pre.style.position;
+      if (!prevPos) pre.style.position = "relative";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("aria-label", "Copy code");
+      btn.className =
+        "code-copy-btn absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-md border border-white/15 bg-black/40 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-white/70 opacity-0 backdrop-blur transition-all hover:border-white/30 hover:text-white group-hover:opacity-100 focus:opacity-100";
+      btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>copy</span>`;
+
+      // Make the parent figure (or pre) reveal the button on hover.
+      const hoverHost = (pre.closest("figure") as HTMLElement) || pre;
+      hoverHost.classList.add("group");
+
+      const onClick = async () => {
+        const code = pre.querySelector("code");
+        const text = (code?.textContent ?? pre.textContent ?? "").replace(/\n$/, "");
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.classList.add("!opacity-100");
+          const span = btn.querySelector("span");
+          if (span) span.textContent = "copied";
+          window.setTimeout(() => {
+            if (span) span.textContent = "copy";
+            btn.classList.remove("!opacity-100");
+          }, 1400);
+        } catch {
+          /* ignore */
+        }
+      };
+      btn.addEventListener("click", onClick);
+      pre.appendChild(btn);
+      cleanups.push(() => {
+        btn.removeEventListener("click", onClick);
+        btn.remove();
+        delete pre.dataset.copyAttached;
+      });
+    });
+    return () => cleanups.forEach((fn) => fn());
+  }, [slug, post]);
+
   if (!post) return <Navigate to="/blog" replace />;
 
   const { Component, title, description, date, tags, readingTime } = post;
@@ -92,6 +143,54 @@ const BlogPost = () => {
     await navigator.clipboard.writeText(postUrl);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
+  };
+
+  const [copiedFmt, setCopiedFmt] = useState<"json" | "rss" | null>(null);
+  const flashFmt = (f: "json" | "rss") => {
+    setCopiedFmt(f);
+    window.setTimeout(() => setCopiedFmt(null), 1600);
+  };
+
+  const getPlainText = () =>
+    (articleRef.current?.innerText || "").trim();
+
+  const copyAsJson = async () => {
+    const payload = {
+      title,
+      description,
+      slug: post.slug,
+      url: postUrl,
+      date,
+      tags: tags ?? [],
+      author: { name: AUTHOR.name, url: SITE.BASE_URL },
+      readingTime,
+      content: getPlainText(),
+    };
+    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    flashFmt("json");
+  };
+
+  const copyAsRss = async () => {
+    const escape = (s: string) =>
+      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const html = articleRef.current?.innerHTML || "";
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+  <title>${escape(SITE.name)}</title>
+  <link>${SITE.BASE_URL}</link>
+  <description>${escape(SITE.description)}</description>
+  <item>
+    <title>${escape(title)}</title>
+    <link>${postUrl}</link>
+    <guid>${postUrl}</guid>
+    <pubDate>${new Date(date).toUTCString()}</pubDate>
+    <author>${escape(AUTHOR.name)}</author>
+    <description>${escape(description)}</description>
+    <content:encoded><![CDATA[${html}]]></content:encoded>
+  </item>
+</channel></rss>`;
+    await navigator.clipboard.writeText(xml);
+    flashFmt("rss");
   };
 
   const jsonLd = {
@@ -175,6 +274,24 @@ const BlogPost = () => {
               >
                 {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                 {copied ? "copied" : "copy link"}
+              </button>
+              <button
+                type="button"
+                onClick={copyAsJson}
+                title="Copy this post as JSON"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-1/40 px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+              >
+                {copiedFmt === "json" ? <Check className="h-3 w-3" /> : <FileJson className="h-3 w-3" />}
+                {copiedFmt === "json" ? "copied" : "as json"}
+              </button>
+              <button
+                type="button"
+                onClick={copyAsRss}
+                title="Copy this post as an RSS item"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-1/40 px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+              >
+                {copiedFmt === "rss" ? <Check className="h-3 w-3" /> : <Rss className="h-3 w-3" />}
+                {copiedFmt === "rss" ? "copied" : "as rss"}
               </button>
             </div>
           )}
