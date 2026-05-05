@@ -275,6 +275,24 @@ const BlogPost = () => {
                 {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                 {copied ? "copied" : "copy link"}
               </button>
+              <button
+                type="button"
+                onClick={copyAsJson}
+                title="Copy this post as JSON"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-1/40 px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+              >
+                {copiedFmt === "json" ? <Check className="h-3 w-3" /> : <FileJson className="h-3 w-3" />}
+                {copiedFmt === "json" ? "copied" : "as json"}
+              </button>
+              <button
+                type="button"
+                onClick={copyAsRss}
+                title="Copy this post as an RSS item"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-1/40 px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+              >
+                {copiedFmt === "rss" ? <Check className="h-3 w-3" /> : <Rss className="h-3 w-3" />}
+                {copiedFmt === "rss" ? "copied" : "as rss"}
+              </button>
             </div>
           )}
         </header>
