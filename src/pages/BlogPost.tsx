@@ -77,6 +77,57 @@ const BlogPost = () => {
     return () => observer.disconnect();
   }, [slug, post]);
 
+  // Add a copy button to every <pre> code block in the rendered article.
+  useEffect(() => {
+    const root = articleRef.current;
+    if (!root) return;
+    const pres = Array.from(root.querySelectorAll<HTMLPreElement>("pre"));
+    const cleanups: Array<() => void> = [];
+    pres.forEach((pre) => {
+      if (pre.dataset.copyAttached === "1") return;
+      pre.dataset.copyAttached = "1";
+      // Make sure pre is a positioning context for the absolute button.
+      const prevPos = pre.style.position;
+      if (!prevPos) pre.style.position = "relative";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("aria-label", "Copy code");
+      btn.className =
+        "code-copy-btn absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-md border border-white/15 bg-black/40 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-white/70 opacity-0 backdrop-blur transition-all hover:border-white/30 hover:text-white group-hover:opacity-100 focus:opacity-100";
+      btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>copy</span>`;
+
+      // Make the parent figure (or pre) reveal the button on hover.
+      const hoverHost = (pre.closest("figure") as HTMLElement) || pre;
+      hoverHost.classList.add("group");
+
+      const onClick = async () => {
+        const code = pre.querySelector("code");
+        const text = (code?.textContent ?? pre.textContent ?? "").replace(/\n$/, "");
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.classList.add("!opacity-100");
+          const span = btn.querySelector("span");
+          if (span) span.textContent = "copied";
+          window.setTimeout(() => {
+            if (span) span.textContent = "copy";
+            btn.classList.remove("!opacity-100");
+          }, 1400);
+        } catch {
+          /* ignore */
+        }
+      };
+      btn.addEventListener("click", onClick);
+      pre.appendChild(btn);
+      cleanups.push(() => {
+        btn.removeEventListener("click", onClick);
+        btn.remove();
+        delete pre.dataset.copyAttached;
+      });
+    });
+    return () => cleanups.forEach((fn) => fn());
+  }, [slug, post]);
+
   if (!post) return <Navigate to="/blog" replace />;
 
   const { Component, title, description, date, tags, readingTime } = post;
