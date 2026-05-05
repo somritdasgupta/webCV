@@ -145,6 +145,54 @@ const BlogPost = () => {
     window.setTimeout(() => setCopied(false), 1600);
   };
 
+  const [copiedFmt, setCopiedFmt] = useState<"json" | "rss" | null>(null);
+  const flashFmt = (f: "json" | "rss") => {
+    setCopiedFmt(f);
+    window.setTimeout(() => setCopiedFmt(null), 1600);
+  };
+
+  const getPlainText = () =>
+    (articleRef.current?.innerText || "").trim();
+
+  const copyAsJson = async () => {
+    const payload = {
+      title,
+      description,
+      slug: post.slug,
+      url: postUrl,
+      date,
+      tags: tags ?? [],
+      author: { name: AUTHOR.name, url: SITE.BASE_URL },
+      readingTime,
+      content: getPlainText(),
+    };
+    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    flashFmt("json");
+  };
+
+  const copyAsRss = async () => {
+    const escape = (s: string) =>
+      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const html = articleRef.current?.innerHTML || "";
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+  <title>${escape(SITE.name)}</title>
+  <link>${SITE.BASE_URL}</link>
+  <description>${escape(SITE.description)}</description>
+  <item>
+    <title>${escape(title)}</title>
+    <link>${postUrl}</link>
+    <guid>${postUrl}</guid>
+    <pubDate>${new Date(date).toUTCString()}</pubDate>
+    <author>${escape(AUTHOR.name)}</author>
+    <description>${escape(description)}</description>
+    <content:encoded><![CDATA[${html}]]></content:encoded>
+  </item>
+</channel></rss>`;
+    await navigator.clipboard.writeText(xml);
+    flashFmt("rss");
+  };
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
