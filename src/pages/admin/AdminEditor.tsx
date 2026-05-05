@@ -326,15 +326,25 @@ const AdminEditor = () => {
     setRemoteError(null);
     let content: string | null = null;
     const entry = remote.find((r) => r.path === path);
-    // Try GitHub first when we have a token (gets the latest), fall back to local.
+    // 1) Authenticated GitHub read (latest content) when we have a token.
     if (token && entry?.source !== "local") {
       try {
         const r = await readPost(token, path);
-        content = typeof r.content === "string" ? r.content : null;
+        if (typeof r.content === "string" && r.content) content = r.content;
       } catch (e) {
-        console.warn("readPost failed, falling back to local:", e);
+        console.warn("readPost (authed) failed, will retry unauthed:", e);
       }
     }
+    // 2) Unauthenticated GitHub read (works for public repos, 60 req/h/IP).
+    if (!content && entry?.source !== "local") {
+      try {
+        const r = await readPost(null, path);
+        if (typeof r.content === "string" && r.content) content = r.content;
+      } catch (e) {
+        console.warn("readPost (unauthed) failed, falling back to local:", e);
+      }
+    }
+    // 3) Locally-bundled MDX as a final fallback — always works offline.
     if (!content) content = readLocalPost(path);
     if (typeof content !== "string" || !content) {
       setRemoteError(`Could not load ${path}.`);
