@@ -326,15 +326,25 @@ const AdminEditor = () => {
     setRemoteError(null);
     let content: string | null = null;
     const entry = remote.find((r) => r.path === path);
-    // Try GitHub first when we have a token (gets the latest), fall back to local.
+    // 1) Authenticated GitHub read (latest content) when we have a token.
     if (token && entry?.source !== "local") {
       try {
         const r = await readPost(token, path);
-        content = typeof r.content === "string" ? r.content : null;
+        if (typeof r.content === "string" && r.content) content = r.content;
       } catch (e) {
-        console.warn("readPost failed, falling back to local:", e);
+        console.warn("readPost (authed) failed, will retry unauthed:", e);
       }
     }
+    // 2) Unauthenticated GitHub read (works for public repos, 60 req/h/IP).
+    if (!content && entry?.source !== "local") {
+      try {
+        const r = await readPost(null, path);
+        if (typeof r.content === "string" && r.content) content = r.content;
+      } catch (e) {
+        console.warn("readPost (unauthed) failed, falling back to local:", e);
+      }
+    }
+    // 3) Locally-bundled MDX as a final fallback — always works offline.
     if (!content) content = readLocalPost(path);
     if (typeof content !== "string" || !content) {
       setRemoteError(`Could not load ${path}.`);
@@ -919,13 +929,13 @@ const AdminEditor = () => {
                 placeholder="tags, comma, separated"
                 className="min-w-[180px] flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 outline-none transition-colors focus:border-foreground/40"
               />
-              <label className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-muted-foreground">
+              <label className="group inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-muted-foreground transition-colors focus-within:border-foreground/40 hover:border-foreground/30">
                 <Calendar className="h-3.5 w-3.5" />
                 <input
                   type="datetime-local"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="bg-transparent text-foreground outline-none"
+                  className="bg-transparent text-foreground outline-none [color-scheme:dark] dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:invert"
                 />
               </label>
             </div>
@@ -1002,21 +1012,47 @@ const AdminEditor = () => {
                     <ChevronDown className="h-3 w-3" />
                   </button>
                   {showInserter && (
-                    <div
-                      role="menu"
-                      className="absolute right-0 top-full z-30 mt-1 w-64 overflow-hidden rounded-lg border border-border bg-popover shadow-elev-lg"
-                    >
-                      {COMPONENT_SNIPPETS.map((item) => (
-                        <button
-                          key={item.label}
-                          type="button"
-                          onClick={() => insertSnippet(item.snippet)}
-                          className="block w-full px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-surface-1 hover:text-foreground"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
+                    <>
+                      {/* Click-outside backdrop */}
+                      <button
+                        type="button"
+                        aria-label="Close components"
+                        onClick={() => setShowInserter(false)}
+                        className="fixed inset-0 z-20 cursor-default bg-transparent"
+                      />
+                      <div
+                        role="menu"
+                        className="absolute right-0 top-full z-30 mt-2 w-[min(92vw,520px)] overflow-hidden rounded-xl border border-border bg-popover shadow-elev-lg"
+                      >
+                        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
+                          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                            Insert component
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/70">
+                            {COMPONENT_SNIPPETS.length} blocks
+                          </span>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto p-2">
+                          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                            {COMPONENT_SNIPPETS.map((item) => (
+                              <button
+                                key={item.label}
+                                type="button"
+                                onClick={() => insertSnippet(item.snippet)}
+                                className="group flex flex-col gap-0.5 rounded-md border border-transparent px-2.5 py-1.5 text-left transition-colors hover:border-border hover:bg-surface-1"
+                              >
+                                <span className="text-[12px] font-medium text-foreground">
+                                  {item.label}
+                                </span>
+                                <span className="truncate text-[10px] text-muted-foreground">
+                                  {item.hint}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </div>
               </>
