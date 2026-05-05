@@ -5,7 +5,7 @@ import { Seo } from "@/components/Seo";
 import { getPostBySlug, getPostMeta } from "@/lib/posts";
 import { mdxComponents } from "@/components/mdx/mdxComponents";
 import { AUTHOR, SITE, absUrl } from "@/site.config";
-import { ArrowLeft, ArrowUpRight, Check, Copy, List } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, Copy, List, FileJson, Rss } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TocItem {
