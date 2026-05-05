@@ -1012,21 +1012,47 @@ const AdminEditor = () => {
                     <ChevronDown className="h-3 w-3" />
                   </button>
                   {showInserter && (
-                    <div
-                      role="menu"
-                      className="absolute right-0 top-full z-30 mt-1 w-64 overflow-hidden rounded-lg border border-border bg-popover shadow-elev-lg"
-                    >
-                      {COMPONENT_SNIPPETS.map((item) => (
-                        <button
-                          key={item.label}
-                          type="button"
-                          onClick={() => insertSnippet(item.snippet)}
-                          className="block w-full px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-surface-1 hover:text-foreground"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
+                    <>
+                      {/* Click-outside backdrop */}
+                      <button
+                        type="button"
+                        aria-label="Close components"
+                        onClick={() => setShowInserter(false)}
+                        className="fixed inset-0 z-20 cursor-default bg-transparent"
+                      />
+                      <div
+                        role="menu"
+                        className="absolute right-0 top-full z-30 mt-2 w-[min(92vw,520px)] overflow-hidden rounded-xl border border-border bg-popover shadow-elev-lg"
+                      >
+                        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
+                          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                            Insert component
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/70">
+                            {COMPONENT_SNIPPETS.length} blocks
+                          </span>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto p-2">
+                          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                            {COMPONENT_SNIPPETS.map((item) => (
+                              <button
+                                key={item.label}
+                                type="button"
+                                onClick={() => insertSnippet(item.snippet)}
+                                className="group flex flex-col gap-0.5 rounded-md border border-transparent px-2.5 py-1.5 text-left transition-colors hover:border-border hover:bg-surface-1"
+                              >
+                                <span className="text-[12px] font-medium text-foreground">
+                                  {item.label}
+                                </span>
+                                <span className="truncate text-[10px] text-muted-foreground">
+                                  {item.hint}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </div>
               </>
