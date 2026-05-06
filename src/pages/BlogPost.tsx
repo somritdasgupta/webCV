@@ -222,14 +222,15 @@ const BlogPost = () => {
         jsonLd={jsonLd}
       />
 
-      {/* Reading-progress bar — fixed at very top, above nav (z-[60]) */}
+      {/* Reading-progress bar — fixed at very top, above nav and iOS safe area */}
       <div
         aria-hidden
-        className="fixed inset-x-0 top-0 z-[60] h-[3px] bg-border/30 pointer-events-none"
+        className="fixed inset-x-0 z-[100] h-[3px] bg-foreground/10 pointer-events-none backdrop-blur-sm"
+        style={{ top: "env(safe-area-inset-top, 0px)" }}
       >
         <div
-          className="h-full bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.6)] transition-[width] duration-100 ease-linear"
-          style={{ width: `${progress}%` }}
+          className="h-full bg-accent shadow-[0_0_10px_hsl(var(--accent)/0.7)] will-change-[width]"
+          style={{ width: `${progress}%`, transition: "width 120ms linear" }}
         />
       </div>
 
