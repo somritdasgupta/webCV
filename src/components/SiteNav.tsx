@@ -10,7 +10,10 @@ import { cn } from "@/lib/utils";
 export const SiteNav = () => {
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-2 sm:top-5 sm:px-3">
+    <header
+      className="pointer-events-none fixed inset-x-0 z-50 flex justify-center px-2 sm:px-3"
+      style={{ top: "calc(env(safe-area-inset-top, 0px) + 0.75rem)" }}
+    >
       <div
         className={cn(
           "pointer-events-auto flex max-w-[calc(100vw-1rem)] items-center gap-0.5 rounded-full border border-border/70 sm:gap-1",
