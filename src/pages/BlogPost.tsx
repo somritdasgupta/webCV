@@ -1,5 +1,6 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MDXProvider } from "@mdx-js/react";
 import { Seo } from "@/components/Seo";
 import { getPostBySlug, getPostMeta } from "@/lib/posts";
