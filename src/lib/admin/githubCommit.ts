@@ -43,12 +43,29 @@ const toB64 = (s: string) => {
   return btoa(bin);
 };
 
+/** Wrap fetch so we surface a descriptive error instead of bare "Failed to fetch". */
+async function netFetch(input: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch (e) {
+    // Retry once — handles transient network blips and Safari's flaky first
+    // call after the page has been backgrounded.
+    try {
+      return await fetch(input, init);
+    } catch {
+      throw new Error(
+        `Network request to ${new URL(input).hostname} failed (${e instanceof Error ? e.message : "unknown"}). Check your internet connection or VPN/firewall.`,
+      );
+    }
+  }
+}
+
 async function getExistingSha(
   token: string,
   path: string,
   branch: string,
 ): Promise<string | null> {
-  const res = await fetch(
+  const res = await netFetch(
     contentApiUrl(path, branch),
     { headers: headers(token) },
   );
@@ -67,7 +84,7 @@ export async function commitFile(opts: {
 }): Promise<CommitResult> {
   const branch = opts.branch || ADMIN.repo.branch;
   const sha = await getExistingSha(opts.token, opts.path, branch);
-  const res = await fetch(
+  const res = await netFetch(
     contentApiWriteUrl(opts.path),
     {
       method: "PUT",
@@ -127,14 +144,27 @@ export async function readPost(
   token: string | null | undefined,
   path: string,
 ): Promise<{ content: string; sha: string }> {
-  const res = await fetch(
-    contentApiUrl(path, ADMIN.repo.branch),
-    { headers: headers(token) },
-  );
-  if (!res.ok) throw new Error(`Read failed: ${res.status}`);
-  const data = await res.json();
-  // base64 → utf-8
-  const bin = atob((data.content as string).replace(/\n/g, ""));
-  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
-  return { content: new TextDecoder().decode(bytes), sha: data.sha };
+  // Try Contents API first (gives us a sha for later writes).
+  try {
+    const res = await fetch(
+      contentApiUrl(path, ADMIN.repo.branch),
+      { headers: headers(token) },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      const bin = atob((data.content as string).replace(/\n/g, ""));
+      const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      return { content: new TextDecoder().decode(bytes), sha: data.sha };
+    }
+    // 403/404/etc — fall through to raw fallback.
+  } catch {
+    // network error — fall through to raw fallback.
+  }
+  // Fallback: raw.githubusercontent.com works for public files even when the
+  // Contents API rate-limits, hiccups, or the path encoding trips it up.
+  const rawUrl = `https://raw.githubusercontent.com/${ADMIN.repo.owner}/${ADMIN.repo.name}/${ADMIN.repo.branch}/${path.split("/").map(encodeURIComponent).join("/")}`;
+  const rawRes = await fetch(rawUrl, { cache: "no-store" });
+  if (!rawRes.ok) throw new Error(`Read failed: ${rawRes.status}`);
+  const text = await rawRes.text();
+  return { content: text, sha: "" };
 }

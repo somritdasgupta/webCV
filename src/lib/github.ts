@@ -124,15 +124,18 @@ export interface GhCommit {
 
 export const useGithubCommits = (limitPerRepo = 30) =>
   useQuery({
-    queryKey: ["gh-commits", GITHUB.username, limitPerRepo],
+    queryKey: ["gh-commits-all", GITHUB.username, limitPerRepo],
     queryFn: async (): Promise<GhCommit[]> => {
-      // 1. Get filtered repo list (reuses same allowlist logic)
+      // 1. Get ALL non-fork, non-archived repos — no allowlist filter.
+      //    Activity feed should reflect everything the user has been doing.
       const reposRes = await fetch(
-        `${GH}/users/${GITHUB.username}/repos?per_page=100&sort=pushed`,
+        `${GH}/users/${GITHUB.username}/repos?per_page=100&sort=pushed&type=owner`,
         { headers: { Accept: "application/vnd.github+json" } },
       );
       if (!reposRes.ok) throw new Error(`GitHub repos: ${reposRes.status}`);
-      const repos = filterRepos((await reposRes.json()) as GhRepo[]);
+      const repos = ((await reposRes.json()) as GhRepo[]).filter(
+        (r) => !r.fork && !r.archived,
+      );
 
       // 2. Fan out, pulling commits authored by the user from each repo
       const all = await Promise.allSettled(
