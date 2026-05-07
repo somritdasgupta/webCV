@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import fs from "fs";
 import mdx from "@mdx-js/rollup";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
