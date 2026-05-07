@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import fs from "fs";
 import mdx from "@mdx-js/rollup";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
@@ -41,9 +42,7 @@ Sitemap: ${url}/sitemap.xml
       });
 
       // Build sitemap.xml from static routes + MDX posts in /content/blog.
-      const fs = require("fs") as typeof import("fs");
-      const pathMod = require("path") as typeof import("path");
-      const blogDir = pathMod.resolve(__dirname, "content/blog");
+      const blogDir = path.resolve(__dirname, "content/blog");
       const staticRoutes = ["/", "/blog", "/activity", "/cv"];
       const today = new Date().toISOString().slice(0, 10);
 
@@ -57,7 +56,7 @@ Sitemap: ${url}/sitemap.xml
         const files = fs.readdirSync(blogDir).filter((f) => f.endsWith(".mdx"));
         for (const file of files) {
           const slug = file.replace(/\.mdx$/, "").toLowerCase();
-          const raw = fs.readFileSync(pathMod.join(blogDir, file), "utf-8");
+          const raw = fs.readFileSync(path.join(blogDir, file), "utf-8");
           const dateMatch = raw.match(/date:\s*["']([^"']+)["']/);
           const draftMatch = raw.match(/draft:\s*true/);
           const date = dateMatch?.[1] ?? today;
