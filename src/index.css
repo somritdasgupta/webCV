@@ -218,6 +218,20 @@
     color: hsl(220 14% 88%);
     font-feature-settings: "calt", "liga";
   }
+  /* On small screens, wrap long lines instead of horizontal scroll so
+     content stays readable and the sticky copy button doesn't get covered. */
+  @media (max-width: 640px) {
+    [data-rehype-pretty-code-figure] pre,
+    [data-rehype-pretty-code-figure] pre code,
+    [data-rehype-pretty-code-figure] [data-line] {
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+    [data-rehype-pretty-code-figure] pre { overflow-x: hidden; }
+    /* Reserve top-right space so wrapped first line isn't hidden behind the copy btn */
+    [data-rehype-pretty-code-figure] [data-line]:first-child { padding-right: 4.5rem; }
+  }
   [data-rehype-pretty-code-figure] pre code {
     @apply grid w-full;
     counter-reset: line;
