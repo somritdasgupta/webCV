@@ -8,6 +8,9 @@
       "source": "/gh/login/oauth/access_token",
       "destination": "https://github.com/login/oauth/access_token"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/((?!.*\\.).*)",
+      "destination": "/index.html"
+    }
   ]
 }
