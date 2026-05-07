@@ -17,7 +17,6 @@ const siteUrlPlugin = (siteUrl: string): Plugin => {
   return {
     name: "site-url-injector",
     transformIndexHtml: (html) => html.replaceAll("__SITE_URL__", url),
-    // Rewrite robots.txt as it's emitted from /public.
     generateBundle() {
       this.emitFile({
         type: "asset",
@@ -39,6 +38,55 @@ Allow: /
 
 Sitemap: ${url}/sitemap.xml
 `,
+      });
+
+      // Build sitemap.xml from static routes + MDX posts in /content/blog.
+      const fs = require("fs") as typeof import("fs");
+      const pathMod = require("path") as typeof import("path");
+      const blogDir = pathMod.resolve(__dirname, "content/blog");
+      const staticRoutes = ["/", "/blog", "/activity", "/cv"];
+      const today = new Date().toISOString().slice(0, 10);
+
+      type Entry = { loc: string; lastmod: string };
+      const entries: Entry[] = staticRoutes.map((r) => ({
+        loc: `${url}${r}`,
+        lastmod: today,
+      }));
+
+      try {
+        const files = fs.readdirSync(blogDir).filter((f) => f.endsWith(".mdx"));
+        for (const file of files) {
+          const slug = file.replace(/\.mdx$/, "").toLowerCase();
+          const raw = fs.readFileSync(pathMod.join(blogDir, file), "utf-8");
+          const dateMatch = raw.match(/date:\s*["']([^"']+)["']/);
+          const draftMatch = raw.match(/draft:\s*true/);
+          const date = dateMatch?.[1] ?? today;
+          if (draftMatch) continue;
+          if (+new Date(date) > Date.now()) continue;
+          entries.push({
+            loc: `${url}/blog/${slug}`,
+            lastmod: new Date(date).toISOString().slice(0, 10),
+          });
+        }
+      } catch {
+        // no blog dir — skip
+      }
+
+      const xml =
+        `<?xml version="1.0" encoding="UTF-8"?>\n` +
+        `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+        entries
+          .map(
+            (e) =>
+              `  <url><loc>${e.loc}</loc><lastmod>${e.lastmod}</lastmod></url>`,
+          )
+          .join("\n") +
+        `\n</urlset>\n`;
+
+      this.emitFile({
+        type: "asset",
+        fileName: "sitemap.xml",
+        source: xml,
       });
     },
   };
