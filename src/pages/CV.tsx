@@ -93,14 +93,14 @@ const CV = () => {
         </aside>
 
         {/* Mobile toolbar */}
-        <div className="flex justify-end gap-2 lg:hidden print:hidden">
+        <div className="lg:hidden print:hidden">
           <a
             href={RESUME_URL}
             target="_blank"
             rel="noreferrer noopener"
-            className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-border px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
           >
-            <Download className="h-3.5 w-3.5" /> Save
+            <Download className="h-4 w-4" /> Save
           </a>
         </div>
 
