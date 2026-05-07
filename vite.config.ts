@@ -56,7 +56,7 @@ Sitemap: ${url}/sitemap.xml
         const files = fs.readdirSync(blogDir).filter((f) => f.endsWith(".mdx"));
         for (const file of files) {
           const slug = file.replace(/\.mdx$/, "").toLowerCase();
-          const raw = fs.readFileSync(pathMod.join(blogDir, file), "utf-8");
+          const raw = fs.readFileSync(path.join(blogDir, file), "utf-8");
           const dateMatch = raw.match(/date:\s*["']([^"']+)["']/);
           const draftMatch = raw.match(/draft:\s*true/);
           const date = dateMatch?.[1] ?? today;
