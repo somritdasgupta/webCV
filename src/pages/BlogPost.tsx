@@ -1,5 +1,6 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MDXProvider } from "@mdx-js/react";
 import { Seo } from "@/components/Seo";
 import { getPostBySlug, getPostMeta } from "@/lib/posts";
@@ -77,7 +78,9 @@ const BlogPost = () => {
     return () => observer.disconnect();
   }, [slug, post]);
 
-  // Add a copy button to every <pre> code block in the rendered article.
+  // Add a copy button to every <pre> code block. The button is mounted on a
+  // non-scrolling wrapper around <pre> so it stays in the top-right corner
+  // even when the code scrolls horizontally on mobile.
   useEffect(() => {
     const root = articleRef.current;
     if (!root) return;
@@ -86,42 +89,44 @@ const BlogPost = () => {
     pres.forEach((pre) => {
       if (pre.dataset.copyAttached === "1") return;
       pre.dataset.copyAttached = "1";
-      // Make sure pre is a positioning context for the absolute button.
-      const prevPos = pre.style.position;
-      if (!prevPos) pre.style.position = "relative";
+
+      // Build a wrapper that becomes the positioning context for the button.
+      const wrap = document.createElement("div");
+      wrap.className = "code-block-wrap group relative";
+      pre.parentNode?.insertBefore(wrap, pre);
+      wrap.appendChild(pre);
 
       const btn = document.createElement("button");
       btn.type = "button";
       btn.setAttribute("aria-label", "Copy code");
       btn.className =
-        "code-copy-btn absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-md border border-white/15 bg-black/40 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-white/70 opacity-0 backdrop-blur transition-all hover:border-white/30 hover:text-white group-hover:opacity-100 focus:opacity-100";
+        "code-copy-btn absolute right-2 top-2 z-20 inline-flex items-center gap-1 rounded-md border border-white/15 bg-black/50 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-white/80 opacity-100 backdrop-blur transition-all hover:border-white/30 hover:text-white sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100";
       btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>copy</span>`;
-
-      // Make the parent figure (or pre) reveal the button on hover.
-      const hoverHost = (pre.closest("figure") as HTMLElement) || pre;
-      hoverHost.classList.add("group");
 
       const onClick = async () => {
         const code = pre.querySelector("code");
         const text = (code?.textContent ?? pre.textContent ?? "").replace(/\n$/, "");
         try {
           await navigator.clipboard.writeText(text);
-          btn.classList.add("!opacity-100");
           const span = btn.querySelector("span");
           if (span) span.textContent = "copied";
           window.setTimeout(() => {
             if (span) span.textContent = "copy";
-            btn.classList.remove("!opacity-100");
           }, 1400);
         } catch {
           /* ignore */
         }
       };
       btn.addEventListener("click", onClick);
-      pre.appendChild(btn);
+      wrap.appendChild(btn);
       cleanups.push(() => {
         btn.removeEventListener("click", onClick);
         btn.remove();
+        // Unwrap
+        if (wrap.parentNode) {
+          wrap.parentNode.insertBefore(pre, wrap);
+          wrap.remove();
+        }
         delete pre.dataset.copyAttached;
       });
     });
@@ -222,17 +227,21 @@ const BlogPost = () => {
         jsonLd={jsonLd}
       />
 
-      {/* Reading-progress bar — fixed at very top, above nav and iOS safe area */}
-      <div
-        aria-hidden
-        className="fixed inset-x-0 z-[100] h-[3px] bg-foreground/10 pointer-events-none backdrop-blur-sm"
-        style={{ top: "env(safe-area-inset-top, 0px)" }}
-      >
+      {/* Reading-progress bar — portaled to <body> so it isn't trapped
+          inside <main>'s transformed page-enter containing block. */}
+      {createPortal(
         <div
-          className="h-full bg-accent shadow-[0_0_10px_hsl(var(--accent)/0.7)] will-change-[width]"
-          style={{ width: `${progress}%`, transition: "width 120ms linear" }}
-        />
-      </div>
+          aria-hidden
+          className="fixed inset-x-0 z-[100] h-[3px] bg-foreground/10 pointer-events-none"
+          style={{ top: "env(safe-area-inset-top, 0px)" }}
+        >
+          <div
+            className="h-full bg-accent shadow-[0_0_10px_hsl(var(--accent)/0.7)] will-change-[width]"
+            style={{ width: `${progress}%`, transition: "width 120ms linear" }}
+          />
+        </div>,
+        document.body,
+      )}
 
       <article className="container-wide pt-6 pb-24 sm:pt-10">
         <Link
@@ -409,19 +418,22 @@ const BlogPost = () => {
           </nav>
         )}
 
-        {/* Floating back-to-top — appears after some scroll */}
-        <button
-          type="button"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          aria-label="Back to top"
-          className={cn(
-            "fixed bottom-6 right-6 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-md backdrop-blur transition-all hover:border-foreground/40 hover:bg-surface-1",
-            progress > 15 ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
-          )}
-          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
-        >
-          <ArrowUp className="h-4 w-4" />
-        </button>
+        {/* Floating back-to-top — portaled to escape transformed <main> */}
+        {createPortal(
+          <button
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            aria-label="Back to top"
+            className={cn(
+              "fixed right-6 z-[90] inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-md backdrop-blur transition-all hover:border-foreground/40 hover:bg-surface-1",
+              progress > 15 ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
+            )}
+            style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
+          >
+            <ArrowUp className="h-4 w-4" />
+          </button>,
+          document.body,
+        )}
 
         <footer className="mt-10 flex items-center justify-between border-t border-border pt-6 text-xs text-muted-foreground">
           <Link to="/blog" className="hover:text-foreground">← All posts</Link>
