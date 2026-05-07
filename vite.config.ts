@@ -42,9 +42,7 @@ Sitemap: ${url}/sitemap.xml
       });
 
       // Build sitemap.xml from static routes + MDX posts in /content/blog.
-      const fs = require("fs") as typeof import("fs");
-      const pathMod = require("path") as typeof import("path");
-      const blogDir = pathMod.resolve(__dirname, "content/blog");
+      const blogDir = path.resolve(__dirname, "content/blog");
       const staticRoutes = ["/", "/blog", "/activity", "/cv"];
       const today = new Date().toISOString().slice(0, 10);
 
