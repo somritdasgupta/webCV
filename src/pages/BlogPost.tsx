@@ -377,38 +377,51 @@ const BlogPost = () => {
           )}
         </div>
 
-        {/* Prev / Next */}
-
+        {/* Prev / Next — Older on the LEFT, Newer on the RIGHT (chronological) */}
         {(newer || older) && (
           <nav className="mt-20 grid gap-3 border-t border-border pt-8 sm:grid-cols-2 sm:gap-4">
-            {newer ? (
-              <Link
-                to={`/blog/${newer.slug}`}
-                className="group rounded-lg border border-border bg-surface-1/30 px-4 py-3 transition-colors hover:border-foreground/30 hover:bg-surface-1"
-              >
-                <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  <ArrowLeft className="h-3 w-3" /> Newer
-                </div>
-                <div className="mt-1 truncate font-serif text-base group-hover:text-accent">
-                  {newer.title}
-                </div>
-              </Link>
-            ) : <span />}
             {older ? (
               <Link
                 to={`/blog/${older.slug}`}
-                className="group rounded-lg border border-border bg-surface-1/30 px-4 py-3 text-right transition-colors hover:border-foreground/30 hover:bg-surface-1"
+                className="group relative overflow-hidden rounded-xl border border-border bg-surface-1/30 px-4 py-4 transition-all hover:-translate-y-0.5 hover:border-foreground/30 hover:bg-surface-1 hover:shadow-md"
               >
-                <div className="flex items-center justify-end gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Older <ArrowUpRight className="h-3 w-3" />
+                <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <ArrowLeft className="h-3 w-3 transition-transform group-hover:-translate-x-1" /> Older
                 </div>
-                <div className="mt-1 truncate font-serif text-base group-hover:text-accent">
+                <div className="mt-1.5 truncate font-serif text-base group-hover:text-accent">
                   {older.title}
                 </div>
               </Link>
-            ) : <span />}
+            ) : <span className="hidden sm:block" />}
+            {newer ? (
+              <Link
+                to={`/blog/${newer.slug}`}
+                className="group relative overflow-hidden rounded-xl border border-border bg-surface-1/30 px-4 py-4 text-right transition-all hover:-translate-y-0.5 hover:border-foreground/30 hover:bg-surface-1 hover:shadow-md sm:col-start-2"
+              >
+                <div className="flex items-center justify-end gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Newer <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                </div>
+                <div className="mt-1.5 truncate font-serif text-base group-hover:text-accent">
+                  {newer.title}
+                </div>
+              </Link>
+            ) : null}
           </nav>
         )}
+
+        {/* Floating back-to-top — appears after some scroll */}
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="Back to top"
+          className={cn(
+            "fixed bottom-6 right-6 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-md backdrop-blur transition-all hover:border-foreground/40 hover:bg-surface-1",
+            progress > 15 ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
+          )}
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
+        >
+          <ArrowUp className="h-4 w-4" />
+        </button>
 
         <footer className="mt-10 flex items-center justify-between border-t border-border pt-6 text-xs text-muted-foreground">
           <Link to="/blog" className="hover:text-foreground">← All posts</Link>
