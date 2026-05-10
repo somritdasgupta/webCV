@@ -21,9 +21,9 @@ export const SITE = {
   BASE_URL: (ENV_BASE_URL || "https://somritdasgupta.in").replace(/\/$/, ""),
   name: "Somrit Dasgupta",
   shortName: "Somrit",
-  title: "Somrit Dasgupta — Engineer, Writer, Builder",
+  title: "Somrit Dasgupta — Engineer x Extraordinaire",
   description:
-    "Personal site of Somrit Dasgupta. Engineering notes, projects, and live activity from GitHub.",
+    "Personal site of Somrit Dasgupta. Blogs, contributions and live activities from GitHub.",
   locale: "en_US",
   twitterHandle: "@somritdasgupta",
   ogImage: "/og.png",
