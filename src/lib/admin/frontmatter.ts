@@ -82,7 +82,7 @@ export function buildMdx(fm: Frontmatter, body: string): string {
   return lines.join("\n") + body.trimStart() + (body.endsWith("\n") ? "" : "\n");
 }
 
-const escape = (s: string) => s.replace(/"/g, '\\"');
+const escape = (s: string) => s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 
 export function slugify(input: string): string {
   return input
