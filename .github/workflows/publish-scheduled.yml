@@ -13,6 +13,8 @@ on:
     - cron: "0 * * * *" # every hour, on the hour
   workflow_dispatch: {}
 
+permissions: {}
+
 jobs:
   rebuild:
     runs-on: ubuntu-latest
