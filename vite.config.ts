@@ -94,7 +94,7 @@ Sitemap: ${url}/sitemap.xml
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const SITE_URL = env.VITE_SITE_URL || "https://somrits-webcv.lovable.app";
+  const SITE_URL = env.VITE_SITE_URL || "https://somritdasgupta.in";
   return {
   server: {
     host: "::",
