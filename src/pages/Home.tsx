@@ -51,11 +51,9 @@ const Home = () => {
         <div className="grid items-start gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           {/* Left: greeting */}
           <div className="min-w-0">
-            <div className="mb-5 animate-fade-in">
-              <span className="font-mono text-[11px] tracking-[0.04em] leading-[1.9] text-background [box-decoration-break:clone] [-webkit-box-decoration-break:clone] bg-foreground px-2 py-1">
-                Engineer, Hobbyist · Based in India, For the World
-              </span>
-            </div>
+            <p className="mb-5 font-mono text-[11px] tracking-[0.12em] uppercase text-muted-foreground">
+              Engineer, Hobbyist, Discerning
+            </p>
             <h1 className="fluid-h1 font-serif text-balance">
               Hi, I'm{" "}
               <span className="bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">

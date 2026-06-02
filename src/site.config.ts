@@ -18,7 +18,7 @@ const ENV_BASE_URL =
 
 export const SITE = {
   /** Resolved at build time. Override with VITE_SITE_URL. NO trailing slash. */
-  BASE_URL: (ENV_BASE_URL || "https://somritdasgupta.in").replace(/\/$/, ""),
+  BASE_URL: (ENV_BASE_URL || "https://somrits-webcv.lovable.app").replace(/\/$/, ""),
   name: "Somrit Dasgupta",
   shortName: "Somrit",
   title: "Somrit Dasgupta — Engineer x Extraordinaire",
@@ -91,7 +91,7 @@ export const ADMIN = {
   /** Repo where blog MDX files live. */
   repo: {
     owner: "somritdasgupta",
-    name: "somritdasgupta.in",
+    name: "webCV",
     branch: "main",
     /** Folder inside the repo where MDX posts go. */
     contentDir: "content/blog",

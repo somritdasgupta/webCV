@@ -34,12 +34,10 @@ const syncBrowserChrome = (theme: "light" | "dark") => {
     "name",
     theme === "dark" ? "(prefers-color-scheme: dark)" : "(prefers-color-scheme: light)",
   );
-  // iOS Safari status bar (only honored in standalone PWA, harmless otherwise)
-  upsertMeta("apple-mobile-web-app-status-bar-style", "name");
   const apple = document.querySelector<HTMLMetaElement>(
     'meta[name="apple-mobile-web-app-status-bar-style"]',
   );
-  if (apple) apple.setAttribute("content", theme === "dark" ? "black-translucent" : "default");
+  if (apple) apple.setAttribute("content", "default");
   // Microsoft / older mobile chrome
   upsertMeta("msapplication-navbutton-color", "name");
 };
