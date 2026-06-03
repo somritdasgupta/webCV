@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { auth } from "@/lib/admin/githubAuth";
 import { commitFile, contentApiUrl, contentApiWriteUrl, listPosts, readPost } from "@/lib/admin/githubCommit";
-import { listLocalPosts, readLocalPost, writeLocalPostOverride } from "@/lib/admin/localPosts";
+import { listLocalPosts, readLocalPost, removeLocalPostOverride, writeLocalPostOverride } from "@/lib/admin/localPosts";
 import { drafts, newDraftId, type Draft } from "@/lib/admin/drafts";
 import { buildMdx, parseFrontmatter, slugify, type Frontmatter } from "@/lib/admin/frontmatter";
 import { ADMIN } from "@/site.config";
 import { cn } from "@/lib/utils";
 import { MdxPreview } from "@/components/admin/MdxPreview";
+import { DateTimePicker, localTz } from "@/components/admin/DateTimePicker";
 import {
   Eye,
   Pencil,
@@ -17,7 +18,7 @@ import {
   FileText,
   RefreshCw,
   LogOut,
-  Calendar,
+  Calendar as CalendarIcon,
   ArrowLeft,
   Bold,
   Italic,
@@ -44,10 +45,12 @@ import {
 
 const todayIso = () => new Date().toISOString();
 
-const toDateTimeInput = (value?: string) => {
-  if (!value) return todayIso().slice(0, 16);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}T00:00`;
-  return value.slice(0, 16);
+/** Best-effort: turn an existing frontmatter date value into a UTC ISO. */
+const toIsoUtc = (value?: string): string => {
+  if (!value) return todayIso();
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return todayIso();
+  return d.toISOString();
 };
 
 /** Component snippets shown in the Components inserter (toolbar + mobile sheet). */
@@ -214,7 +217,8 @@ const AdminEditor = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tagsInput, setTagsInput] = useState("");
-  const [date, setDate] = useState<string>(todayIso().slice(0, 16));
+  const [date, setDate] = useState<string>(todayIso());
+  const [timezone, setTimezone] = useState<string>(() => localTz());
   const [body, setBody] = useState("");
   const [view, setView] = useState<"edit" | "preview">("edit");
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -256,7 +260,7 @@ const AdminEditor = () => {
     setTitle((data.title as string) || d.title || "");
     setDescription((data.description as string) || "");
     setTagsInput(((data.tags as string[]) || []).join(", "));
-    setDate(toDateTimeInput(data.date as string | undefined));
+    setDate(toIsoUtc(data.date as string | undefined));
     setBody(body);
   }, [draftId]);
 
@@ -269,7 +273,7 @@ const AdminEditor = () => {
       const fm: Frontmatter = {
         title: title.trim() || "Untitled",
         description: description.trim(),
-        date: new Date(date).toISOString(),
+        date: toIsoUtc(date),
         tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       };
       const content = buildMdx(fm, body);
@@ -367,7 +371,7 @@ const AdminEditor = () => {
     setTitle(loadedTitle);
     setDescription((parsed.data.description as string) || "");
     setTagsInput(((parsed.data.tags as string[]) || []).join(", "));
-    setDate(toDateTimeInput(parsed.data.date as string | undefined));
+    setDate(toIsoUtc(parsed.data.date as string | undefined));
     setBody(parsed.body || "");
     setDraftId(id);
     setView("edit");
@@ -387,7 +391,7 @@ const AdminEditor = () => {
     setTitle("");
     setDescription("");
     setTagsInput("");
-    setDate(todayIso().slice(0, 16));
+    setDate(todayIso());
     setBody("");
   };
 
@@ -402,7 +406,7 @@ const AdminEditor = () => {
     const fm: Frontmatter = {
       title: title.trim() || "Untitled",
       description: description.trim(),
-      date: new Date(date).toISOString(),
+      date: toIsoUtc(date),
       tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
     };
     const content = buildMdx(fm, body);
@@ -420,7 +424,16 @@ const AdminEditor = () => {
 
   const deletePublished = async () => {
     if (!token || !editingPath) return;
-    if (!confirm(`Delete ${editingPath} from GitHub? This cannot be undone.`)) return;
+    const filename = editingPath.split("/").pop();
+    const ok = confirm(
+      `Delete "${filename}" everywhere?\n\n` +
+        `• Removes the .mdx file from ${ADMIN.repo.owner}/${ADMIN.repo.name} on branch ${ADMIN.repo.branch} (one commit).\n` +
+        `• Clears any local override saved in this browser.\n` +
+        `• Removes any matching drafts.\n` +
+        `• The post disappears from the UI on the next deploy.\n\n` +
+        `Note: git history retains the file in older commits — this is normal and doesn't affect the live site.`,
+    );
+    if (!ok) return;
     setPublishing(true);
     setPublishErr(null);
     setPublishMsg(null);
@@ -429,11 +442,15 @@ const AdminEditor = () => {
         contentApiUrl(editingPath, ADMIN.repo.branch),
         { headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}` } },
       );
-      if (!lookupRes.ok) throw new Error(`Lookup failed: ${lookupRes.status}`);
-      const meta = await lookupRes.json();
-      const delRes = await fetch(
-        contentApiWriteUrl(editingPath),
-        {
+      // 404 = already gone in the repo; still clean local state below.
+      let sha: string | null = null;
+      if (lookupRes.ok) {
+        sha = (await lookupRes.json()).sha as string;
+      } else if (lookupRes.status !== 404) {
+        throw new Error(`Lookup failed: ${lookupRes.status}`);
+      }
+      if (sha) {
+        const delRes = await fetch(contentApiWriteUrl(editingPath), {
           method: "DELETE",
           headers: {
             Accept: "application/vnd.github+json",
@@ -441,15 +458,26 @@ const AdminEditor = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            message: `chore(blog): delete ${editingPath.split("/").pop()}`,
-            sha: meta.sha,
+            message: `chore(blog): delete ${filename}`,
+            sha,
             branch: ADMIN.repo.branch,
           }),
-        },
+        });
+        if (!delRes.ok) throw new Error(`Delete failed: ${delRes.status}`);
+      }
+      // Local cleanup — overrides + any drafts that pointed at this file.
+      removeLocalPostOverride(editingPath);
+      for (const d of drafts.list()) {
+        if (d.path === editingPath) drafts.remove(d.id);
+      }
+      setDraftList(drafts.list());
+      setPublishMsg(
+        sha
+          ? `Deleted ${editingPath} from repo and cleared local copies.`
+          : `${editingPath} was already gone from the repo — cleared local copies.`,
       );
-      if (!delRes.ok) throw new Error(`Delete failed: ${delRes.status}`);
-      setPublishMsg(`Deleted ${editingPath} from repo.`);
-      setEditingPath(null);
+      // Reset the editor to a fresh draft so we're not pointing at a ghost file.
+      newDraft();
       refreshRemote();
     } catch (e) {
       setPublishErr(e instanceof Error ? e.message : String(e));
@@ -494,7 +522,7 @@ const AdminEditor = () => {
       const fm: Frontmatter = {
         title: title.trim() || "Untitled",
         description: description.trim(),
-        date: new Date(date).toISOString(),
+        date: toIsoUtc(date),
         tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       };
       const content = buildMdx(fm, body);
@@ -521,7 +549,7 @@ const AdminEditor = () => {
       const fm: Frontmatter = {
         title: title.trim() || "Untitled",
         description: description.trim(),
-        date: new Date(date).toISOString(),
+        date: toIsoUtc(date),
         tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       };
       const content = buildMdx(fm, body);
@@ -929,15 +957,12 @@ const AdminEditor = () => {
                 placeholder="tags, comma, separated"
                 className="min-w-[180px] flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 outline-none transition-colors focus:border-foreground/40"
               />
-              <label className="group inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-muted-foreground transition-colors focus-within:border-foreground/40 hover:border-foreground/30">
-                <Calendar className="h-3.5 w-3.5" />
-                <input
-                  type="datetime-local"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="bg-transparent text-foreground outline-none [color-scheme:dark] dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:invert"
-                />
-              </label>
+              <DateTimePicker
+                value={date}
+                onChange={setDate}
+                timezone={timezone}
+                onTimezoneChange={setTimezone}
+              />
             </div>
           </div>
 
