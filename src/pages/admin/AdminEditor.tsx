@@ -424,7 +424,16 @@ const AdminEditor = () => {
 
   const deletePublished = async () => {
     if (!token || !editingPath) return;
-    if (!confirm(`Delete ${editingPath} from GitHub? This cannot be undone.`)) return;
+    const filename = editingPath.split("/").pop();
+    const ok = confirm(
+      `Delete "${filename}" everywhere?\n\n` +
+        `• Removes the .mdx file from ${ADMIN.repo.owner}/${ADMIN.repo.name} on branch ${ADMIN.repo.branch} (one commit).\n` +
+        `• Clears any local override saved in this browser.\n` +
+        `• Removes any matching drafts.\n` +
+        `• The post disappears from the UI on the next deploy.\n\n` +
+        `Note: git history retains the file in older commits — this is normal and doesn't affect the live site.`,
+    );
+    if (!ok) return;
     setPublishing(true);
     setPublishErr(null);
     setPublishMsg(null);
@@ -433,11 +442,15 @@ const AdminEditor = () => {
         contentApiUrl(editingPath, ADMIN.repo.branch),
         { headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}` } },
       );
-      if (!lookupRes.ok) throw new Error(`Lookup failed: ${lookupRes.status}`);
-      const meta = await lookupRes.json();
-      const delRes = await fetch(
-        contentApiWriteUrl(editingPath),
-        {
+      // 404 = already gone in the repo; still clean local state below.
+      let sha: string | null = null;
+      if (lookupRes.ok) {
+        sha = (await lookupRes.json()).sha as string;
+      } else if (lookupRes.status !== 404) {
+        throw new Error(`Lookup failed: ${lookupRes.status}`);
+      }
+      if (sha) {
+        const delRes = await fetch(contentApiWriteUrl(editingPath), {
           method: "DELETE",
           headers: {
             Accept: "application/vnd.github+json",
@@ -445,15 +458,26 @@ const AdminEditor = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            message: `chore(blog): delete ${editingPath.split("/").pop()}`,
-            sha: meta.sha,
+            message: `chore(blog): delete ${filename}`,
+            sha,
             branch: ADMIN.repo.branch,
           }),
-        },
+        });
+        if (!delRes.ok) throw new Error(`Delete failed: ${delRes.status}`);
+      }
+      // Local cleanup — overrides + any drafts that pointed at this file.
+      removeLocalPostOverride(editingPath);
+      for (const d of drafts.list()) {
+        if (d.path === editingPath) drafts.remove(d.id);
+      }
+      setDraftList(drafts.list());
+      setPublishMsg(
+        sha
+          ? `Deleted ${editingPath} from repo and cleared local copies.`
+          : `${editingPath} was already gone from the repo — cleared local copies.`,
       );
-      if (!delRes.ok) throw new Error(`Delete failed: ${delRes.status}`);
-      setPublishMsg(`Deleted ${editingPath} from repo.`);
-      setEditingPath(null);
+      // Reset the editor to a fresh draft so we're not pointing at a ghost file.
+      newDraft();
       refreshRemote();
     } catch (e) {
       setPublishErr(e instanceof Error ? e.message : String(e));
