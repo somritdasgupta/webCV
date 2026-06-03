@@ -79,7 +79,9 @@ export function buildMdx(fm: Frontmatter, body: string): string {
   if (fm.draft) lines.push(`  draft: true,`);
   if (fm.readingTime) lines.push(`  readingTime: ${fm.readingTime},`);
   lines.push("};", "");
-  return lines.join("\n") + body.trimStart() + (body.endsWith("\n") ? "" : "\n");
+  // Ensure a blank line between the export block and body — MDX/acorn fails to
+  // parse if markdown text immediately follows the closing `};`.
+  return lines.join("\n") + "\n" + body.trimStart() + (body.endsWith("\n") ? "" : "\n");
 }
 
 const escape = (s: string) => s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
