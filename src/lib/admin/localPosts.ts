@@ -55,3 +55,13 @@ export const writeLocalPostOverride = (path: string, content: string) => {
   const repoPath = path.replace(/^\//, "");
   writeOverrides({ ...readOverrides(), [repoPath]: content });
 };
+
+/** Drop a local override (used after a published post is deleted from the repo). */
+export const removeLocalPostOverride = (path: string) => {
+  const repoPath = path.replace(/^\//, "");
+  const all = readOverrides();
+  if (repoPath in all) {
+    delete all[repoPath];
+    writeOverrides(all);
+  }
+};
