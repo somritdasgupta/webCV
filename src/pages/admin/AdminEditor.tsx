@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { auth } from "@/lib/admin/githubAuth";
 import { commitFile, contentApiUrl, contentApiWriteUrl, listPosts, readPost } from "@/lib/admin/githubCommit";
-import { listLocalPosts, readLocalPost, writeLocalPostOverride } from "@/lib/admin/localPosts";
+import { listLocalPosts, readLocalPost, removeLocalPostOverride, writeLocalPostOverride } from "@/lib/admin/localPosts";
 import { drafts, newDraftId, type Draft } from "@/lib/admin/drafts";
 import { buildMdx, parseFrontmatter, slugify, type Frontmatter } from "@/lib/admin/frontmatter";
 import { ADMIN } from "@/site.config";
 import { cn } from "@/lib/utils";
 import { MdxPreview } from "@/components/admin/MdxPreview";
+import { DateTimePicker, localTz } from "@/components/admin/DateTimePicker";
 import {
   Eye,
   Pencil,
@@ -17,7 +18,7 @@ import {
   FileText,
   RefreshCw,
   LogOut,
-  Calendar,
+  Calendar as CalendarIcon,
   ArrowLeft,
   Bold,
   Italic,
@@ -44,10 +45,12 @@ import {
 
 const todayIso = () => new Date().toISOString();
 
-const toDateTimeInput = (value?: string) => {
-  if (!value) return todayIso().slice(0, 16);
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}T00:00`;
-  return value.slice(0, 16);
+/** Best-effort: turn an existing frontmatter date value into a UTC ISO. */
+const toIsoUtc = (value?: string): string => {
+  if (!value) return todayIso();
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return todayIso();
+  return d.toISOString();
 };
 
 /** Component snippets shown in the Components inserter (toolbar + mobile sheet). */
