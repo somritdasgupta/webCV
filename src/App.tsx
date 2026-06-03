@@ -36,6 +36,7 @@ const App = () => (
           </Routes>
         </SiteLayout>
       </BrowserRouter>
+      <SpeedInsights />
     </TooltipProvider>
   </QueryClientProvider>
 );
