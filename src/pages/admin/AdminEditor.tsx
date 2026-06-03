@@ -941,8 +941,6 @@ const AdminEditor = () => {
               />
             </div>
           </div>
-            </div>
-          </div>
 
           {publishMsg && (
             <div className="flex items-start gap-2 rounded-md border border-success/40 bg-success/10 p-3 text-sm">
