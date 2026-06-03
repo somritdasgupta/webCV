@@ -217,7 +217,8 @@ const AdminEditor = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tagsInput, setTagsInput] = useState("");
-  const [date, setDate] = useState<string>(todayIso().slice(0, 16));
+  const [date, setDate] = useState<string>(todayIso());
+  const [timezone, setTimezone] = useState<string>(() => localTz());
   const [body, setBody] = useState("");
   const [view, setView] = useState<"edit" | "preview">("edit");
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -259,7 +260,7 @@ const AdminEditor = () => {
     setTitle((data.title as string) || d.title || "");
     setDescription((data.description as string) || "");
     setTagsInput(((data.tags as string[]) || []).join(", "));
-    setDate(toDateTimeInput(data.date as string | undefined));
+    setDate(toIsoUtc(data.date as string | undefined));
     setBody(body);
   }, [draftId]);
 
@@ -272,7 +273,7 @@ const AdminEditor = () => {
       const fm: Frontmatter = {
         title: title.trim() || "Untitled",
         description: description.trim(),
-        date: new Date(date).toISOString(),
+        date: toIsoUtc(date),
         tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       };
       const content = buildMdx(fm, body);
@@ -370,7 +371,7 @@ const AdminEditor = () => {
     setTitle(loadedTitle);
     setDescription((parsed.data.description as string) || "");
     setTagsInput(((parsed.data.tags as string[]) || []).join(", "));
-    setDate(toDateTimeInput(parsed.data.date as string | undefined));
+    setDate(toIsoUtc(parsed.data.date as string | undefined));
     setBody(parsed.body || "");
     setDraftId(id);
     setView("edit");
@@ -390,7 +391,7 @@ const AdminEditor = () => {
     setTitle("");
     setDescription("");
     setTagsInput("");
-    setDate(todayIso().slice(0, 16));
+    setDate(todayIso());
     setBody("");
   };
 
@@ -405,7 +406,7 @@ const AdminEditor = () => {
     const fm: Frontmatter = {
       title: title.trim() || "Untitled",
       description: description.trim(),
-      date: new Date(date).toISOString(),
+      date: toIsoUtc(date),
       tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
     };
     const content = buildMdx(fm, body);
@@ -497,7 +498,7 @@ const AdminEditor = () => {
       const fm: Frontmatter = {
         title: title.trim() || "Untitled",
         description: description.trim(),
-        date: new Date(date).toISOString(),
+        date: toIsoUtc(date),
         tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       };
       const content = buildMdx(fm, body);
@@ -524,7 +525,7 @@ const AdminEditor = () => {
       const fm: Frontmatter = {
         title: title.trim() || "Untitled",
         description: description.trim(),
-        date: new Date(date).toISOString(),
+        date: toIsoUtc(date),
         tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
       };
       const content = buildMdx(fm, body);
