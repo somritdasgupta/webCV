@@ -632,10 +632,11 @@ const AdminEditor = () => {
   const sidebar = (
     <aside
       className={cn(
-        "sticky top-20 flex h-[calc(100vh-6rem)] shrink-0 flex-col gap-4 rounded-xl border border-border bg-card/60 backdrop-blur-sm transition-[width] duration-300 ease-out-expo",
+        "flex h-full shrink-0 flex-col gap-4 rounded-xl border border-border bg-card/60 backdrop-blur-sm transition-[width] duration-300 ease-out-expo",
         sidebarCollapsed ? "w-14 p-2" : "w-64 p-3",
       )}
     >
+
       {/* Top: collapse toggle + brand */}
       <div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "justify-between")}>
         {!sidebarCollapsed && (
