@@ -11,18 +11,18 @@
  * which clears any scheduled state because the date is not in the future.
  */
 import { useMemo, useState } from "react";
-import { Calendar as CalendarIcon, Clock, Globe, Zap } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  Globe,
+  Zap,
+  Search,
+  ChevronRight,
+} from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 /* ── TZ helpers ───────────────────────────────────────────────── */
 
@@ -51,7 +51,7 @@ function tzOffsetMin(tz: string, utcMs: number): number {
   return (asUtc - utcMs) / 60000;
 }
 
-/** UTC ISO → { y,m,d,hh,mm } as wall-clock in tz. */
+/** UTC ISO → { date, time } as wall-clock in tz. */
 function utcToWall(iso: string, tz: string) {
   const d = new Date(iso);
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -73,9 +73,8 @@ function utcToWall(iso: string, tz: string) {
 /** Wall date/time in tz → UTC ISO. Iterates once for DST edge correctness. */
 function wallToUtcIso(date: string, time: string, tz: string): string {
   const guess = new Date(`${date}T${time}:00Z`).getTime();
-  let offset = tzOffsetMin(tz, guess);
+  const offset = tzOffsetMin(tz, guess);
   let utc = guess - offset * 60000;
-  // re-check at the corrected instant in case we crossed a DST boundary
   const offset2 = tzOffsetMin(tz, utc);
   if (offset2 !== offset) utc = guess - offset2 * 60000;
   return new Date(utc).toISOString();
@@ -136,6 +135,41 @@ const allZones = (): string[] => {
   return TZ_FALLBACK;
 };
 
+/* ── Presets ──────────────────────────────────────────────────── */
+
+type Preset = { label: string; build: () => Date };
+
+const PRESETS: Preset[] = [
+  {
+    label: "Now",
+    build: () => new Date(),
+  },
+  {
+    label: "+1 hour",
+    build: () => new Date(Date.now() + 60 * 60 * 1000),
+  },
+  {
+    label: "Tomorrow 9am",
+    build: () => {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      d.setHours(9, 0, 0, 0);
+      return d;
+    },
+  },
+  {
+    label: "Next Mon 9am",
+    build: () => {
+      const d = new Date();
+      const day = d.getDay(); // 0..6, Sun..Sat
+      const delta = ((1 - day + 7) % 7) || 7;
+      d.setDate(d.getDate() + delta);
+      d.setHours(9, 0, 0, 0);
+      return d;
+    },
+  },
+];
+
 /* ── Component ────────────────────────────────────────────────── */
 
 export interface DateTimePickerProps {
@@ -155,10 +189,11 @@ export function DateTimePicker({
   className,
 }: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
+  const [tzQuery, setTzQuery] = useState("");
+  const [tzPickerOpen, setTzPickerOpen] = useState(false);
   const wall = useMemo(() => utcToWall(value, timezone), [value, timezone]);
 
-  // Calendar Date object representing the *wall* date (so the highlighted
-  // day matches what the user sees regardless of their browser tz).
+  // Calendar Date object representing the *wall* date.
   const wallDateObj = useMemo(() => {
     const [y, m, d] = wall.date.split("-").map(Number);
     return new Date(y, m - 1, d);
@@ -168,9 +203,8 @@ export function DateTimePicker({
     onChange(wallToUtcIso(date, time, timezone));
   };
 
-  const setNow = () => {
-    const now = new Date();
-    onChange(now.toISOString());
+  const applyPreset = (p: Preset) => {
+    onChange(p.build().toISOString());
   };
 
   const triggerLabel = useMemo(() => {
@@ -186,7 +220,14 @@ export function DateTimePicker({
   }, [value, timezone]);
 
   const zones = useMemo(() => allZones(), []);
+  const filteredZones = useMemo(() => {
+    const q = tzQuery.trim().toLowerCase();
+    if (!q) return zones;
+    return zones.filter((z) => z.toLowerCase().includes(q));
+  }, [zones, tzQuery]);
+
   const isScheduled = new Date(value).getTime() > Date.now() + 30_000;
+  const minutesAhead = Math.round((new Date(value).getTime() - Date.now()) / 60000);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -210,62 +251,159 @@ export function DateTimePicker({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-auto p-0 pointer-events-auto"
+        className="w-[320px] p-0 pointer-events-auto overflow-hidden"
       >
-        <div className="flex flex-col">
-          <Calendar
-            mode="single"
-            selected={wallDateObj}
-            onSelect={(d) => {
-              if (!d) return;
-              const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-              updateWall(iso, wall.time);
-            }}
-            initialFocus
-            className="p-3 pointer-events-auto"
-          />
-          <div className="space-y-2.5 border-t border-border/60 p-3">
-            <div className="flex items-center gap-2">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="time"
-                value={wall.time}
-                onChange={(e) => updateWall(wall.date, e.target.value)}
-                className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs outline-none focus:border-foreground/40 [color-scheme:dark] dark:[color-scheme:dark]"
-              />
-              <button
-                type="button"
-                onClick={setNow}
-                title="Set to right now — publishes immediately"
-                className="inline-flex items-center gap-1 rounded-md border border-border bg-foreground px-2.5 py-1.5 text-[11px] font-medium text-background transition-opacity hover:opacity-90"
-              >
-                <Zap className="h-3 w-3" />
-                Now
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-              <Select value={timezone} onValueChange={onTimezoneChange}>
-                <SelectTrigger className="h-8 flex-1 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {zones.map((tz) => (
-                    <SelectItem key={tz} value={tz} className="text-xs">
-                      {tz}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center justify-between pt-1 font-mono text-[10px] text-muted-foreground">
-              <span>{format(new Date(value), "yyyy-MM-dd HH:mm")} UTC</span>
-              {isScheduled ? (
-                <span className="text-warning">scheduled</span>
-              ) : (
-                <span className="text-success">publishes now</span>
+        {/* Status header */}
+        <div
+          className={cn(
+            "flex items-center justify-between border-b border-border/60 px-3 py-2",
+            isScheduled ? "bg-warning/5" : "bg-success/5",
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                isScheduled ? "bg-warning" : "bg-success",
               )}
+            />
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              {isScheduled ? "Scheduled" : "Publishes immediately"}
+            </span>
+          </div>
+          {isScheduled && (
+            <span className="font-mono text-[10px] text-muted-foreground">
+              in {minutesAhead < 60
+                ? `${minutesAhead}m`
+                : minutesAhead < 1440
+                  ? `${Math.round(minutesAhead / 60)}h`
+                  : `${Math.round(minutesAhead / 1440)}d`}
+            </span>
+          )}
+        </div>
+
+        {/* Preset chips */}
+        <div className="flex flex-wrap gap-1 border-b border-border/60 px-3 py-2">
+          {PRESETS.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => applyPreset(p)}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border border-border bg-background px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground",
+                p.label === "Now" && "border-foreground bg-foreground text-background hover:opacity-90",
+              )}
+            >
+              {p.label === "Now" && <Zap className="h-2.5 w-2.5" />}
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <Calendar
+          mode="single"
+          selected={wallDateObj}
+          onSelect={(d) => {
+            if (!d) return;
+            const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+            updateWall(iso, wall.time);
+          }}
+          initialFocus
+          className="p-3 pointer-events-auto"
+        />
+
+        <div className="space-y-2 border-t border-border/60 p-3">
+          {/* Time row */}
+          <div className="flex items-center gap-2">
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+            <input
+              type="time"
+              value={wall.time}
+              onChange={(e) => updateWall(wall.date, e.target.value)}
+              className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs outline-none transition-colors focus:border-foreground/40 [color-scheme:light] dark:[color-scheme:dark]"
+            />
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              {tzShort(timezone, new Date(value).getTime())}
+            </span>
+          </div>
+
+          {/* Timezone row — collapses to a button, expands to a searchable list */}
+          <button
+            type="button"
+            onClick={() => setTzPickerOpen((v) => !v)}
+            className="flex w-full items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-foreground transition-colors hover:border-foreground/30"
+          >
+            <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="flex-1 truncate text-left">{timezone}</span>
+            <ChevronRight
+              className={cn(
+                "h-3 w-3 text-muted-foreground transition-transform",
+                tzPickerOpen && "rotate-90",
+              )}
+            />
+          </button>
+
+          {tzPickerOpen && (
+            <div className="overflow-hidden rounded-md border border-border bg-background">
+              <div className="flex items-center gap-2 border-b border-border/60 px-2.5 py-1.5">
+                <Search className="h-3 w-3 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={tzQuery}
+                  onChange={(e) => setTzQuery(e.target.value)}
+                  placeholder="Search timezone…"
+                  className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/60"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    onTimezoneChange(localTz());
+                    setTzQuery("");
+                  }}
+                  className="rounded border border-border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+                >
+                  Local
+                </button>
+              </div>
+              <ul className="max-h-44 overflow-y-auto py-1">
+                {filteredZones.length === 0 && (
+                  <li className="px-3 py-2 text-[11px] text-muted-foreground">No matches.</li>
+                )}
+                {filteredZones.map((tz) => (
+                  <li key={tz}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onTimezoneChange(tz);
+                        setTzPickerOpen(false);
+                        setTzQuery("");
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between gap-2 px-3 py-1 text-left text-xs transition-colors hover:bg-surface-1",
+                        tz === timezone && "bg-surface-1 text-foreground",
+                      )}
+                    >
+                      <span className="truncate">{tz}</span>
+                      <span className="font-mono text-[10px] text-muted-foreground">
+                        {tzShort(tz, Date.now())}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
+          )}
+
+          <div className="flex items-center justify-between pt-0.5 font-mono text-[10px] text-muted-foreground">
+            <span>{format(new Date(value), "yyyy-MM-dd HH:mm")} UTC</span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded border border-border px-2 py-0.5 text-foreground transition-colors hover:bg-surface-1"
+            >
+              Done
+            </button>
           </div>
         </div>
       </PopoverContent>
