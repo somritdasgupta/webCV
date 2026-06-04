@@ -908,14 +908,17 @@ const AdminEditor = () => {
   );
 
   return (
-    <div className="container-wide pb-12 pt-4 sm:pt-6">
-      <div className="flex gap-4">
+    // App-shell: the editor occupies the viewport below the floating nav.
+    // Sidebar and editor column have their OWN scroll regions — the page
+    // itself never scrolls, so the sidebar and frontmatter stay put.
+    <div className="h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] overflow-hidden">
+      <div className="container-wide flex h-full gap-4 py-3 sm:py-4">
         {sidebar}
 
-        {/* Editor column */}
-        <div className="min-w-0 flex-1 space-y-5">
-          {/* Frontmatter */}
-          <div className="space-y-3 border-b border-border/60 pb-5">
+        {/* Editor column — its own flex shell with sticky header & toolbar */}
+        <div className="flex h-full min-w-0 flex-1 flex-col gap-3">
+          {/* Frontmatter (fixed at top of column) */}
+          <div className="shrink-0 space-y-2.5 border-b border-border/60 pb-3">
             <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
               <span>{editingPath ? "editing" : "draft"}</span>
               <span aria-hidden>·</span>
@@ -941,14 +944,14 @@ const AdminEditor = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Untitled post"
-              className="w-full bg-transparent font-serif text-3xl leading-tight outline-none placeholder:text-muted-foreground/60 sm:text-4xl"
+              className="w-full bg-transparent font-serif text-2xl leading-tight outline-none placeholder:text-muted-foreground/60 sm:text-3xl"
             />
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="A one-line description, like a deck for the article."
-              rows={2}
-              className="w-full resize-none bg-transparent text-base leading-relaxed text-muted-foreground outline-none placeholder:text-muted-foreground/60"
+              rows={1}
+              className="w-full resize-none bg-transparent text-sm leading-relaxed text-muted-foreground outline-none placeholder:text-muted-foreground/60"
             />
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <input
@@ -968,19 +971,19 @@ const AdminEditor = () => {
           </div>
 
           {publishMsg && (
-            <div className="flex items-start gap-2 rounded-md border border-success/40 bg-success/10 p-3 text-sm">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+            <div className="shrink-0 flex items-start gap-2 rounded-md border border-success/40 bg-success/10 p-2.5 text-xs">
+              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
               <span className="break-all">{publishMsg}</span>
             </div>
           )}
           {publishErr && (
-            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            <div className="shrink-0 rounded-md border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive">
               {publishErr}
             </div>
           )}
 
-          {/* Formatting toolbar — Write/Preview toggle lives here */}
-          <div className="sticky top-20 z-20 flex items-center gap-0.5 overflow-x-auto rounded-lg border border-border bg-card/95 p-1 shadow-elev-sm backdrop-blur-xl supports-[backdrop-filter]:bg-card/80 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible">
+          {/* Formatting toolbar (fixed, above the scrolling body) */}
+          <div className="shrink-0 flex items-center gap-0.5 overflow-x-auto rounded-lg border border-border bg-card/95 p-1 shadow-elev-sm backdrop-blur-xl supports-[backdrop-filter]:bg-card/80 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible">
             {/* View toggle (inline at the start of the toolbar) */}
             <div className="inline-flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-surface-1/60 p-0.5">
               {(
@@ -1085,22 +1088,22 @@ const AdminEditor = () => {
             )}
           </div>
 
-          {/* Editor / preview (single pane — no split) */}
-          <div className="grid grid-cols-1 gap-4">
+          {/* Editor / preview — only this region scrolls as content grows */}
+          <div className="min-h-0 flex-1">
             {view === "edit" ? (
-              <div className="relative rounded-xl border border-border bg-surface-1/30 transition-colors focus-within:border-foreground/30 focus-within:bg-surface-1/50">
+              <div className="relative h-full overflow-hidden rounded-xl border border-border bg-surface-1/30 transition-colors focus-within:border-foreground/30 focus-within:bg-surface-1/50">
                 <textarea
                   ref={bodyRef}
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   placeholder="Start writing. Markdown and MDX components both work…"
                   spellCheck={false}
-                  className="min-h-[60vh] w-full resize-y bg-transparent p-5 font-mono text-[13px] leading-[1.7] outline-none placeholder:text-muted-foreground/50 sm:p-7 sm:text-sm sm:leading-[1.75]"
+                  className="h-full w-full resize-none bg-transparent p-5 font-mono text-[13px] leading-[1.7] outline-none placeholder:text-muted-foreground/50 sm:p-7 sm:text-sm sm:leading-[1.75]"
                 />
               </div>
             ) : (
-              <div className="relative min-h-[60vh] overflow-hidden rounded-xl border border-border bg-background">
-                <div className="absolute right-3 top-3 z-10 rounded-full border border-border bg-card/80 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
+              <div className="relative h-full overflow-y-auto rounded-xl border border-border bg-background">
+                <div className="sticky right-3 top-3 z-10 ml-auto inline-block rounded-full border border-border bg-card/80 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
                   preview
                 </div>
                 <article className="prose prose-neutral max-w-none p-5 dark:prose-invert sm:p-8">
@@ -1124,3 +1127,4 @@ const AdminEditor = () => {
 };
 
 export default AdminEditor;
+
