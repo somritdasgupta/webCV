@@ -25,7 +25,7 @@ export const SITE = {
   description:
     "Personal site of Somrit Dasgupta. Blogs, contributions and live activities from GitHub.",
   locale: "en_US",
-  twitterHandle: "@somritdasgupta",
+  twitterHandle: "@kitsomrit",
   ogImage: "/og.png",
   themeColor: "#0a0a0a",
 } as const;
