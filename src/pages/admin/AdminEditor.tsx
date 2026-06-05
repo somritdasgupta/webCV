@@ -41,7 +41,19 @@ import {
   ChevronsRight,
   Plus,
   FilePlus,
+  Menu,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const todayIso = () => new Date().toISOString();
 
