@@ -434,17 +434,6 @@ const AdminEditor = () => {
     setDraftList(drafts.list());
   };
 
-  const deletePublished = async () => {
-    if (!token || !editingPath) return;
-    const filename = editingPath.split("/").pop();
-    const ok = confirm(
-      `Delete "${filename}" everywhere?\n\n` +
-        `• Removes the .mdx file from ${ADMIN.repo.owner}/${ADMIN.repo.name} on branch ${ADMIN.repo.branch} (one commit).\n` +
-        `• Clears any local override saved in this browser.\n` +
-        `• Removes any matching drafts.\n` +
-        `• The post disappears from the UI on the next deploy.\n\n` +
-        `Note: git history retains the file in older commits — this is normal and doesn't affect the live site.`,
-    );
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -452,6 +441,7 @@ const AdminEditor = () => {
     if (!token || !editingPath) return;
     setConfirmDeleteOpen(true);
   };
+
 
   const deletePublished = async () => {
     if (!token || !editingPath) return;
