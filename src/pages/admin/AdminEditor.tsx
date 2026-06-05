@@ -1180,6 +1180,37 @@ const AdminEditor = () => {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this post everywhere?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  <span className="font-mono text-foreground">{editingPath?.split("/").pop()}</span> will be removed:
+                </p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>Deleted from <span className="font-mono">{ADMIN.repo.owner}/{ADMIN.repo.name}</span> on <span className="font-mono">{ADMIN.repo.branch}</span> (one commit).</li>
+                  <li>Local browser overrides cleared.</li>
+                  <li>Matching drafts removed.</li>
+                  <li>Disappears from the live site on next deploy.</li>
+                </ul>
+                <p className="text-xs">Git history retains the file in older commits — that's normal and doesn't affect the live site.</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={deletePublished}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete post
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
