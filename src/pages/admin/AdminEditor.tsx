@@ -702,7 +702,7 @@ const AdminEditor = () => {
           <SideButton
             icon={Trash2}
             label="Delete post"
-            onClick={deletePublished}
+            onClick={requestDeletePublished}
             disabled={publishing}
             danger
           />
