@@ -230,8 +230,8 @@ export function DateTimePicker({
   const minutesAhead = Math.round((new Date(value).getTime() - Date.now()) / 60000);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <button
           type="button"
           className={cn(
@@ -248,11 +248,9 @@ export function DateTimePicker({
             </span>
           )}
         </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-[320px] p-0 pointer-events-auto overflow-hidden"
-      >
+      </DialogTrigger>
+      <DialogContent className="w-[min(94vw,360px)] gap-0 overflow-hidden p-0 pointer-events-auto">
+        <DialogTitle className="sr-only">Pick publish date & time</DialogTitle>
         {/* Status header */}
         <div
           className={cn(
@@ -300,17 +298,19 @@ export function DateTimePicker({
           ))}
         </div>
 
-        <Calendar
-          mode="single"
-          selected={wallDateObj}
-          onSelect={(d) => {
-            if (!d) return;
-            const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-            updateWall(iso, wall.time);
-          }}
-          initialFocus
-          className="p-3 pointer-events-auto"
-        />
+        <div className="flex justify-center">
+          <Calendar
+            mode="single"
+            selected={wallDateObj}
+            onSelect={(d) => {
+              if (!d) return;
+              const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+              updateWall(iso, wall.time);
+            }}
+            initialFocus
+            className="p-3 pointer-events-auto"
+          />
+        </div>
 
         <div className="space-y-2 border-t border-border/60 p-3">
           {/* Time row */}
@@ -406,7 +406,7 @@ export function DateTimePicker({
             </button>
           </div>
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }
