@@ -926,10 +926,55 @@ const AdminEditor = () => {
     // itself never scrolls, so the sidebar and frontmatter stay put.
     <div className="h-[calc(100dvh-4rem)] sm:h-[calc(100dvh-5rem)] overflow-hidden">
       <div className="container-wide flex h-full gap-4 py-3 sm:py-4">
-        {sidebar}
+        {/* Desktop sidebar */}
+        <div className="hidden h-full md:flex">{sidebar}</div>
 
         {/* Editor column — its own flex shell with sticky header & toolbar */}
         <div className="flex h-full min-w-0 flex-1 flex-col gap-3">
+          {/* Mobile topbar: menu + post selector + publish */}
+          <div className="flex shrink-0 items-center gap-2 md:hidden">
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Open editor menu"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground"
+                >
+                  <Menu className="h-4 w-4" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[18rem] p-3">
+                <div onClick={() => setMobileMenuOpen(false)} className="h-full">
+                  {sidebar}
+                </div>
+              </SheetContent>
+            </Sheet>
+            <select
+              value={editingPath || ""}
+              onChange={(e) => {
+                if (e.target.value) loadRemote(e.target.value);
+                else newDraft();
+              }}
+              className="min-w-0 flex-1 truncate rounded-md border border-border bg-card px-2.5 py-2 text-xs text-foreground outline-none focus:border-foreground/40"
+            >
+              <option value="">— New draft —</option>
+              {remote.map((f) => (
+                <option key={f.path} value={f.path}>
+                  {f.name} {f.source === "local" ? "(local)" : ""}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={publish}
+              disabled={publishing || !title.trim() || (!canPublish && !editingPath)}
+              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background disabled:opacity-40"
+            >
+              {publishing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              {publishing ? "…" : isScheduled ? "Schedule" : editingPath ? "Update" : "Publish"}
+            </button>
+          </div>
+
           {/* Frontmatter (fixed at top of column) */}
           <div className="shrink-0 space-y-2.5 border-b border-border/60 pb-3">
             <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
