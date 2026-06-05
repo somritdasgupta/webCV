@@ -37,7 +37,7 @@ export const AUTHOR = {
   email: "hello@somritdasgupta.in",
   links: {
     github: "https://github.com/somritdasgupta",
-    twitter: "https://twitter.com/somritdasgupta",
+    twitter: "https://x.com/kitsomrit",
     linkedin: "https://www.linkedin.com/in/somritdasgupta",
   },
 } as const;
