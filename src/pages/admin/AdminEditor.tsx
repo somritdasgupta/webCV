@@ -445,7 +445,18 @@ const AdminEditor = () => {
         `• The post disappears from the UI on the next deploy.\n\n` +
         `Note: git history retains the file in older commits — this is normal and doesn't affect the live site.`,
     );
-    if (!ok) return;
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const requestDeletePublished = () => {
+    if (!token || !editingPath) return;
+    setConfirmDeleteOpen(true);
+  };
+
+  const deletePublished = async () => {
+    if (!token || !editingPath) return;
+    const filename = editingPath.split("/").pop();
+    setConfirmDeleteOpen(false);
     setPublishing(true);
     setPublishErr(null);
     setPublishMsg(null);
