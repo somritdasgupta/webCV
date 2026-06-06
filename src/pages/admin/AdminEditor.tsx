@@ -53,7 +53,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { ComponentsPicker } from "@/components/admin/ComponentsPicker";
 
 const todayIso = () => new Date().toISOString();
 
