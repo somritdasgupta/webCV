@@ -85,8 +85,8 @@ const Home = () => {
                 <a href={AUTHOR.links.github} target="_blank" rel="noreferrer noopener" aria-label="GitHub" className="rounded-sm p-1 transition-colors hover:text-foreground">
                   <Github className="h-4 w-4" />
                 </a>
-                <a href={AUTHOR.links.twitter} target="_blank" rel="noreferrer noopener" aria-label="Twitter" className="rounded-sm p-1 transition-colors hover:text-foreground">
-                  <Twitter className="h-4 w-4" />
+                <a href={AUTHOR.links.twitter} target="_blank" rel="noreferrer noopener" aria-label="X (Twitter)" className="rounded-sm p-1 transition-colors hover:text-foreground">
+                  <XLogo className="h-3.5 w-3.5" />
                 </a>
                 <a href={AUTHOR.links.linkedin} target="_blank" rel="noreferrer noopener" aria-label="LinkedIn" className="rounded-sm p-1 transition-colors hover:text-foreground">
                   <Linkedin className="h-4 w-4" />
