@@ -932,24 +932,16 @@ const AdminEditor = () => {
 
         {/* Editor column — its own flex shell with sticky header & toolbar */}
         <div className="flex h-full min-w-0 flex-1 flex-col gap-3">
-          {/* Mobile topbar: menu + post selector + publish */}
+          {/* Mobile topbar: menu (opens bottom sheet) + post selector + publish */}
           <div className="flex shrink-0 items-center gap-2 md:hidden">
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="Open editor menu"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground"
-                >
-                  <Menu className="h-4 w-4" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[18rem] p-3">
-                <div onClick={() => setMobileMenuOpen(false)} className="h-full">
-                  {sidebar}
-                </div>
-              </SheetContent>
-            </Sheet>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open editor menu"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
             <select
               value={editingPath || ""}
               onChange={(e) => {
@@ -969,12 +961,24 @@ const AdminEditor = () => {
               type="button"
               onClick={publish}
               disabled={publishing || !title.trim() || (!canPublish && !editingPath)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background disabled:opacity-40"
+              aria-label={isScheduled ? "Schedule" : editingPath ? "Update" : "Publish"}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-foreground text-background disabled:opacity-40"
             >
-              {publishing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-              {publishing ? "…" : isScheduled ? "Schedule" : editingPath ? "Update" : "Publish"}
+              {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
             </button>
           </div>
+
+          <BottomSheet
+            open={mobileMenuOpen}
+            onOpenChange={setMobileMenuOpen}
+            title="Editor"
+            hideHeader
+            forceMode="sheet"
+          >
+            <div onClick={() => setMobileMenuOpen(false)} className="p-2">
+              {sidebar}
+            </div>
+          </BottomSheet>
 
           {/* Frontmatter (fixed at top of column) */}
           <div className="shrink-0 space-y-2.5 border-b border-border/60 pb-3">
