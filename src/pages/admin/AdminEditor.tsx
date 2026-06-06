@@ -263,6 +263,39 @@ const AdminEditor = () => {
   const [draftList, setDraftList] = useState<Draft[]>(() => drafts.list());
 
   const bodyRef = useRef<HTMLTextAreaElement | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+
+  /** Read a local file as data URI and embed into the editor body. Data
+   *  URIs render anywhere — including the published static site — without
+   *  needing storage. Each file is capped at 1.5 MB to keep posts sensible. */
+  const handleImageFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const MAX = 1.5 * 1024 * 1024;
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+        setPublishErr(`${file.name}: unsupported file type.`);
+        return;
+      }
+      if (file.size > MAX) {
+        setPublishErr(`${file.name}: too large (${(file.size / 1024 / 1024).toFixed(1)} MB > 1.5 MB).`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result || "");
+        const isVideo = file.type.startsWith("video/");
+        const isGif = file.type === "image/gif";
+        const alt = file.name.replace(/\.[^.]+$/, "");
+        const md = isVideo
+          ? `\n<Video src="${dataUrl}" caption="${alt}" />\n`
+          : `\n![${alt}${isGif ? " (gif)" : ""}](${dataUrl})\n`;
+        insertSnippet(md);
+        setPublishMsg(`Embedded ${file.name} (${(file.size / 1024).toFixed(0)} KB).`);
+      };
+      reader.onerror = () => setPublishErr(`Could not read ${file.name}.`);
+      reader.readAsDataURL(file);
+    });
+  };
 
   // Load draft into form
   useEffect(() => {
