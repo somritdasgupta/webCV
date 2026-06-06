@@ -223,7 +223,7 @@ const BlogPost = () => {
       },
       url: absUrl(`/blog/${post.slug}`),
       inLanguage: "en",
-      keywords: post.frontmatter.tags?.join(", "),
+      keywords: post.tags?.join(", "),
     },
     {
       "@context": "https://schema.org",
