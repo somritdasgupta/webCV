@@ -198,22 +198,43 @@ const BlogPost = () => {
     flashFmt("rss");
   };
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: title,
-    description,
-    datePublished: date,
-    author: {
-      "@type": "Person",
-      name: AUTHOR.name,
-      url: SITE.BASE_URL,
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: title,
+      description,
+      datePublished: date,
+      dateModified: date,
+      author: {
+        "@type": "Person",
+        name: AUTHOR.name,
+        url: SITE.BASE_URL,
+        sameAs: [AUTHOR.links.github, AUTHOR.links.twitter, AUTHOR.links.linkedin],
+      },
+      publisher: {
+        "@type": "Person",
+        name: AUTHOR.name,
+        url: SITE.BASE_URL,
+      },
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": absUrl(`/blog/${post.slug}`),
+      },
+      url: absUrl(`/blog/${post.slug}`),
+      inLanguage: "en",
+      keywords: post.frontmatter.tags?.join(", "),
     },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": absUrl(`/blog/${post.slug}`),
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: SITE.BASE_URL },
+        { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE.BASE_URL}/blog` },
+        { "@type": "ListItem", position: 3, name: title, item: absUrl(`/blog/${post.slug}`) },
+      ],
     },
-  };
+  ];
 
   return (
     <>
