@@ -1,5 +1,6 @@
 import { AUTHOR, SITE } from "@/site.config";
-import { Github, Twitter, Linkedin, Mail } from "lucide-react";
+import { Github, Linkedin, Mail } from "lucide-react";
+import { XLogo } from "@/components/icons/XLogo";
 
 export const SiteFooter = () => {
   return (
