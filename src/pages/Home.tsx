@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Seo } from "@/components/Seo";
 import { AUTHOR, SITE, GITHUB } from "@/site.config";
-import { ArrowUpRight, Github, Twitter, Linkedin, Star, GitFork, ExternalLink } from "lucide-react";
+import { ArrowUpRight, Github, Linkedin, Star, GitFork, ExternalLink } from "lucide-react";
+import { XLogo } from "@/components/icons/XLogo";
 import { getPostMeta } from "@/lib/posts";
 import { useQuery } from "@tanstack/react-query";
 
@@ -32,15 +33,59 @@ const Home = () => {
     refetchOnWindowFocus: false,
   });
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: AUTHOR.name,
-    url: SITE.BASE_URL,
-    jobTitle: AUTHOR.role,
-    description: AUTHOR.bio,
-    sameAs: [AUTHOR.links.github, AUTHOR.links.twitter, AUTHOR.links.linkedin],
-  };
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": `${SITE.BASE_URL}/#person`,
+      name: AUTHOR.name,
+      alternateName: ["Somrit", "somritdasgupta", "kitsomrit", "Somrit Das Gupta"],
+      url: SITE.BASE_URL,
+      jobTitle: AUTHOR.role,
+      description: AUTHOR.bio,
+      email: `mailto:${AUTHOR.email}`,
+      knowsAbout: [
+        "Software Engineering", "TypeScript", "React", "Node.js",
+        "Python", "Go", "AWS", "Distributed Systems", "AI", "LLMs",
+        "Open Source", "Backend Development",
+      ],
+      sameAs: [
+        AUTHOR.links.github,
+        AUTHOR.links.twitter,
+        AUTHOR.links.linkedin,
+        "https://x.com/kitsomrit",
+        "https://github.com/somritdasgupta",
+      ],
+      image: `${SITE.BASE_URL}${SITE.ogImage}`,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": `${SITE.BASE_URL}/#website`,
+      url: SITE.BASE_URL,
+      name: SITE.name,
+      description: SITE.description,
+      inLanguage: "en",
+      author: { "@id": `${SITE.BASE_URL}/#person` },
+      publisher: { "@id": `${SITE.BASE_URL}/#person` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: `${SITE.BASE_URL}/blog?q={search_term_string}` },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Site sections",
+      itemListElement: [
+        { "@type": "SiteNavigationElement", position: 1, name: "About", url: `${SITE.BASE_URL}/` },
+        { "@type": "SiteNavigationElement", position: 2, name: "Blog", url: `${SITE.BASE_URL}/blog` },
+        { "@type": "SiteNavigationElement", position: 3, name: "Activity", url: `${SITE.BASE_URL}/activity` },
+        { "@type": "SiteNavigationElement", position: 4, name: "CV", url: `${SITE.BASE_URL}/cv` },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -84,8 +129,8 @@ const Home = () => {
                 <a href={AUTHOR.links.github} target="_blank" rel="noreferrer noopener" aria-label="GitHub" className="rounded-sm p-1 transition-colors hover:text-foreground">
                   <Github className="h-4 w-4" />
                 </a>
-                <a href={AUTHOR.links.twitter} target="_blank" rel="noreferrer noopener" aria-label="Twitter" className="rounded-sm p-1 transition-colors hover:text-foreground">
-                  <Twitter className="h-4 w-4" />
+                <a href={AUTHOR.links.twitter} target="_blank" rel="noreferrer noopener" aria-label="X (Twitter)" className="rounded-sm p-1 transition-colors hover:text-foreground">
+                  <XLogo className="h-3.5 w-3.5" />
                 </a>
                 <a href={AUTHOR.links.linkedin} target="_blank" rel="noreferrer noopener" aria-label="LinkedIn" className="rounded-sm p-1 transition-colors hover:text-foreground">
                   <Linkedin className="h-4 w-4" />

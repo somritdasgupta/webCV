@@ -53,7 +53,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { ComponentsPicker } from "@/components/admin/ComponentsPicker";
 
 const todayIso = () => new Date().toISOString();
 
@@ -262,6 +263,39 @@ const AdminEditor = () => {
   const [draftList, setDraftList] = useState<Draft[]>(() => drafts.list());
 
   const bodyRef = useRef<HTMLTextAreaElement | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+
+  /** Read a local file as data URI and embed into the editor body. Data
+   *  URIs render anywhere — including the published static site — without
+   *  needing storage. Each file is capped at 1.5 MB to keep posts sensible. */
+  const handleImageFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const MAX = 1.5 * 1024 * 1024;
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+        setPublishErr(`${file.name}: unsupported file type.`);
+        return;
+      }
+      if (file.size > MAX) {
+        setPublishErr(`${file.name}: too large (${(file.size / 1024 / 1024).toFixed(1)} MB > 1.5 MB).`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result || "");
+        const isVideo = file.type.startsWith("video/");
+        const isGif = file.type === "image/gif";
+        const alt = file.name.replace(/\.[^.]+$/, "");
+        const md = isVideo
+          ? `\n<Video src="${dataUrl}" caption="${alt}" />\n`
+          : `\n![${alt}${isGif ? " (gif)" : ""}](${dataUrl})\n`;
+        insertSnippet(md);
+        setPublishMsg(`Embedded ${file.name} (${(file.size / 1024).toFixed(0)} KB).`);
+      };
+      reader.onerror = () => setPublishErr(`Could not read ${file.name}.`);
+      reader.readAsDataURL(file);
+    });
+  };
 
   // Load draft into form
   useEffect(() => {
@@ -931,24 +965,16 @@ const AdminEditor = () => {
 
         {/* Editor column — its own flex shell with sticky header & toolbar */}
         <div className="flex h-full min-w-0 flex-1 flex-col gap-3">
-          {/* Mobile topbar: menu + post selector + publish */}
+          {/* Mobile topbar: menu (opens bottom sheet) + post selector + publish */}
           <div className="flex shrink-0 items-center gap-2 md:hidden">
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="Open editor menu"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground"
-                >
-                  <Menu className="h-4 w-4" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[18rem] p-3">
-                <div onClick={() => setMobileMenuOpen(false)} className="h-full">
-                  {sidebar}
-                </div>
-              </SheetContent>
-            </Sheet>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open editor menu"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
             <select
               value={editingPath || ""}
               onChange={(e) => {
@@ -968,12 +994,24 @@ const AdminEditor = () => {
               type="button"
               onClick={publish}
               disabled={publishing || !title.trim() || (!canPublish && !editingPath)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background disabled:opacity-40"
+              aria-label={isScheduled ? "Schedule" : editingPath ? "Update" : "Publish"}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-foreground text-background disabled:opacity-40"
             >
-              {publishing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-              {publishing ? "…" : isScheduled ? "Schedule" : editingPath ? "Update" : "Publish"}
+              {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
             </button>
           </div>
+
+          <BottomSheet
+            open={mobileMenuOpen}
+            onOpenChange={setMobileMenuOpen}
+            title="Editor"
+            hideHeader
+            forceMode="sheet"
+          >
+            <div onClick={() => setMobileMenuOpen(false)} className="p-2">
+              {sidebar}
+            </div>
+          </BottomSheet>
 
           {/* Frontmatter (fixed at top of column) */}
           <div className="shrink-0 space-y-2.5 border-b border-border/60 pb-3">
@@ -1040,9 +1078,11 @@ const AdminEditor = () => {
             </div>
           )}
 
-          {/* Formatting toolbar (fixed, above the scrolling body) */}
-          <div className="shrink-0 flex items-center gap-0.5 overflow-x-auto rounded-lg border border-border bg-card/95 p-1 shadow-elev-sm backdrop-blur-xl supports-[backdrop-filter]:bg-card/80 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible">
-            {/* View toggle (inline at the start of the toolbar) */}
+          {/* Formatting toolbar — sticky Write/Preview on the LEFT, sticky
+              Components on the RIGHT, scrollable formatting strip between
+              them. Icon-only on mobile to maximise horizontal real estate. */}
+          <div className="shrink-0 flex items-center gap-1 rounded-lg border border-border bg-card/95 p-1 shadow-elev-sm backdrop-blur-xl supports-[backdrop-filter]:bg-card/80">
+            {/* LEFT — Write / Preview, sticky */}
             <div className="inline-flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-surface-1/60 p-0.5">
               {(
                 [
@@ -1054,6 +1094,8 @@ const AdminEditor = () => {
                   key={v}
                   type="button"
                   onClick={() => setView(v)}
+                  aria-label={label}
+                  title={label}
                   className={cn(
                     "inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-all",
                     view === v
@@ -1061,16 +1103,15 @@ const AdminEditor = () => {
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <Icon className="h-3 w-3" />
-                  {label}
+                  <Icon className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{label}</span>
                 </button>
               ))}
             </div>
 
-            <span className="mx-1 h-5 w-px bg-border" />
-
-            {view === "edit" && (
-              <>
+            {/* MIDDLE — scrollable formatting strip */}
+            {view === "edit" ? (
+              <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <ToolBtn icon={Heading2} label="Heading 2" onClick={() => apply((el) => wrapSelection(el, "## ", "", "Heading"))} />
                 <ToolBtn icon={Heading3} label="Heading 3" onClick={() => apply((el) => wrapSelection(el, "### ", "", "Subheading"))} />
                 <ToolBtn icon={Bold} label="Bold" onClick={() => apply((el) => wrapSelection(el, "**", "**", "bold"))} />
@@ -1078,73 +1119,56 @@ const AdminEditor = () => {
                 <ToolBtn icon={Strikethrough} label="Strikethrough" onClick={() => apply((el) => wrapSelection(el, "~~", "~~", "strike"))} />
                 <ToolBtn icon={Code} label="Inline code" onClick={() => apply((el) => wrapSelection(el, "`", "`", "code"))} />
                 <ToolBtn icon={FileText} label="Code block" onClick={() => apply((el) => wrapSelection(el, "\n```ts\n", "\n```\n", "// code"))} />
-                <span className="mx-1 h-5 w-px bg-border" />
+                <span className="mx-0.5 h-5 w-px shrink-0 bg-border" />
                 <ToolBtn icon={LinkIcon} label="Link" onClick={() => apply((el) => wrapSelection(el, "[", "](https://)", "label"))} />
-                <ToolBtn icon={ImageIcon} label="Image" onClick={() => apply((el) => wrapSelection(el, "![", "](https://)", "alt"))} />
+                <ToolBtn icon={ImageIcon} label="Insert image / GIF / video" onClick={() => imageInputRef.current?.click()} />
                 <ToolBtn icon={Quote} label="Quote" onClick={() => apply((el) => wrapSelection(el, "> ", "", "quote"))} />
-                <span className="mx-1 h-5 w-px bg-border" />
+                <span className="mx-0.5 h-5 w-px shrink-0 bg-border" />
                 <ToolBtn icon={List} label="List" onClick={() => apply((el) => wrapSelection(el, "- ", "", "item"))} />
                 <ToolBtn icon={ListOrdered} label="Numbered list" onClick={() => apply((el) => wrapSelection(el, "1. ", "", "item"))} />
                 <ToolBtn icon={TableIcon} label="Table" onClick={() => insertSnippet("\n| Column A | Column B |\n| --- | --- |\n| cell | cell |\n| cell | cell |\n")} />
                 <ToolBtn icon={Minus} label="Divider" onClick={() => insertSnippet("\n\n---\n\n")} />
-                <span className="mx-1 h-5 w-px bg-border" />
-                <div className="relative shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setShowInserter((v) => !v)}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground"
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Components</span>
-                    <ChevronDown className="h-3 w-3" />
-                  </button>
-                  {showInserter && (
-                    <>
-                      {/* Click-outside backdrop */}
-                      <button
-                        type="button"
-                        aria-label="Close components"
-                        onClick={() => setShowInserter(false)}
-                        className="fixed inset-0 z-20 cursor-default bg-transparent"
-                      />
-                      <div
-                        role="menu"
-                        className="absolute right-0 top-full z-30 mt-2 w-[min(92vw,520px)] overflow-hidden rounded-xl border border-border bg-popover shadow-elev-lg"
-                      >
-                        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
-                          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                            Insert component
-                          </span>
-                          <span className="text-[10px] text-muted-foreground/70">
-                            {COMPONENT_SNIPPETS.length} blocks
-                          </span>
-                        </div>
-                        <div className="max-h-[60vh] overflow-y-auto p-2">
-                          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-                            {COMPONENT_SNIPPETS.map((item) => (
-                              <button
-                                key={item.label}
-                                type="button"
-                                onClick={() => insertSnippet(item.snippet)}
-                                className="group flex flex-col gap-0.5 rounded-md border border-transparent px-2.5 py-1.5 text-left transition-colors hover:border-border hover:bg-surface-1"
-                              >
-                                <span className="text-[12px] font-medium text-foreground">
-                                  {item.label}
-                                </span>
-                                <span className="truncate text-[10px] text-muted-foreground">
-                                  {item.hint}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </>
+              </div>
+            ) : (
+              <div className="min-w-0 flex-1" />
+            )}
+
+            {/* RIGHT — Components picker, sticky */}
+            {view === "edit" && (
+              <button
+                type="button"
+                onClick={() => setShowInserter(true)}
+                aria-label="Insert component"
+                title="Insert component"
+                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-surface-1/60 px-2 text-xs font-medium text-foreground transition-colors hover:bg-surface-2"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                <span className="hidden sm:inline">Components</span>
+                <ChevronDown className="h-3 w-3" />
+              </button>
             )}
           </div>
+
+          {/* Hidden image/video file input — triggered by toolbar icon */}
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              handleImageFiles(e.target.files);
+              e.target.value = "";
+            }}
+          />
+
+          {/* Responsive picker — bottom sheet on mobile, modal on desktop */}
+          <ComponentsPicker
+            open={showInserter}
+            onOpenChange={setShowInserter}
+            snippets={COMPONENT_SNIPPETS}
+            onInsert={insertSnippet}
+          />
 
           {/* Editor / preview — only this region scrolls as content grows */}
           <div className="min-h-0 flex-1">
