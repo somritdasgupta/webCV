@@ -1,0 +1,18 @@
+# Somrit Dasgupta
+
+> Personal site of Somrit Dasgupta — software engineer working across TypeScript, React, Node.js, Python, Go, and AWS. Writing, projects, and live GitHub activity.
+
+Somrit builds backend systems and AI tools, ships in public, and keeps most of his work open source.
+
+## Pages
+
+- [About](/): Intro, featured open-source project, and recent writing.
+- [Blog](/blog): Long-form writing on engineering, TypeScript, React, AI, and open source.
+- [Activity](/activity): Live GitHub repositories and recent commits.
+- [CV](/cv): Curriculum vitae — experience, projects, skills, education, and certifications.
+
+## Optional
+
+- [GitHub](https://github.com/somritdasgupta): Source code and open-source contributions.
+- [X / Twitter](https://x.com/kitsomrit): Short-form posts.
+- [LinkedIn](https://www.linkedin.com/in/somritdasgupta): Professional profile.
