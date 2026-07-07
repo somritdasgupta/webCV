@@ -1,12 +1,15 @@
 /**
- * BottomSheet — consistent, responsive sheet:
- *   • Mobile/tablet: bottom sheet with 3D depth backdrop, drag handle, no X.
- *     Height is capped at 70dvh so it never overflows on browsers with
- *     dynamic toolbars (Safari address bar, iOS Liquid Glass, etc.).
+ * BottomSheet — responsive sheet with 3D depth on mobile:
+ *   • Mobile/tablet: bottom sheet that dynamically caps at `maxHeightDvh`
+ *     (default 75 % of the *visual* viewport, so it works with iOS Safari's
+ *     collapsing chrome, Android nav bars, etc.). Uses vaul's
+ *     `shouldScaleBackground` for a real 3D pushback, layered with an ambient
+ *     drop shadow and a top highlight ring so the sheet reads as a physical
+ *     surface floating above the page.
  *   • Desktop (md+): centered modal with soft scale-in.
  *
- * Built on vaul (already used by ui/drawer.tsx). All close affordances are
- * gestural — drag the handle, tap the scrim, or press Esc. No corner X.
+ * All close affordances are gestural — drag the handle, tap the scrim, or
+ * press Esc. No corner X.
  */
 import * as React from "react";
 import { Drawer as Vaul } from "vaul";
@@ -23,9 +26,13 @@ interface BottomSheetProps {
   forceMode?: "sheet" | "modal";
   /** Max width on desktop modal. */
   maxWidth?: string;
+  /** Max height of the mobile sheet as a percentage of dvh (default 75). */
+  maxHeightDvh?: number;
   /** Hide the visual title header bar inside the sheet. */
   hideHeader?: boolean;
   className?: string;
+  /** Content wrapper class (applied to the scroll region). */
+  contentClassName?: string;
 }
 
 export function BottomSheet({
@@ -36,14 +43,15 @@ export function BottomSheet({
   children,
   forceMode,
   maxWidth = "440px",
+  maxHeightDvh = 75,
   hideHeader,
   className,
+  contentClassName,
 }: BottomSheetProps) {
   const isMobile = useIsMobile();
   const mode = forceMode ?? (isMobile ? "sheet" : "modal");
 
   if (mode === "modal") {
-    // Centered modal
     return (
       <Vaul.Root open={open} onOpenChange={onOpenChange}>
         <Vaul.Portal>
@@ -74,36 +82,43 @@ export function BottomSheet({
                 {description && <Vaul.Description className="sr-only">{description}</Vaul.Description>}
               </>
             )}
-            <div className="max-h-[80vh] overflow-y-auto">{children}</div>
+            <div className={cn("max-h-[80vh] overflow-y-auto", contentClassName)}>{children}</div>
           </Vaul.Content>
         </Vaul.Portal>
       </Vaul.Root>
     );
   }
 
-  // Mobile bottom sheet with 3D backdrop scale
+  // Mobile bottom sheet: dynamic height, 3D perspective, top highlight.
+  const mh = Math.max(30, Math.min(95, maxHeightDvh));
+
   return (
     <Vaul.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground>
       <Vaul.Portal>
-        <Vaul.Overlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-[3px]" />
+        {/* Scrim: heavy blur + radial darkening near the sheet reads as depth. */}
+        <Vaul.Overlay className="fixed inset-0 z-50 bg-black/75 backdrop-blur-[6px]" />
         <Vaul.Content
           className={cn(
             "fixed inset-x-0 bottom-0 z-50 flex flex-col",
-            "rounded-t-[22px] border-t border-border bg-popover shadow-[0_-24px_60px_-12px_rgba(0,0,0,0.45)]",
-            // 70% of available viewport, accounts for dynamic toolbars
-            "max-h-[70dvh]",
+            "rounded-t-[28px] border-t border-border bg-popover",
+            // Ambient depth: broad soft shadow + a tight upward halo.
+            "shadow-[0_-30px_80px_-20px_rgba(0,0,0,0.65),0_-1px_0_0_hsl(var(--foreground)/0.06)_inset]",
+            // Top rim highlight for the "lit edge" of a floating panel.
+            "before:pointer-events-none before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-foreground/25 before:to-transparent",
             className,
           )}
           style={{
             paddingBottom: "env(safe-area-inset-bottom, 0px)",
+            maxHeight: `${mh}dvh`,
+            height: `${mh}dvh`,
           }}
         >
           {/* Drag handle */}
-          <div className="flex shrink-0 items-center justify-center pt-2.5 pb-1">
-            <div className="h-1.5 w-10 rounded-full bg-border" />
+          <div className="flex shrink-0 items-center justify-center pt-2.5 pb-1.5">
+            <div className="h-1.5 w-11 rounded-full bg-border/80" />
           </div>
           {!hideHeader && title && (
-            <div className="shrink-0 px-4 pb-2 pt-1 text-center">
+            <div className="shrink-0 px-5 pb-2.5 pt-1 text-center">
               <Vaul.Title className="text-sm font-medium text-foreground">{title}</Vaul.Title>
               {description && (
                 <Vaul.Description className="mt-0.5 text-xs text-muted-foreground">
@@ -118,7 +133,14 @@ export function BottomSheet({
               {description && <Vaul.Description className="sr-only">{description}</Vaul.Description>}
             </>
           )}
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+          <div
+            className={cn(
+              "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+              contentClassName,
+            )}
+          >
+            {children}
+          </div>
         </Vaul.Content>
       </Vaul.Portal>
     </Vaul.Root>
