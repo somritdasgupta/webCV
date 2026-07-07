@@ -12,7 +12,10 @@ import { ADMIN } from "@/site.config";
 
 const TOKEN_KEY = "admin_gh_token_v1";
 const USER_KEY = "admin_gh_user_v1";
-const DEV_KEY = "admin_dev_session_v1";
+// Legacy client-only "dev PIN" session key — kept only so we can proactively
+// clear any stale value from previously-visited browsers. No new sessions of
+// this kind can be created; UI access now requires a real GitHub OAuth token.
+const LEGACY_DEV_KEY = "admin_dev_session_v1";
 
 export interface GhUser {
   login: string;
