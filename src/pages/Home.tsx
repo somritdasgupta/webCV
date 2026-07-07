@@ -105,6 +105,9 @@ const Home = () => {
                 {AUTHOR.name.split(" ")[0]}
               </span>
               <span className="text-accent">.</span>
+              <span className="mt-2 block fluid-lead font-sans text-muted-foreground">
+                Software engineer building backend systems, AI tools, and open source.
+              </span>
             </h1>
             <p className="mt-7 max-w-2xl fluid-lead leading-relaxed text-muted-foreground text-pretty">
               I work across the stack — TypeScript, React, Node, Python, Go, and AWS.

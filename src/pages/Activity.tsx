@@ -309,6 +309,7 @@ const Activity = () => {
         </div>
 
         <div key={tab} className="animate-fade-up">
+          <h2 className="sr-only">{tab === "projects" ? "Projects" : "Recent commits"}</h2>
           {tab === "projects" ? <ProjectsView /> : <CommitsView />}
         </div>
       </section>
