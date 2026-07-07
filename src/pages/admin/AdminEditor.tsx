@@ -217,13 +217,12 @@ const AdminEditor = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const token = auth.getToken();
-  const isDevSession = auth.isDevSession();
   const canPublish = Boolean(token);
   const user = auth.getCachedUser();
 
   useEffect(() => {
-    if (!token && !isDevSession) navigate("/admin", { replace: true });
-  }, [token, isDevSession, navigate]);
+    if (!token) navigate("/admin", { replace: true });
+  }, [token, navigate]);
 
   // Draft state
   const [draftId, setDraftId] = useState<string>(() => params.get("d") || newDraftId());
