@@ -1216,10 +1216,9 @@ const AdminEditor = () => {
             title="Editor"
             hideHeader
             forceMode="sheet"
+            maxHeightDvh={82}
           >
-            <div onClick={() => setMobileMenuOpen(false)} className="p-2">
-              {sidebar}
-            </div>
+            <MobileMenu />
           </BottomSheet>
 
           {/* Frontmatter (fixed at top of column) */}
