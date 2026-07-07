@@ -633,7 +633,7 @@ const AdminEditor = () => {
     navigate("/admin", { replace: true });
   };
 
-  if (!token && !isDevSession) return null;
+  if (!token) return null;
 
   // ============ Sidebar ============
   // Collapsed: icon-only rail. Expanded: full controls + post list.
