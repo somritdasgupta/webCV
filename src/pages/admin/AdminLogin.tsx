@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { ADMIN } from "@/site.config";
 import {
@@ -9,7 +9,7 @@ import {
   type DeviceCode,
   type GhUser,
 } from "@/lib/admin/githubAuth";
-import { Github, Copy, Check, AlertTriangle, Loader2, ArrowRight, Shield, KeyRound } from "lucide-react";
+import { Github, Copy, Check, AlertTriangle, Loader2, ArrowRight, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const AdminLogin = () => {
@@ -18,19 +18,12 @@ const AdminLogin = () => {
   const [status, setStatus] = useState<"idle" | "starting" | "polling" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [pin, setPin] = useState<string[]>(["", "", "", ""]);
-  const [pinError, setPinError] = useState<string | null>(null);
-  const pinRefs = useRef<Array<HTMLInputElement | null>>([]);
   const navigate = useNavigate();
 
   // Already signed in? Validate and bounce to editor.
   useEffect(() => {
     const token = auth.getToken();
-    if (!token) {
-      // Already in a local dev session? Bounce to editor.
-      if (auth.isDevSession()) navigate("/admin/editor", { replace: true });
-      return;
-    }
+    if (!token) return;
     fetchUser(token)
       .then((u) => {
         auth.setCachedUser(u);
@@ -69,67 +62,15 @@ const AdminLogin = () => {
 
   const configMissing = !ADMIN.githubClientId;
 
-  const submitPin = (next: string[]) => {
-    const value = next.join("");
-    if (value.length !== 4) return;
-    if (value === ADMIN.devPin) {
-      setPinError(null);
-      auth.setDevSession(true);
-      navigate("/admin/editor", { replace: true });
-    } else {
-      setPinError("Wrong PIN. Try again.");
-      setPin(["", "", "", ""]);
-      pinRefs.current[0]?.focus();
-    }
-  };
-
-  const handlePinChange = (i: number, raw: string) => {
-    const v = raw.replace(/\D/g, "").slice(0, 1);
-    const next = [...pin];
-    next[i] = v;
-    setPin(next);
-    setPinError(null);
-    if (v && i < 3) pinRefs.current[i + 1]?.focus();
-    if (next.every((c) => c.length === 1)) submitPin(next);
-  };
-
-  const handlePinKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !pin[i] && i > 0) {
-      pinRefs.current[i - 1]?.focus();
-    }
-    if (e.key === "ArrowLeft" && i > 0) pinRefs.current[i - 1]?.focus();
-    if (e.key === "ArrowRight" && i < 3) pinRefs.current[i + 1]?.focus();
-  };
-
-  const handlePinPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    const text = e.clipboardData.getData("text").trim();
-    // Accept either raw 4-digit pin or full "user:pin" form
-    const m = text.match(/(?:^|:)(\d{4})$/);
-    const digits = (m ? m[1] : text.replace(/\D/g, "")).slice(0, 4);
-    if (digits.length === 4) {
-      e.preventDefault();
-      const next = digits.split("");
-      setPin(next);
-      submitPin(next);
-    }
-  };
-
   return (
     <div className="relative">
-      {/* Site-wide ambient smoke shows through — no extra gradient layer here,
-          which would clash with the navbar pill backdrop.
-          Height: fill the viewport below the floating nav (5rem top pad on
-          <main>) so the page sits flush without a scrollbar. */}
       <section className="container-prose relative z-10 flex min-h-[calc(100svh-5rem)] flex-col justify-center py-6 sm:py-10">
-        {/* Brand mark */}
         <div className="mb-5 flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] text-muted-foreground">
           <Shield className="h-3.5 w-3.5" />
           admin
         </div>
 
-        <h1 className="font-serif text-4xl tracking-tight sm:text-5xl">
-          Sign in.
-        </h1>
+        <h1 className="font-serif text-4xl tracking-tight sm:text-5xl">Sign in.</h1>
         <p className="mt-2 max-w-md text-sm text-muted-foreground sm:text-base">
           GitHub Device Flow. Token stays in your browser.
         </p>
@@ -148,7 +89,6 @@ const AdminLogin = () => {
           </div>
         )}
 
-        {/* Primary CTA */}
         {!code && (
           <div className="mt-6">
             <button
@@ -172,10 +112,8 @@ const AdminLogin = () => {
           </div>
         )}
 
-        {/* Device code panel */}
         {code && (
           <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-card shadow-elev-md">
-            {/* Step 1 */}
             <div className="border-b border-border p-5 sm:p-6">
               <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-foreground/10 text-foreground">
@@ -193,7 +131,6 @@ const AdminLogin = () => {
               </a>
             </div>
 
-            {/* Step 2 */}
             <div className="p-5 sm:p-6">
               <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-foreground/10 text-foreground">
@@ -238,43 +175,6 @@ const AdminLogin = () => {
             Signed in as <strong className="text-foreground">{user.login}</strong>. Going to editor…
           </p>
         )}
-
-        {/* Backup local PIN — UI access only, no commit privileges */}
-        <div className="mt-8 border-t border-border pt-6">
-          <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-            <KeyRound className="h-3.5 w-3.5" /> or use local PIN
-          </div>
-          <p className="mt-2 max-w-md text-xs text-muted-foreground">
-            Read-only workdesk access for dev / preview. Pushing changes still requires GitHub sign-in above.
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <span className="font-mono text-sm text-muted-foreground">{ADMIN.devUsername}:</span>
-            <div className="flex items-center gap-2">
-              {[0, 1, 2, 3].map((i) => (
-                <input
-                  key={i}
-                  ref={(el) => (pinRefs.current[i] = el)}
-                  type="password"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={1}
-                  value={pin[i]}
-                  onChange={(e) => handlePinChange(i, e.target.value)}
-                  onKeyDown={(e) => handlePinKeyDown(i, e)}
-                  onPaste={handlePinPaste}
-                  aria-label={`PIN digit ${i + 1}`}
-                  className={cn(
-                    "h-12 w-10 rounded-lg border bg-background text-center font-mono text-lg outline-none transition-colors sm:h-14 sm:w-12 sm:text-xl",
-                    pinError ? "border-destructive/60" : "border-border focus:border-foreground/40",
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-          {pinError && (
-            <p className="mt-3 text-xs text-destructive">{pinError}</p>
-          )}
-        </div>
       </section>
     </div>
   );

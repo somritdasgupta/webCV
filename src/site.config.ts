@@ -102,14 +102,6 @@ export const ADMIN = {
    * Swap for your own deployed proxy when ready.
    */
   corsProxy: "https://corsproxy.io/?",
-  /**
-   * Backup local-only login for dev / preview when GitHub Device Flow is awkward.
-   * Format is `username:PIN`. PIN must be 4 digits.
-   * This grants UI access (read editor, preview) ONLY — committing posts still
-   * requires GitHub sign-in because we need a real token to call the API.
-   */
-  devUsername: "somrit",
-  devPin: "2106",
 } as const;
 
 /** Resolve any path to an absolute URL using BASE_URL. */

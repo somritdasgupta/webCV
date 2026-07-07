@@ -12,7 +12,10 @@ import { ADMIN } from "@/site.config";
 
 const TOKEN_KEY = "admin_gh_token_v1";
 const USER_KEY = "admin_gh_user_v1";
-const DEV_KEY = "admin_dev_session_v1";
+// Legacy client-only "dev PIN" session key — kept only so we can proactively
+// clear any stale value from previously-visited browsers. No new sessions of
+// this kind can be created; UI access now requires a real GitHub OAuth token.
+const LEGACY_DEV_KEY = "admin_dev_session_v1";
 
 export interface GhUser {
   login: string;
@@ -125,7 +128,7 @@ export const auth = {
   clearSession: () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(DEV_KEY);
+    localStorage.removeItem(LEGACY_DEV_KEY);
   },
   getCachedUser: (): GhUser | null => {
     const v = localStorage.getItem(USER_KEY);
@@ -133,13 +136,17 @@ export const auth = {
   },
   setCachedUser: (u: GhUser) => localStorage.setItem(USER_KEY, JSON.stringify(u)),
 
-  /** Local dev session — UI-only, no GitHub token. */
-  isDevSession: (): boolean => localStorage.getItem(DEV_KEY) === "1",
-  setDevSession: (on: boolean) => {
-    if (on) localStorage.setItem(DEV_KEY, "1");
-    else localStorage.removeItem(DEV_KEY);
+  /**
+   * True only when a real GitHub OAuth token is present. The legacy
+   * client-only "dev PIN" session was removed because a localStorage flag
+   * set by client JS provides no real access control — anyone could set it
+   * via devtools. Editor UI access now requires GitHub sign-in.
+   */
+  hasAnySession: (): boolean => {
+    // Best-effort cleanup of the legacy flag on any auth check.
+    if (localStorage.getItem(LEGACY_DEV_KEY)) {
+      localStorage.removeItem(LEGACY_DEV_KEY);
+    }
+    return !!localStorage.getItem(TOKEN_KEY);
   },
-  /** Either GitHub-authenticated OR a local dev session. */
-  hasAnySession: (): boolean =>
-    !!localStorage.getItem(TOKEN_KEY) || localStorage.getItem(DEV_KEY) === "1",
 };
