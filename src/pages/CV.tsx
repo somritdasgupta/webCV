@@ -48,7 +48,11 @@ const CV = () => {
 
   return (
     <>
-      <Seo path="/cv" title={`${cvData.header.name} — CV`} description="Resume / CV" />
+      <Seo
+        path="/cv"
+        title={`${cvData.header.name} — Curriculum Vitae`}
+        description={`Curriculum vitae of ${cvData.header.name} — ${cvData.header.title}. Experience, projects, skills across TypeScript, React, Node.js, Python, Go, and AWS, plus education and certifications.`}
+      />
 
       <div className="container-wide mt-6 mb-16 grid gap-8 lg:grid-cols-[200px_1fr] lg:gap-10 print:block print:m-0">
         {/* Sticky side navigation — hidden in print */}
