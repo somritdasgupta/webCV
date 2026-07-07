@@ -128,7 +128,7 @@ export const auth = {
   clearSession: () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(DEV_KEY);
+    localStorage.removeItem(LEGACY_DEV_KEY);
   },
   getCachedUser: (): GhUser | null => {
     const v = localStorage.getItem(USER_KEY);
@@ -136,13 +136,17 @@ export const auth = {
   },
   setCachedUser: (u: GhUser) => localStorage.setItem(USER_KEY, JSON.stringify(u)),
 
-  /** Local dev session — UI-only, no GitHub token. */
-  isDevSession: (): boolean => localStorage.getItem(DEV_KEY) === "1",
-  setDevSession: (on: boolean) => {
-    if (on) localStorage.setItem(DEV_KEY, "1");
-    else localStorage.removeItem(DEV_KEY);
+  /**
+   * True only when a real GitHub OAuth token is present. The legacy
+   * client-only "dev PIN" session was removed because a localStorage flag
+   * set by client JS provides no real access control — anyone could set it
+   * via devtools. Editor UI access now requires GitHub sign-in.
+   */
+  hasAnySession: (): boolean => {
+    // Best-effort cleanup of the legacy flag on any auth check.
+    if (localStorage.getItem(LEGACY_DEV_KEY)) {
+      localStorage.removeItem(LEGACY_DEV_KEY);
+    }
+    return !!localStorage.getItem(TOKEN_KEY);
   },
-  /** Either GitHub-authenticated OR a local dev session. */
-  hasAnySession: (): boolean =>
-    !!localStorage.getItem(TOKEN_KEY) || localStorage.getItem(DEV_KEY) === "1",
 };
