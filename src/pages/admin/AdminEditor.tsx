@@ -1289,7 +1289,7 @@ const AdminEditor = () => {
           {/* Formatting toolbar — sticky Write/Preview on the LEFT, sticky
               Components on the RIGHT, scrollable formatting strip between
               them. Icon-only on mobile to maximise horizontal real estate. */}
-          <div className="shrink-0 flex items-center gap-1 rounded-lg border border-border bg-card/95 p-1 shadow-elev-sm backdrop-blur-xl supports-[backdrop-filter]:bg-card/80">
+          <div className="shrink-0 flex items-center gap-1.5 rounded-lg border border-border bg-card/95 p-1.5 shadow-elev-sm backdrop-blur-xl supports-[backdrop-filter]:bg-card/80 sm:gap-1 sm:p-1">
             {/* LEFT — Write / Preview, sticky */}
             <div className="inline-flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-surface-1/60 p-0.5">
               {(
@@ -1305,21 +1305,23 @@ const AdminEditor = () => {
                   aria-label={label}
                   title={label}
                   className={cn(
-                    "inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-all",
+                    "inline-flex h-8 items-center gap-1 rounded px-2.5 text-xs font-medium transition-all sm:h-7 sm:px-2 sm:text-[11px]",
                     view === v
                       ? "bg-foreground text-background shadow-elev-sm"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                   <span className="hidden sm:inline">{label}</span>
                 </button>
               ))}
             </div>
 
-            {/* MIDDLE — scrollable formatting strip */}
+            {/* MIDDLE — scrollable formatting strip. Bigger gaps and taller
+                buttons on mobile so individual icons are clearly tappable
+                (~44 px target); tightens up on sm+ where hover works. */}
             {view === "edit" ? (
-              <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-0.5 sm:px-1">
                 <ToolBtn icon={Heading2} label="Heading 2" onClick={() => apply((el) => wrapSelection(el, "## ", "", "Heading"))} />
                 <ToolBtn icon={Heading3} label="Heading 3" onClick={() => apply((el) => wrapSelection(el, "### ", "", "Subheading"))} />
                 <ToolBtn icon={Bold} label="Bold" onClick={() => apply((el) => wrapSelection(el, "**", "**", "bold"))} />
@@ -1327,11 +1329,11 @@ const AdminEditor = () => {
                 <ToolBtn icon={Strikethrough} label="Strikethrough" onClick={() => apply((el) => wrapSelection(el, "~~", "~~", "strike"))} />
                 <ToolBtn icon={Code} label="Inline code" onClick={() => apply((el) => wrapSelection(el, "`", "`", "code"))} />
                 <ToolBtn icon={FileText} label="Code block" onClick={() => apply((el) => wrapSelection(el, "\n```ts\n", "\n```\n", "// code"))} />
-                <span className="mx-0.5 h-5 w-px shrink-0 bg-border" />
+                <span className="mx-1 h-6 w-px shrink-0 bg-border sm:mx-0.5 sm:h-5" />
                 <ToolBtn icon={LinkIcon} label="Link" onClick={() => apply((el) => wrapSelection(el, "[", "](https://)", "label"))} />
                 <ToolBtn icon={ImageIcon} label="Insert image / GIF / video" onClick={() => imageInputRef.current?.click()} />
                 <ToolBtn icon={Quote} label="Quote" onClick={() => apply((el) => wrapSelection(el, "> ", "", "quote"))} />
-                <span className="mx-0.5 h-5 w-px shrink-0 bg-border" />
+                <span className="mx-1 h-6 w-px shrink-0 bg-border sm:mx-0.5 sm:h-5" />
                 <ToolBtn icon={List} label="List" onClick={() => apply((el) => wrapSelection(el, "- ", "", "item"))} />
                 <ToolBtn icon={ListOrdered} label="Numbered list" onClick={() => apply((el) => wrapSelection(el, "1. ", "", "item"))} />
                 <ToolBtn icon={TableIcon} label="Table" onClick={() => insertSnippet("\n| Column A | Column B |\n| --- | --- |\n| cell | cell |\n| cell | cell |\n")} />
@@ -1348,9 +1350,9 @@ const AdminEditor = () => {
                 onClick={() => setShowInserter(true)}
                 aria-label="Insert component"
                 title="Insert component"
-                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-surface-1/60 px-2 text-xs font-medium text-foreground transition-colors hover:bg-surface-2"
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-border bg-surface-1/60 px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-2 sm:h-8 sm:px-2"
               >
-                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                <Sparkles className="h-4 w-4 text-accent sm:h-3.5 sm:w-3.5" />
                 <span className="hidden sm:inline">Components</span>
                 <ChevronDown className="h-3 w-3" />
               </button>
