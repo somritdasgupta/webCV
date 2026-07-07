@@ -927,7 +927,7 @@ const AdminEditor = () => {
     </aside>
   );
 
-  // Toolbar buttons
+  // Toolbar buttons — bigger touch target on mobile, tight on desktop.
   const ToolBtn = ({
     icon: Icon,
     label,
@@ -942,11 +942,226 @@ const AdminEditor = () => {
       onClick={onClick}
       title={label}
       aria-label={label}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-all hover:bg-surface-2 hover:text-foreground active:scale-95"
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-all hover:bg-surface-2 hover:text-foreground active:scale-95 sm:h-8 sm:w-8"
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
     </button>
   );
+
+  // ============ Mobile menu (bottom sheet only) ============
+  // Purpose-built layout: NOT a shrunken sidebar. No collapse button,
+  // scrolls freely, everything sized for thumbs.
+  const MobileMenu = () => {
+    const closeAnd = (fn: () => void) => () => {
+      fn();
+      setMobileMenuOpen(false);
+    };
+    const MobileAction = ({
+      icon: Icon,
+      label,
+      onClick,
+      disabled,
+      primary,
+      danger,
+    }: {
+      icon: typeof Save;
+      label: string;
+      onClick: () => void;
+      disabled?: boolean;
+      primary?: boolean;
+      danger?: boolean;
+    }) => (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className={cn(
+          "flex h-11 items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-40",
+          primary
+            ? "bg-foreground text-background shadow-elev-sm"
+            : danger
+              ? "border border-destructive/40 bg-destructive/5 text-destructive"
+              : "border border-border bg-surface-1 text-foreground",
+        )}
+      >
+        <Icon className={cn("h-4 w-4", primary && publishing && "animate-spin")} />
+        <span className="truncate">{label}</span>
+      </button>
+    );
+
+    return (
+      <div className="flex h-full flex-col">
+        {/* Identity strip */}
+        <div className="flex shrink-0 items-center gap-3 border-b border-border/60 px-5 pb-3">
+          {user ? (
+            <img
+              src={user.avatar_url}
+              alt={user.login}
+              className="h-10 w-10 rounded-full ring-1 ring-border"
+            />
+          ) : (
+            <div className="h-10 w-10 rounded-full border border-border bg-surface-1" />
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-medium text-foreground">
+              {user?.login ?? "editor"}
+            </div>
+            <div className="truncate font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              {canPublish ? "can publish" : "preview only"} · {wordCount}w · {readMin}m
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={closeAnd(signOut)}
+            aria-label="Sign out"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-1 hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Primary action grid */}
+        <div className="grid shrink-0 grid-cols-2 gap-2 px-5 py-4">
+          <MobileAction
+            icon={publishing ? Loader2 : Upload}
+            label={publishing ? "Pushing…" : isScheduled ? "Schedule" : editingPath ? "Update" : "Publish"}
+            onClick={closeAnd(publish)}
+            disabled={publishing || !title.trim() || (!canPublish && !editingPath)}
+            primary
+          />
+          <MobileAction
+            icon={Save}
+            label={savedAt ? "Saved" : "Save draft"}
+            onClick={closeAnd(saveDraftNow)}
+          />
+          <MobileAction icon={FilePlus} label="New draft" onClick={closeAnd(newDraft)} />
+          <MobileAction icon={ArrowLeft} label="Back to site" onClick={closeAnd(() => navigate("/"))} />
+          {editingPath && canPublish && (
+            <MobileAction
+              icon={Trash2}
+              label="Delete post"
+              onClick={closeAnd(requestDeletePublished)}
+              disabled={publishing}
+              danger
+            />
+          )}
+        </div>
+
+        {/* Drafts + Posts — the ONLY scrollable region inside the sheet */}
+        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-5 pb-6">
+          <section>
+            <header className="mb-2 flex items-center gap-2">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+                Drafts · {draftList.length}
+              </h3>
+              <span aria-hidden className="h-px flex-1 bg-border/70" />
+            </header>
+            {draftList.length === 0 ? (
+              <p className="rounded-md border border-dashed border-border/70 px-3 py-4 text-center text-xs text-muted-foreground">
+                No drafts yet.
+              </p>
+            ) : (
+              <ul className="space-y-1.5">
+                {draftList.map((d) => (
+                  <li
+                    key={d.id}
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition-all",
+                      d.id === draftId
+                        ? "border-border bg-surface-1 shadow-elev-sm"
+                        : "border-transparent hover:bg-surface-1/60",
+                    )}
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "h-1.5 w-1.5 shrink-0 rounded-full",
+                        d.id === draftId ? "bg-accent" : "bg-border",
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={closeAnd(() => {
+                        setDraftId(d.id);
+                        setEditingPath(d.path || null);
+                      })}
+                      className="min-w-0 flex-1 truncate text-left"
+                    >
+                      {d.title || "Untitled"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeDraft(d.id)}
+                      aria-label="Delete draft"
+                      className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section>
+            <header className="mb-2 flex items-center gap-2">
+              <h3 className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+                Posts · {remote.length}
+              </h3>
+              <button
+                type="button"
+                onClick={refreshRemote}
+                aria-label="Refresh posts"
+                className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCw className={cn("h-3.5 w-3.5", loadingRemote && "animate-spin")} />
+              </button>
+              <span aria-hidden className="h-px flex-1 bg-border/70" />
+            </header>
+            <ul className="space-y-1">
+              {remote.map((f) => (
+                <li key={f.path}>
+                  <button
+                    type="button"
+                    onClick={closeAnd(() => loadRemote(f.path))}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                      editingPath === f.path
+                        ? "bg-surface-1 text-foreground"
+                        : "text-muted-foreground hover:bg-surface-1/60 hover:text-foreground",
+                    )}
+                  >
+                    <FileText className="h-3.5 w-3.5 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full border px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.14em]",
+                        f.source === "github"
+                          ? "border-success/40 bg-success/10 text-success"
+                          : "border-border bg-surface-2 text-muted-foreground",
+                      )}
+                    >
+                      {f.source === "github" ? "live" : "local"}
+                    </span>
+                  </button>
+                </li>
+              ))}
+              {remote.length === 0 && !loadingRemote && (
+                <li className="rounded-md border border-dashed border-border/70 px-3 py-4 text-center text-xs text-muted-foreground">
+                  Nothing here yet.
+                </li>
+              )}
+            </ul>
+            {remoteError && (
+              <p className="mt-2 rounded-md border border-warning/30 bg-warning/5 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+                {remoteError}
+              </p>
+            )}
+          </section>
+        </div>
+      </div>
+    );
+  };
 
   return (
     // App-shell: the editor occupies the viewport below the floating nav.
@@ -1001,10 +1216,9 @@ const AdminEditor = () => {
             title="Editor"
             hideHeader
             forceMode="sheet"
+            maxHeightDvh={82}
           >
-            <div onClick={() => setMobileMenuOpen(false)} className="p-2">
-              {sidebar}
-            </div>
+            <MobileMenu />
           </BottomSheet>
 
           {/* Frontmatter (fixed at top of column) */}
@@ -1075,7 +1289,7 @@ const AdminEditor = () => {
           {/* Formatting toolbar — sticky Write/Preview on the LEFT, sticky
               Components on the RIGHT, scrollable formatting strip between
               them. Icon-only on mobile to maximise horizontal real estate. */}
-          <div className="shrink-0 flex items-center gap-1 rounded-lg border border-border bg-card/95 p-1 shadow-elev-sm backdrop-blur-xl supports-[backdrop-filter]:bg-card/80">
+          <div className="shrink-0 flex items-center gap-1.5 rounded-lg border border-border bg-card/95 p-1.5 shadow-elev-sm backdrop-blur-xl supports-[backdrop-filter]:bg-card/80 sm:gap-1 sm:p-1">
             {/* LEFT — Write / Preview, sticky */}
             <div className="inline-flex shrink-0 items-center gap-0.5 rounded-md border border-border bg-surface-1/60 p-0.5">
               {(
@@ -1091,21 +1305,23 @@ const AdminEditor = () => {
                   aria-label={label}
                   title={label}
                   className={cn(
-                    "inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-all",
+                    "inline-flex h-8 items-center gap-1 rounded px-2.5 text-xs font-medium transition-all sm:h-7 sm:px-2 sm:text-[11px]",
                     view === v
                       ? "bg-foreground text-background shadow-elev-sm"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                   <span className="hidden sm:inline">{label}</span>
                 </button>
               ))}
             </div>
 
-            {/* MIDDLE — scrollable formatting strip */}
+            {/* MIDDLE — scrollable formatting strip. Bigger gaps and taller
+                buttons on mobile so individual icons are clearly tappable
+                (~44 px target); tightens up on sm+ where hover works. */}
             {view === "edit" ? (
-              <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-0.5 sm:px-1">
                 <ToolBtn icon={Heading2} label="Heading 2" onClick={() => apply((el) => wrapSelection(el, "## ", "", "Heading"))} />
                 <ToolBtn icon={Heading3} label="Heading 3" onClick={() => apply((el) => wrapSelection(el, "### ", "", "Subheading"))} />
                 <ToolBtn icon={Bold} label="Bold" onClick={() => apply((el) => wrapSelection(el, "**", "**", "bold"))} />
@@ -1113,11 +1329,11 @@ const AdminEditor = () => {
                 <ToolBtn icon={Strikethrough} label="Strikethrough" onClick={() => apply((el) => wrapSelection(el, "~~", "~~", "strike"))} />
                 <ToolBtn icon={Code} label="Inline code" onClick={() => apply((el) => wrapSelection(el, "`", "`", "code"))} />
                 <ToolBtn icon={FileText} label="Code block" onClick={() => apply((el) => wrapSelection(el, "\n```ts\n", "\n```\n", "// code"))} />
-                <span className="mx-0.5 h-5 w-px shrink-0 bg-border" />
+                <span className="mx-1 h-6 w-px shrink-0 bg-border sm:mx-0.5 sm:h-5" />
                 <ToolBtn icon={LinkIcon} label="Link" onClick={() => apply((el) => wrapSelection(el, "[", "](https://)", "label"))} />
                 <ToolBtn icon={ImageIcon} label="Insert image / GIF / video" onClick={() => imageInputRef.current?.click()} />
                 <ToolBtn icon={Quote} label="Quote" onClick={() => apply((el) => wrapSelection(el, "> ", "", "quote"))} />
-                <span className="mx-0.5 h-5 w-px shrink-0 bg-border" />
+                <span className="mx-1 h-6 w-px shrink-0 bg-border sm:mx-0.5 sm:h-5" />
                 <ToolBtn icon={List} label="List" onClick={() => apply((el) => wrapSelection(el, "- ", "", "item"))} />
                 <ToolBtn icon={ListOrdered} label="Numbered list" onClick={() => apply((el) => wrapSelection(el, "1. ", "", "item"))} />
                 <ToolBtn icon={TableIcon} label="Table" onClick={() => insertSnippet("\n| Column A | Column B |\n| --- | --- |\n| cell | cell |\n| cell | cell |\n")} />
@@ -1134,9 +1350,9 @@ const AdminEditor = () => {
                 onClick={() => setShowInserter(true)}
                 aria-label="Insert component"
                 title="Insert component"
-                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-surface-1/60 px-2 text-xs font-medium text-foreground transition-colors hover:bg-surface-2"
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-border bg-surface-1/60 px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-surface-2 sm:h-8 sm:px-2"
               >
-                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                <Sparkles className="h-4 w-4 text-accent sm:h-3.5 sm:w-3.5" />
                 <span className="hidden sm:inline">Components</span>
                 <ChevronDown className="h-3 w-3" />
               </button>

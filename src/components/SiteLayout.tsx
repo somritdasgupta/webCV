@@ -16,7 +16,10 @@ export const SiteLayout = ({ children }: { children: ReactNode }) => {
       >
         Skip to content
       </a>
-      <div className="flex min-h-screen flex-col">
+      {/* `vaul-drawer-wrapper` opts the whole page into vaul's 3D pushback:
+          when a BottomSheet opens with shouldScaleBackground, this element
+          gets scaled + translated so the sheet visibly floats above it. */}
+      <div vaul-drawer-wrapper="" className="flex min-h-screen flex-col bg-background">
         <SiteNav />
         {/* pt offset to clear the floating pill */}
         <main id="content" key={location.pathname} className="flex-1 page-enter pt-16 sm:pt-20">
