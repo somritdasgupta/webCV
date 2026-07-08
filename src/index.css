@@ -377,7 +377,7 @@
 .ambient-smoke {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   overflow: hidden;
 }
@@ -393,15 +393,15 @@
   opacity: 1;
 }
 .ambient-smoke::before {
-  background: radial-gradient(45% 45% at 25% 30%, hsl(var(--accent) / 0.28), transparent 70%);
+  background: radial-gradient(45% 45% at 25% 30%, hsl(var(--accent) / 0.32), transparent 70%);
   animation: ambient-1 38s ease-in-out infinite;
 }
 .ambient-smoke::after {
-  background: radial-gradient(50% 50% at 75% 65%, hsl(340 85% 60% / 0.22), transparent 70%);
+  background: radial-gradient(50% 50% at 75% 65%, hsl(340 85% 60% / 0.26), transparent 70%);
   animation: ambient-2 46s ease-in-out infinite;
 }
 .ambient-smoke > span {
-  background: radial-gradient(55% 55% at 50% 85%, hsl(220 90% 60% / 0.18), transparent 70%);
+  background: radial-gradient(55% 55% at 50% 85%, hsl(220 90% 60% / 0.22), transparent 70%);
   animation: ambient-3 54s ease-in-out infinite;
 }
 
