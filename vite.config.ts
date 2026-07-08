@@ -103,6 +103,18 @@ export default defineConfig(({ mode }) => {
       overlay: false,
     },
   },
+  build: {
+    sourcemap: true,
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          query: ["@tanstack/react-query"],
+        },
+      },
+    },
+  },
   plugins: [
     {
       enforce: "pre" as const,
