@@ -1184,21 +1184,19 @@ const AdminEditor = () => {
             >
               <Menu className="h-4 w-4" />
             </button>
-            <select
-              value={editingPath || ""}
-              onChange={(e) => {
-                if (e.target.value) loadRemote(e.target.value);
-                else newDraft();
-              }}
-              className="min-w-0 flex-1 truncate rounded-md border border-border bg-card px-2.5 py-2 text-xs text-foreground outline-none focus:border-foreground/40"
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2 text-left text-xs text-foreground outline-none focus:border-foreground/40"
             >
-              <option value="">— New draft —</option>
-              {remote.map((f) => (
-                <option key={f.path} value={f.path}>
-                  {f.name} {f.source === "local" ? "(local)" : ""}
-                </option>
-              ))}
-            </select>
+              <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <span className="truncate">
+                {editingPath
+                  ? remote.find((f) => f.path === editingPath)?.name ?? editingPath
+                  : "New draft"}
+              </span>
+              <ChevronDown className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            </button>
             <button
               type="button"
               onClick={publish}
