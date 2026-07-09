@@ -40,9 +40,13 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('theme');
-          if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-          if (t === 'dark') document.documentElement.classList.add('dark');
+          var m = localStorage.getItem('theme') || 'system';
+          var dark;
+          if (m === 'dark') dark = true;
+          else if (m === 'light') dark = false;
+          else if (m === 'auto') { var h = new Date().getHours(); dark = (h < 6 || h >= 18); }
+          else dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (dark) document.documentElement.classList.add('dark');
         } catch (e) {}
       })();
     </script>
