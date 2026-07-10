@@ -35,8 +35,8 @@ export function ComponentsPicker({ open, onOpenChange, snippets, onInsert }: Pro
     <BottomSheet
       open={open}
       onOpenChange={onOpenChange}
-      maxWidth="580px"
-      maxHeightDvh={72}
+      maxWidth="760px"
+      maxHeightDvh={88}
       hideHeader
       title="Insert component"
       contentClassName="!overflow-hidden flex flex-col"
@@ -44,7 +44,7 @@ export function ComponentsPicker({ open, onOpenChange, snippets, onInsert }: Pro
       <div className="flex h-full min-h-0 flex-col">
         {/* Sticky header: title + search — never scrolls away */}
         <div className="sticky top-0 z-10 shrink-0 border-b border-border/60 bg-popover/95 backdrop-blur supports-[backdrop-filter]:bg-popover/80">
-          <div className="flex items-center gap-2 px-4 pt-3 pb-2">
+          <div className="flex items-center gap-2 px-5 pb-2 pt-4">
             <Sparkles className="h-3.5 w-3.5 text-accent" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
               Insert component
@@ -53,8 +53,8 @@ export function ComponentsPicker({ open, onOpenChange, snippets, onInsert }: Pro
               {filtered.length}/{snippets.length}
             </span>
           </div>
-          <div className="px-3 pb-3">
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-2 focus-within:border-foreground/40">
+          <div className="px-4 pb-4">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2.5 focus-within:border-foreground/40">
               <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               <input
                 type="text"
@@ -85,7 +85,7 @@ export function ComponentsPicker({ open, onOpenChange, snippets, onInsert }: Pro
               No components match "{q}"
             </div>
           )}
-          <div className="grid grid-cols-1 gap-1 p-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 p-3 md:grid-cols-2">
             {filtered.map((item) => (
               <button
                 key={item.label}
@@ -95,11 +95,11 @@ export function ComponentsPicker({ open, onOpenChange, snippets, onInsert }: Pro
                   onOpenChange(false);
                 }}
                 className={cn(
-                  "group flex flex-col gap-0.5 rounded-md border border-transparent px-3 py-2.5 text-left transition-colors",
-                  "hover:border-border hover:bg-surface-1 active:scale-[0.99]",
+                  "group flex min-h-16 flex-col justify-center gap-1 rounded-lg border border-border bg-background px-4 py-3 text-left transition-all",
+                  "hover:bg-surface-1 active:scale-[0.99]",
                 )}
               >
-                <span className="text-[13px] font-medium text-foreground">{item.label}</span>
+                <span className="text-sm font-medium text-foreground">{item.label}</span>
                 <span className="truncate text-[11px] text-muted-foreground">{item.hint}</span>
               </button>
             ))}

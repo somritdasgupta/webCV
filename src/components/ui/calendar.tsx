@@ -3,7 +3,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -13,8 +12,8 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
-        months: "flex flex-col gap-4",
-        month: "space-y-3",
+        months: "flex w-full flex-col gap-4",
+        month: "w-full space-y-3",
         caption: "flex justify-center pt-1 relative items-center h-9",
         caption_label: "text-sm font-medium tracking-tight",
         nav: "space-x-1 flex items-center",
@@ -24,7 +23,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         ),
         nav_button_previous: "absolute left-2",
         nav_button_next: "absolute right-2",
-        table: "w-full border-collapse",
+        table: "w-full table-fixed border-collapse",
         head_row: "grid grid-cols-7",
         head_cell: "text-muted-foreground font-mono text-[10px] uppercase tracking-wider h-8 flex items-center justify-center",
         row: "grid grid-cols-7 mt-1",

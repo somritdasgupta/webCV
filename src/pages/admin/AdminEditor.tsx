@@ -1352,7 +1352,6 @@ const AdminEditor = () => {
               >
                 <Sparkles className="h-4 w-4 text-accent sm:h-3.5 sm:w-3.5" />
                 <span className="hidden sm:inline">Components</span>
-                <ChevronDown className="h-3 w-3" />
               </button>
             )}
           </div>
@@ -1393,9 +1392,6 @@ const AdminEditor = () => {
               </div>
             ) : (
               <div className="relative h-full overflow-y-auto rounded-xl border border-border bg-background">
-                <div className="sticky right-3 top-3 z-10 ml-auto inline-block rounded-full border border-border bg-card/80 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-                  preview
-                </div>
                 <article className="prose prose-neutral max-w-none p-5 dark:prose-invert sm:p-8">
                   {title && (
                     <h1 className="!mb-2 !mt-0 !font-serif !text-3xl !font-normal sm:!text-4xl">
