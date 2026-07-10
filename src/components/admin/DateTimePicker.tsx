@@ -198,7 +198,7 @@ export function DateTimePicker({
   const minutesAhead = Math.round((new Date(value).getTime() - Date.now()) / 60000);
 
   const body = (
-    <div className="flex flex-col">
+    <div className="flex min-h-0 flex-col">
       {/* Status header */}
       <div
         className={cn(
@@ -222,14 +222,14 @@ export function DateTimePicker({
       </div>
 
       {/* Preset chips — single neat row */}
-      <div className="flex flex-wrap gap-1.5 px-4 py-3 border-b border-border/60">
+      <div className="grid grid-cols-2 gap-1.5 border-b border-border/60 px-4 py-3 sm:flex sm:flex-wrap">
         {PRESETS.map((p) => (
           <button
             key={p.label}
             type="button"
             onClick={() => applyPreset(p)}
             className={cn(
-              "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors",
+              "inline-flex items-center justify-center gap-1 rounded-md border px-2.5 py-2 text-[11px] font-medium transition-colors sm:rounded-full sm:py-1",
               p.primary
                 ? "border-foreground bg-foreground text-background hover:opacity-90"
                 : "border-border bg-background text-muted-foreground hover:border-foreground/30 hover:text-foreground",
@@ -241,8 +241,8 @@ export function DateTimePicker({
         ))}
       </div>
 
-      {/* Calendar — centered */}
-      <div className="flex justify-center py-1">
+      {/* Calendar */}
+      <div className="w-full border-b border-border/60 px-3 py-2 sm:px-4">
         <Calendar
           mode="single"
           selected={wallDateObj}
@@ -252,13 +252,17 @@ export function DateTimePicker({
             updateWall(iso, wall.time);
           }}
           initialFocus
-          className="pointer-events-auto"
+          className="pointer-events-auto w-full p-0"
+          classNames={{
+            cell: "relative h-11 w-full p-0 text-center text-sm focus-within:relative focus-within:z-20 sm:h-10",
+            day: "mx-auto inline-flex h-10 w-10 items-center justify-center rounded-lg font-normal text-foreground transition-colors hover:bg-surface-1 aria-selected:opacity-100 sm:h-9 sm:w-9",
+          }}
         />
       </div>
 
       {/* Time + Timezone */}
-      <div className="space-y-2.5 border-t border-border/60 px-4 py-3">
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-background/60 px-2.5 py-1.5">
+      <div className="grid gap-2.5 px-4 py-3 md:grid-cols-2">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-background/60 px-2.5 py-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
           <input
             type="time"
@@ -274,7 +278,7 @@ export function DateTimePicker({
         <button
           type="button"
           onClick={() => setTzPickerOpen((v) => !v)}
-          className="flex w-full items-center gap-2 rounded-lg border border-border bg-background/60 px-2.5 py-1.5 text-sm text-foreground transition-colors hover:border-foreground/30"
+          className="flex w-full items-center gap-2 rounded-lg border border-border bg-background/60 px-2.5 py-2 text-sm text-foreground transition-colors hover:border-foreground/30 md:col-span-1"
         >
           <Globe className="h-4 w-4 text-muted-foreground" />
           <span className="flex-1 truncate text-left">{timezone}</span>
@@ -282,8 +286,8 @@ export function DateTimePicker({
         </button>
 
         {tzPickerOpen && (
-          <div className="overflow-hidden rounded-lg border border-border bg-background">
-            <div className="flex items-center gap-2 border-b border-border/60 px-2.5 py-1.5">
+          <div className="overflow-hidden rounded-lg border border-border bg-background md:col-span-2">
+            <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border/60 bg-background px-2.5 py-2">
               <Search className="h-3.5 w-3.5 text-muted-foreground" />
               <input
                 type="text"
@@ -301,7 +305,7 @@ export function DateTimePicker({
                 Local
               </button>
             </div>
-            <ul className="max-h-44 overflow-y-auto py-1">
+            <ul className="max-h-56 overflow-y-auto py-1">
               {filteredZones.length === 0 && (
                 <li className="px-3 py-2 text-[11px] text-muted-foreground">No matches.</li>
               )}
@@ -367,7 +371,9 @@ export function DateTimePicker({
         onOpenChange={setOpen}
         title="Publish date & time"
         hideHeader
-        maxWidth="380px"
+        maxWidth="720px"
+        maxHeightDvh={92}
+        contentClassName="!overflow-hidden"
       >
         {body}
       </BottomSheet>

@@ -8,8 +8,10 @@
     <meta name="color-scheme" content="light dark" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="apple-touch-icon" href="/favicon.ico" />
+    <link rel="icon" href="/favicon.ico?v=20260710" sizes="any" />
+    <link rel="shortcut icon" href="/favicon.ico?v=20260710" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico?v=20260710" />
+    <link rel="dns-prefetch" href="https://api.github.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://api.github.com" crossorigin />
@@ -47,7 +49,7 @@
           var dark;
           if (m === 'dark') dark = true;
           else if (m === 'light') dark = false;
-          else if (m === 'auto') { var h = new Date().getHours(); dark = (h < 6 || h >= 18); }
+          else if (m === 'auto' || m === 'timezone') { var h = new Date().getHours(); dark = (h < 6 || h >= 18); }
           else dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           if (dark) document.documentElement.classList.add('dark');
         } catch (e) {}

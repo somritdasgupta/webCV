@@ -61,15 +61,15 @@ export const MdxPreview = ({ source }: { source: string }) => {
 
   if (!Content) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <div className="flex min-h-56 items-center justify-center rounded-lg border border-dashed border-border/70 bg-surface-1/30 px-5 py-10 text-center text-sm text-muted-foreground">
         {compiling ? (
           <span className="inline-flex items-center gap-2">
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Compiling preview…
           </span>
         ) : (
-          "Preview appears here."
+          "No preview content."
         )}
-      </p>
+      </div>
     );
   }
 

@@ -8,6 +8,7 @@ import { mdxComponents } from "@/components/mdx/mdxComponents";
 import { AUTHOR, SITE, absUrl } from "@/site.config";
 import { ArrowLeft, ArrowRight, ArrowUp, Check, Copy, List, FileJson, Rss } from "lucide-react";
 import { cn } from "@/lib/utils";
+import "./BlogPost.css";
 
 interface TocItem {
   id: string;
