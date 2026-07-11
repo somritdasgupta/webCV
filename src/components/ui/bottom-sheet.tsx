@@ -110,7 +110,6 @@ export function BottomSheet({
           style={{
             paddingBottom: "env(safe-area-inset-bottom, 0px)",
             maxHeight: `${mh}dvh`,
-            height: `${mh}dvh`,
           }}
         >
           {/* Drag handle */}
