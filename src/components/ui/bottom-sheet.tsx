@@ -13,6 +13,7 @@
  */
 import * as React from "react";
 import { Drawer as Vaul } from "vaul";
+import * as Dialog from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
