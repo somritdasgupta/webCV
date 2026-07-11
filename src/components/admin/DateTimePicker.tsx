@@ -199,27 +199,7 @@ export function DateTimePicker({
 
   const body = (
     <div className="flex min-h-0 flex-col">
-      {/* Status header */}
-      <div
-        className={cn(
-          "flex items-center justify-between px-4 py-2.5 border-b border-border/60",
-          isScheduled ? "bg-warning/5" : "bg-success/5",
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <span className={cn("h-2 w-2 rounded-full", isScheduled ? "bg-warning" : "bg-success")} />
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {isScheduled ? "Scheduled" : "Publishes immediately"}
-          </span>
-        </div>
-        {isScheduled && (
-          <span className="font-mono text-[10px] text-muted-foreground">
-            in {minutesAhead < 60 ? `${minutesAhead}m`
-              : minutesAhead < 1440 ? `${Math.round(minutesAhead / 60)}h`
-              : `${Math.round(minutesAhead / 1440)}d`}
-          </span>
-        )}
-      </div>
+
 
       {/* Preset chips — single neat row */}
       <div className="grid grid-cols-2 gap-1.5 border-b border-border/60 px-4 py-3 sm:flex sm:flex-wrap">

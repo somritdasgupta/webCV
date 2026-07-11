@@ -151,8 +151,8 @@ const AdminLogin = () => {
                     </span>
                     Enter this code
                   </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <code className="flex-1 min-w-0 rounded-xl border border-border bg-background px-4 py-3 text-center font-mono text-2xl tracking-[0.35em] sm:text-3xl">
+                  <div className="mt-2 flex items-stretch gap-2">
+                    <code className="flex-1 min-w-0 truncate rounded-xl border border-border bg-background px-3 py-3 text-center font-mono text-xl tracking-[0.3em] sm:text-2xl">
                       {code.user_code}
                     </code>
                     <button
@@ -162,10 +162,10 @@ const AdminLogin = () => {
                         setCopied(true);
                         setTimeout(() => setCopied(false), 1500);
                       }}
-                      className="inline-flex h-12 items-center gap-1.5 rounded-xl border border-border bg-surface-1 px-4 text-sm transition-all hover:-translate-y-0.5 hover:border-foreground/30"
+                      aria-label={copied ? "Copied" : "Copy code"}
+                      className="inline-flex w-[52px] shrink-0 items-center justify-center rounded-xl border border-border bg-surface-1 text-sm transition-all hover:-translate-y-0.5 hover:border-foreground/30"
                     >
                       {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
-                      {copied ? "Copied" : "Copy"}
                     </button>
                   </div>
                 </div>
