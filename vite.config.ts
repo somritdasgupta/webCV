@@ -141,6 +141,7 @@ export default defineConfig(({ mode }) => {
     },
     react(),
     siteUrlPlugin(SITE_URL),
+    mcpPlugin(),
   ],
   resolve: {
     alias: {
