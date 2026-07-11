@@ -54,11 +54,10 @@ export function BottomSheet({
 
   if (mode === "modal") {
     return (
-      <Vaul.Root open={open} onOpenChange={onOpenChange}>
-        <Vaul.Portal>
-          <Vaul.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0" />
-          <Vaul.Content
-            data-vaul-no-drag
+      <Dialog.Root open={open} onOpenChange={onOpenChange}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0" />
+          <Dialog.Content
             className={cn(
               "fixed left-1/2 top-1/2 z-50 w-[min(94vw,var(--bs-mw))] -translate-x-1/2 -translate-y-1/2",
               "overflow-hidden rounded-2xl border border-border bg-popover shadow-2xl",
@@ -69,24 +68,24 @@ export function BottomSheet({
           >
             {!hideHeader && title && (
               <div className="border-b border-border/60 px-4 py-3">
-                <Vaul.Title className="text-sm font-medium text-foreground">{title}</Vaul.Title>
+                <Dialog.Title className="text-sm font-medium text-foreground">{title}</Dialog.Title>
                 {description && (
-                  <Vaul.Description className="mt-0.5 text-xs text-muted-foreground">
+                  <Dialog.Description className="mt-0.5 text-xs text-muted-foreground">
                     {description}
-                  </Vaul.Description>
+                  </Dialog.Description>
                 )}
               </div>
             )}
             {hideHeader && (title || description) && (
               <>
-                <Vaul.Title className="sr-only">{title}</Vaul.Title>
-                {description && <Vaul.Description className="sr-only">{description}</Vaul.Description>}
+                <Dialog.Title className="sr-only">{title}</Dialog.Title>
+                {description && <Dialog.Description className="sr-only">{description}</Dialog.Description>}
               </>
             )}
             <div className={cn("max-h-[80vh] overflow-y-auto", contentClassName)}>{children}</div>
-          </Vaul.Content>
-        </Vaul.Portal>
-      </Vaul.Root>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     );
   }
 
