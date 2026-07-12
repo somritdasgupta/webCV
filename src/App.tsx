@@ -41,6 +41,7 @@ const App = () => (
               <Route path="/cv" element={<CV />} />
               <Route path="/admin" element={<AdminLogin />} />
               <Route path="/admin/editor" element={<AdminEditor />} />
+              <Route path="/connect" element={<Connect />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
