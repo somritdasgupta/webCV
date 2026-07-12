@@ -68,7 +68,7 @@ const Connect = () => {
   return (
     <div className="container-wide max-w-3xl pb-24">
       <Seo
-        title="Connect an AI assistant — Somrit Dasgupta"
+        title="Connect an AI assistant"
         description="Connect ChatGPT or Claude to this site's MCP server to browse posts, activity, and CV as tools."
         path="/connect"
       />
