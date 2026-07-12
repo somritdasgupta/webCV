@@ -25,9 +25,13 @@ const siteUrlPlugin = (siteUrl: string): Plugin => {
         fileName: "robots.txt",
         source: `User-agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /admin/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin
+Disallow: /admin/
 
 User-agent: Twitterbot
 Allow: /
@@ -37,6 +41,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
 
 Sitemap: ${url}/sitemap.xml
 `,
