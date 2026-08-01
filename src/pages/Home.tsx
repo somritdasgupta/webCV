@@ -123,7 +123,7 @@ const Home = () => {
                 to="/activity"
                 className="inline-flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary"
               >
-                See activity
+                Activity
               </Link>
               <div className="flex items-center gap-1 rounded-md border border-border px-2 py-1.5 text-muted-foreground">
                 <a href={AUTHOR.links.github} target="_blank" rel="noreferrer noopener" aria-label="GitHub" className="rounded-sm p-1 transition-colors hover:text-foreground">
