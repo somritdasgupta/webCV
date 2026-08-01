@@ -23,6 +23,9 @@ export const SiteFooter = () => {
           <a href={`mailto:${AUTHOR.email}`} aria-label="Email" className="transition-colors hover:text-foreground">
             <Mail className="h-4 w-4" />
           </a>
+          <Link to="/connect" aria-label="Connect an AI assistant (MCP)" title="Connect an AI assistant (MCP)" className="transition-colors hover:text-foreground">
+            <Plug className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </footer>
