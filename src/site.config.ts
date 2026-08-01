@@ -70,7 +70,6 @@ export const NAV = [
   { href: "/", label: "about" },
   { href: "/blog", label: "blog" },
   { href: "/activity", label: "activity" },
-  { href: "/connect", label: "connect" },
 ] as const;
 
 /**
