@@ -36,7 +36,7 @@ const toEmbedUrl = (raw: string): string => {
     if (host === "codesandbox.io" && u.pathname.startsWith("/s/"))
       return raw.replace("/s/", "/embed/");
     if (host === "github.com" && u.pathname.includes("/blob/")) return raw;
-    if (host === "figma.com" || host === "figma.com".replace("figma", "figma"))
+    if (host === "figma.com")
       return `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(raw)}`;
     if (host === "open.spotify.com" && !u.pathname.startsWith("/embed"))
       return `https://open.spotify.com/embed${u.pathname}`;
