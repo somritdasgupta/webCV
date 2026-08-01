@@ -36,8 +36,10 @@ export const mdxComponents = {
   Accordion,
   AccordionItem,
   Video,
+  Video,
   Badge,
   FileTree,
+  Embed,
 
   // Tighter default rendering
   a: (props: ComponentPropsWithoutRef<"a">) => {
