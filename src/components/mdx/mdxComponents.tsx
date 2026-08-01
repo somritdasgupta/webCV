@@ -11,6 +11,7 @@ import { Accordion, AccordionItem } from "./Accordion";
 import { Video } from "./Video";
 import { Badge } from "./Badge";
 import { FileTree } from "./FileTree";
+import { Embed } from "./Embed";
 
 /**
  * Map of components available in any MDX file without imports.
