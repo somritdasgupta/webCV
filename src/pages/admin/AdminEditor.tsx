@@ -191,6 +191,24 @@ const COMPONENT_SNIPPETS: Array<{ label: string; hint: string; snippet: string }
     snippet:
       "\n| Column A | Column B |\n| --- | --- |\n| Row 1 | Value |\n| Row 2 | Value |\n",
   },
+  {
+    label: "Live embed",
+    hint: "Any third-party iframe URL",
+    snippet:
+      '\n<Embed src="https://codepen.io/team/codepen/pen/PNaGbb" title="CodePen demo" height={420} caption="Live CodePen" />\n',
+  },
+  {
+    label: "HTML snippet",
+    hint: "Sandboxed raw HTML/JS widget",
+    snippet:
+      '\n<Embed\n  height={200}\n  html={`<style>body{font:14px system-ui;margin:0;display:grid;place-items:center;height:100%}</style>\n<button onclick="this.textContent=\'clicked\'">click me</button>`}\n/>\n',
+  },
+  {
+    label: "Figma / Spotify / Maps",
+    hint: "Auto-normalized share URL",
+    snippet:
+      '\n<Embed src="https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT" height={152} ratio={16/9} />\n',
+  },
 ];
 
 /** Insert text around the current selection in a textarea. */
