@@ -36,7 +36,6 @@ export const mdxComponents = {
   Accordion,
   AccordionItem,
   Video,
-  Video,
   Badge,
   FileTree,
   Embed,
