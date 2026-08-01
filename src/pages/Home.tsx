@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Seo } from "@/components/Seo";
 import { AUTHOR, SITE, GITHUB } from "@/site.config";
-import { ArrowUpRight, Github, Linkedin, Star, GitFork, ExternalLink } from "lucide-react";
+import { ArrowUpRight, Github, Linkedin, Star, GitFork, ExternalLink, Plug } from "lucide-react";
 import { XLogo } from "@/components/icons/XLogo";
 import { getPostMeta } from "@/lib/posts";
 import { useQuery } from "@tanstack/react-query";
