@@ -135,6 +135,9 @@ const Home = () => {
                 <a href={AUTHOR.links.linkedin} target="_blank" rel="noreferrer noopener" aria-label="LinkedIn" className="rounded-sm p-1 transition-colors hover:text-foreground">
                   <Linkedin className="h-4 w-4" />
                 </a>
+                <Link to="/connect" aria-label="Connect an AI assistant (MCP)" title="Connect an AI assistant (MCP)" className="rounded-sm p-1 transition-colors hover:text-foreground">
+                  <Plug className="h-4 w-4" />
+                </Link>
               </div>
             </div>
           </div>
