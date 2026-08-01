@@ -122,27 +122,53 @@ export interface GhCommit {
   url: string;
 }
 
+/** Max repos we fan out to. Unauthenticated GitHub allows 60 req/h per IP —
+ *  fanning out to every repo blows the budget, requests start returning 403,
+ *  and the feed silently degrades to whichever handful happened to succeed. */
+const COMMIT_REPO_FANOUT = 12;
+const FANOUT_CONCURRENCY = 4;
+
+/** Run tasks with bounded concurrency, preserving input order. */
+async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const i = cursor++;
+      out[i] = await fn(items[i]);
+    }
+  });
+  await Promise.all(workers);
+  return out;
+}
+
 export const useGithubCommits = (limitPerRepo = 30) =>
   useQuery({
     queryKey: ["gh-commits-all", GITHUB.username, limitPerRepo],
     queryFn: async (): Promise<GhCommit[]> => {
-      // 1. Get ALL non-fork, non-archived repos — no allowlist filter.
-      //    Activity feed should reflect everything the user has been doing.
+      // 1. Repos owned by the user, newest activity first.
       const reposRes = await fetch(
-        `${GH}/users/${GITHUB.username}/repos?per_page=100&sort=pushed&type=owner`,
+        `${GH}/users/${GITHUB.username}/repos?per_page=100&sort=pushed&direction=desc&type=owner`,
         { headers: { Accept: "application/vnd.github+json" } },
       );
       if (!reposRes.ok) throw new Error(`GitHub repos: ${reposRes.status}`);
-      const repos = ((await reposRes.json()) as GhRepo[]).filter(
-        (r) => !r.fork && !r.archived,
-      );
 
-      // 2. Fan out, pulling commits authored by the user from each repo
-      const all = await Promise.allSettled(
-        repos.map(async (r) => {
-          const url = `${GH}/repos/${r.full_name}/commits?per_page=${limitPerRepo}&author=${GITHUB.username}`;
+      const repos = ((await reposRes.json()) as GhRepo[])
+        .filter((r) => !r.fork && !r.archived && r.pushed_at)
+        // Trust local ordering rather than the API's sort param.
+        .sort((a, b) => +new Date(b.pushed_at) - +new Date(a.pushed_at))
+        .slice(0, COMMIT_REPO_FANOUT);
+
+      // 2. Pull the newest commits from each repo's default branch.
+      let failures = 0;
+      const all = await mapLimit(repos, FANOUT_CONCURRENCY, async (r) => {
+        const url = `${GH}/repos/${r.full_name}/commits?per_page=${limitPerRepo}&author=${GITHUB.username}`;
+        try {
           const res = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
-          if (!res.ok) return [] as GhCommit[];
+          if (!res.ok) {
+            failures++;
+            return [] as GhCommit[];
+          }
           const list = (await res.json()) as Array<{
             sha: string;
             html_url: string;
@@ -159,12 +185,23 @@ export const useGithubCommits = (limitPerRepo = 30) =>
             date: c.commit.author.date,
             url: c.html_url,
           }));
-        }),
-      );
+        } catch {
+          failures++;
+          return [] as GhCommit[];
+        }
+      });
 
-      // 3. Flatten, sort newest first
-      const flat = all.flatMap((p) => (p.status === "fulfilled" ? p.value : []));
-      flat.sort((a, b) => +new Date(b.date) - +new Date(a.date));
+      // 3. Flatten, dedupe by sha, sort newest first.
+      const seen = new Set<string>();
+      const flat = all
+        .flat()
+        .filter((c) => (seen.has(c.sha) ? false : (seen.add(c.sha), true)))
+        .sort((a, b) => +new Date(b.date) - +new Date(a.date));
+
+      // Everything failed → surface the error instead of showing a stale subset.
+      if (flat.length === 0 && failures > 0) {
+        throw new Error("GitHub rate-limited the commit feed. Try again shortly.");
+      }
       return flat;
     },
     staleTime: 1000 * 60 * 10,
