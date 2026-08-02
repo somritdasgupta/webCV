@@ -109,7 +109,7 @@ export const Seo = ({
       script.text = JSON.stringify(jsonLd);
       document.head.appendChild(script);
     }
-  }, [fullTitle, desc, url, img, type, publishedTime, author, jsonLd]);
+  }, [fullTitle, desc, url, img, type, publishedTime, author, jsonLd, noindex]);
 
   return null;
 };
