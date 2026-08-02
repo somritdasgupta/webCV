@@ -6,6 +6,7 @@ import {
   Copy,
   ExternalLink,
   Loader2,
+  LockKeyhole,
   Play,
   ShieldCheck,
   Wrench,
@@ -24,6 +25,7 @@ import {
 
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
 const MCP_URL = `https://${projectRef}.supabase.co/functions/v1/mcp`;
+const MCP_ADMIN_URL = `https://${projectRef}.supabase.co/functions/v1/mcp-admin`;
 
 /* ---------------------------------------------------------------- primitives */
 
