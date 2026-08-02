@@ -379,6 +379,25 @@ const Connect = () => {
         </p>
       </section>
 
+      <section className="mb-6 rounded-2xl border border-border bg-secondary/40 p-5 sm:p-6">
+        <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <Lock className="h-3.5 w-3.5" aria-hidden />
+          Authoring server (owner only)
+        </div>
+        <div className="flex items-center gap-2">
+          <code className="flex-1 truncate rounded-md border border-border bg-background px-3 py-2 font-mono text-[13px] text-foreground sm:text-sm">
+            {MCP_ADMIN_URL}
+          </code>
+          <CopyButton value={MCP_ADMIN_URL} id="admin-url" />
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          A second, OAuth-protected server that can create, update, and delete blog posts. Adding it
+          opens a sign-in and consent screen; only the site owner's account is allowed through, so
+          this endpoint is safe to leave public.
+        </p>
+      </section>
+
+
       <div className="grid gap-5 sm:gap-6">
         <HealthPanel result={result} running={running} onRun={check} />
 
