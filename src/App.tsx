@@ -44,6 +44,8 @@ const App = () => (
               <Route path="/admin" element={<AdminLogin />} />
               <Route path="/admin/editor" element={<AdminEditor />} />
               <Route path="/connect" element={<Connect />} />
+              <Route path="/auth" element={<AuthSignIn />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
