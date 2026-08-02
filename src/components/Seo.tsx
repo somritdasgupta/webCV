@@ -11,6 +11,8 @@ interface SeoProps {
   publishedTime?: string;
   author?: string;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+  /** Keep the page out of search indexes (auth, consent, admin surfaces). */
+  noindex?: boolean;
 }
 
 const upsertMeta = (selector: string, attr: string, attrValue: string, content: string) => {
