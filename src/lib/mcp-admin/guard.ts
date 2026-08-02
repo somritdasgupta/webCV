@@ -41,11 +41,13 @@ export function requireAdmin(ctx: ToolContext): AdminIdentity {
   return { userId, email };
 }
 
+export type Guarded<T> = { ok: true; value: T } | { ok: false; message: string };
+
 /** Wrap a handler so guard failures return a clean MCP error instead of a throw. */
 export async function guarded<T>(
   ctx: ToolContext,
   run: (admin: AdminIdentity) => Promise<T> | T,
-): Promise<{ ok: true; value: T } | { ok: false; message: string }> {
+): Promise<Guarded<T>> {
   try {
     return { ok: true, value: await run(requireAdmin(ctx)) };
   } catch (e) {
