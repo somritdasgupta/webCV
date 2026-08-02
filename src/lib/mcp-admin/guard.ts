@@ -41,21 +41,30 @@ export function requireAdmin(ctx: ToolContext): AdminIdentity {
   return { userId, email };
 }
 
-export type Guarded<T> = { ok: true; value: T } | { ok: false; message: string };
-
-/** Wrap a handler so guard failures return a clean MCP error instead of a throw. */
-export async function guarded<T>(
-  ctx: ToolContext,
-  run: (admin: AdminIdentity) => Promise<T> | T,
-): Promise<Guarded<T>> {
-  try {
-    return { ok: true, value: await run(requireAdmin(ctx)) };
-  } catch (e) {
-    return { ok: false, message: e instanceof Error ? e.message : String(e) };
-  }
-}
-
-export const errorResult = (message: string) => ({
+const errorResult = (message: string) => ({
   content: [{ type: "text" as const, text: message }],
   isError: true as const,
+  structuredContent: { error: message },
 });
+
+/**
+ * Run an admin-only tool body.
+ *
+ * Authorization, error shaping, and JSON serialization live here so every write
+ * tool has identical semantics: a guard failure or a GitHub error becomes an
+ * `isError` MCP result carrying the reason, never an unhandled throw.
+ */
+export async function adminTool<T>(
+  ctx: ToolContext,
+  run: (admin: AdminIdentity) => Promise<T> | T,
+) {
+  try {
+    const value = await run(requireAdmin(ctx));
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }],
+      structuredContent: value as Record<string, unknown>,
+    };
+  } catch (e) {
+    return errorResult(e instanceof Error ? e.message : String(e));
+  }
+}
