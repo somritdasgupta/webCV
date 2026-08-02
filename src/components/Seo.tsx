@@ -46,6 +46,7 @@ export const Seo = ({
   publishedTime,
   author,
   jsonLd,
+  noindex = false,
 }: SeoProps) => {
   const fullTitle = title ? `${title} — ${SITE.shortName}` : SITE.title;
   const desc = description ?? SITE.description;
