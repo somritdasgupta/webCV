@@ -61,6 +61,12 @@ export const Seo = ({
     document.title = fullTitle;
 
     upsertMeta('meta[name="description"]', "name", "description", desc);
+    upsertMeta(
+      'meta[name="robots"]',
+      "name",
+      "robots",
+      noindex ? "noindex, nofollow" : "index, follow",
+    );
     upsertLink("canonical", url);
 
     // Open Graph
