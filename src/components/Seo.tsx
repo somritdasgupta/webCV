@@ -11,6 +11,8 @@ interface SeoProps {
   publishedTime?: string;
   author?: string;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+  /** Keep the page out of search indexes (auth, consent, admin surfaces). */
+  noindex?: boolean;
 }
 
 const upsertMeta = (selector: string, attr: string, attrValue: string, content: string) => {
@@ -44,6 +46,7 @@ export const Seo = ({
   publishedTime,
   author,
   jsonLd,
+  noindex = false,
 }: SeoProps) => {
   const fullTitle = title ? `${title} — ${SITE.shortName}` : SITE.title;
   const desc = description ?? SITE.description;
@@ -58,6 +61,12 @@ export const Seo = ({
     document.title = fullTitle;
 
     upsertMeta('meta[name="description"]', "name", "description", desc);
+    upsertMeta(
+      'meta[name="robots"]',
+      "name",
+      "robots",
+      noindex ? "noindex, nofollow" : "index, follow",
+    );
     upsertLink("canonical", url);
 
     // Open Graph
@@ -100,7 +109,7 @@ export const Seo = ({
       script.text = JSON.stringify(jsonLd);
       document.head.appendChild(script);
     }
-  }, [fullTitle, desc, url, img, type, publishedTime, author, jsonLd]);
+  }, [fullTitle, desc, url, img, type, publishedTime, author, jsonLd, noindex]);
 
   return null;
 };

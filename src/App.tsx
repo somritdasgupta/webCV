@@ -17,6 +17,8 @@ const CV = lazy(() => import("./pages/CV"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminEditor = lazy(() => import("./pages/admin/AdminEditor"));
 const Connect = lazy(() => import("./pages/Connect"));
+const AuthSignIn = lazy(() => import("./pages/AuthSignIn"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
@@ -42,6 +44,8 @@ const App = () => (
               <Route path="/admin" element={<AdminLogin />} />
               <Route path="/admin/editor" element={<AdminEditor />} />
               <Route path="/connect" element={<Connect />} />
+              <Route path="/auth" element={<AuthSignIn />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
