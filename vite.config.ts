@@ -147,7 +147,13 @@ export default defineConfig(({ mode }) => {
     },
     react(),
     siteUrlPlugin(SITE_URL),
+    // Public, read-only MCP server → /functions/v1/mcp
     mcpPlugin(),
+    // Admin, OAuth-protected write server → /functions/v1/mcp-admin
+    mcpPlugin({
+      mcpEntry: "src/lib/mcp-admin/index.ts",
+      functionName: "mcp-admin",
+    }),
   ],
   resolve: {
     alias: {
