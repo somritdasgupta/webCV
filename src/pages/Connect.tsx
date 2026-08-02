@@ -383,7 +383,7 @@ const Connect = () => {
 
       <section className="mb-6 rounded-2xl border border-border bg-secondary/40 p-5 sm:p-6">
         <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          <Lock className="h-3.5 w-3.5" aria-hidden />
+          <LockKeyhole className="h-3.5 w-3.5" aria-hidden />
           Authoring server (owner only)
         </div>
         <div className="flex items-center gap-2">
