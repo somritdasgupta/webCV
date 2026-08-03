@@ -207,8 +207,10 @@ export const useGithubCommits = (limitPerRepo = 30) =>
       }
       return flat;
     },
-    staleTime: 1000 * 60 * 10,
-    refetchOnWindowFocus: false,
+    // Short cache: the feed is the "what am I working on right now" surface.
+    staleTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: true,
+    refetchInterval: 1000 * 60 * 5,
   });
 
 
