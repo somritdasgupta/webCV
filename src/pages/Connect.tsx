@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Activity,
   Check,
   ChevronRight,
   Copy,
   ExternalLink,
   Loader2,
-  LockKeyhole,
   Play,
-  ShieldCheck,
-  Wrench,
-  X,
+  RefreshCw,
 } from "lucide-react";
 import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
+import { SITE } from "@/site.config";
 import { cn } from "@/lib/utils";
 import {
   runMcpHealthCheck,
@@ -23,48 +20,48 @@ import {
   type McpToolRunResult,
 } from "@/lib/mcpClient";
 
+/**
+ * Endpoints are advertised on the site's own origin (`/mcp`, `/mcp/admin`) and
+ * reverse-proxied to the edge functions by vercel.json. Clients never see the
+ * backend host, and the URL survives any future move of the runtime.
+ *
+ * The direct function URL stays as a health-check fallback: preview builds run
+ * on a host without those rewrites, so probing the pretty URL there would show
+ * a false outage.
+ */
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
-const MCP_URL = `https://${projectRef}.supabase.co/functions/v1/mcp`;
-const MCP_ADMIN_URL = `https://${projectRef}.supabase.co/functions/v1/mcp-admin`;
+const DIRECT_URL = `https://${projectRef}.supabase.co/functions/v1/mcp`;
+const READ_URL = `${SITE.BASE_URL}/mcp`;
+const WRITE_URL = `${SITE.BASE_URL}/mcp/admin`;
 
 /* ---------------------------------------------------------------- primitives */
 
-const useCopy = () => {
-  const [copied, setCopied] = useState<string | null>(null);
-  const copy = useCallback(async (value: string, id: string) => {
-    await navigator.clipboard.writeText(value);
-    setCopied(id);
-    setTimeout(() => setCopied((c) => (c === id ? null : c)), 1600);
-  }, []);
-  return { copied, copy };
-};
-
 const CopyButton = ({ value, id }: { value: string; id: string }) => {
-  const { copied, copy } = useCopy();
+  const [copied, setCopied] = useState(false);
   return (
     <button
       type="button"
-      onClick={() => copy(value, id)}
-      aria-label={copied === id ? "Copied" : "Copy"}
+      onClick={async () => {
+        await navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1600);
+      }}
+      aria-label={copied ? "Copied" : "Copy"}
+      data-id={id}
       className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
     >
-      {copied === id ? (
-        <Check className="h-3.5 w-3.5 text-emerald-500" />
-      ) : (
-        <Copy className="h-3.5 w-3.5" />
-      )}
+      {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
     </button>
   );
 };
 
-/** Dark, wrapping, copyable code block — matches the blog code experience. */
 const CodeBlock = ({ code, lang, id }: { code: string; lang?: string; id: string }) => (
-  <div className="not-prose group relative overflow-hidden rounded-xl border border-border bg-[#0d1117]">
+  <div className="not-prose relative overflow-hidden rounded-xl border border-border bg-[#0d1117]">
     <div className="flex items-center justify-between border-b border-white/10 px-3 py-1.5">
       <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
         {lang ?? "text"}
       </span>
-      <div className="[&_button]:border-white/15 [&_button]:bg-white/5 [&_button]:text-white/60 [&_button:hover]:bg-white/10 [&_button:hover]:text-white">
+      <div className="[&_button]:h-7 [&_button]:w-7 [&_button]:border-white/15 [&_button]:bg-white/5 [&_button]:text-white/60 [&_button:hover]:bg-white/10 [&_button:hover]:text-white">
         <CopyButton value={code} id={id} />
       </div>
     </div>
@@ -76,62 +73,64 @@ const CodeBlock = ({ code, lang, id }: { code: string; lang?: string; id: string
   </div>
 );
 
-const Step = ({ n, children }: { n: number; children: React.ReactNode }) => (
-  <li className="flex gap-3">
-    <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-[12px] font-medium text-foreground">
-      {n}
-    </span>
-    <div className="text-sm leading-relaxed text-foreground/90">{children}</div>
-  </li>
-);
-
-const Card = ({
+const Section = ({
   title,
-  icon: Icon,
-  href,
+  hint,
   action,
   children,
 }: {
   title: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  href?: string;
+  hint?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
 }) => (
-  <section className="rounded-2xl border border-border bg-card/60 p-5 shadow-elev-sm backdrop-blur-sm sm:p-6">
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-        {title}
-      </h2>
+  <section className="mt-12 first:mt-0">
+    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 className="text-[13px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          {title}
+        </h2>
+        {hint && <p className="mt-1.5 text-sm text-muted-foreground/80">{hint}</p>}
+      </div>
       {action}
-      {href && (
-        <a
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          Open <ExternalLink className="h-3 w-3" />
-        </a>
-      )}
     </div>
     {children}
   </section>
 );
 
-const Dot = ({ ok }: { ok: boolean | null }) => (
-  <span
-    className={cn(
-      "inline-block h-2 w-2 shrink-0 rounded-full",
-      ok === null ? "bg-muted-foreground/50" : ok ? "bg-emerald-500" : "bg-red-500",
-    )}
-  />
+/* ------------------------------------------------------------------ endpoint */
+
+const Endpoint = ({
+  label,
+  url,
+  note,
+  id,
+}: {
+  label: string;
+  url: string;
+  note: string;
+  id: string;
+}) => (
+  <div className="rounded-xl border border-border bg-card/50 p-4">
+    <div className="mb-2.5 flex items-center justify-between gap-3">
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        {id === "read" ? "public" : "oauth"}
+      </span>
+    </div>
+    <div className="flex items-center gap-2">
+      <code className="flex-1 truncate rounded-md border border-border bg-background px-3 py-2 font-mono text-[13px] text-foreground">
+        {url}
+      </code>
+      <CopyButton value={url} id={id} />
+    </div>
+    <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground">{note}</p>
+  </div>
 );
 
-/* ------------------------------------------------------------------- health */
+/* -------------------------------------------------------------------- status */
 
-const HealthPanel = ({
+const StatusStrip = ({
   result,
   running,
   onRun,
@@ -139,142 +138,116 @@ const HealthPanel = ({
   result: McpCheckResult | null;
   running: boolean;
   onRun: () => void;
-}) => (
-  <Card
-    title="Server health"
-    icon={Activity}
-    action={
-      <Button size="sm" variant="outline" onClick={onRun} disabled={running} className="gap-1.5">
-        {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
-        {running ? "Checking" : "Verify connection"}
-      </Button>
-    }
-  >
-    {!result && !running && (
-      <p className="text-sm text-muted-foreground">
-        Run a live check against the endpoint: reachability, MCP handshake, and tool discovery.
-      </p>
-    )}
-    {running && !result && (
-      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Contacting the MCP server…
-      </p>
-    )}
-    {result && (
-      <div className="space-y-3">
-        <div
+}) => {
+  const state = running ? "checking" : result ? (result.ok ? "ok" : "down") : "idle";
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-card/50 px-4 py-3">
+      <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+        <span
           className={cn(
-            "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm",
-            result.ok
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              : "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
+            "inline-block h-2 w-2 rounded-full",
+            state === "ok" && "bg-emerald-500",
+            state === "down" && "bg-red-500",
+            (state === "idle" || state === "checking") && "animate-pulse bg-muted-foreground/60",
           )}
-        >
-          <Dot ok={result.ok} />
-          <span className="font-medium">{result.ok ? "Operational" : "Degraded"}</span>
-          <span className="ml-auto font-mono text-[11px] opacity-70">{result.totalMs}ms</span>
-        </div>
+        />
+        {state === "ok" ? "Operational" : state === "down" ? "Degraded" : "Checking…"}
+      </span>
+      {result && (
+        <>
+          <span className="font-mono text-[11px] text-muted-foreground">
+            {result.server?.version ? `v${result.server.version}` : "—"} · {result.tools.length} tools ·{" "}
+            {result.totalMs}ms
+          </span>
+          <div className="hidden items-center gap-3 sm:flex">
+            {result.steps.map((s) => (
+              <span
+                key={s.id}
+                className={cn(
+                  "font-mono text-[11px]",
+                  s.ok ? "text-muted-foreground" : "text-red-500",
+                )}
+                title={s.detail}
+              >
+                {s.ok ? "✓" : "✕"} {s.label.toLowerCase()}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={onRun}
+        disabled={running}
+        className="ml-auto h-7 gap-1.5 px-2 text-xs"
+      >
+        {running ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+        Re-check
+      </Button>
+      {result && !result.ok && (
+        <p className="w-full font-mono text-[11px] text-red-500">
+          {result.steps.find((s) => !s.ok)?.detail}
+        </p>
+      )}
+    </div>
+  );
+};
 
-        <ul className="divide-y divide-border/60 overflow-hidden rounded-lg border border-border">
-          {result.steps.map((s) => (
-            <li key={s.id} className="flex items-start gap-3 px-3 py-2.5">
-              {s.ok ? (
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-              ) : (
-                <X className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground">{s.label}</div>
-                <div className="break-words font-mono text-[11px] text-muted-foreground">{s.detail}</div>
-              </div>
-              <span className="shrink-0 font-mono text-[11px] text-muted-foreground">{s.ms}ms</span>
-            </li>
-          ))}
-        </ul>
-
-        {result.instructions && (
-          <p className="rounded-lg border border-border bg-secondary/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-            {result.instructions}
-          </p>
-        )}
-      </div>
-    )}
-  </Card>
-);
-
-/* -------------------------------------------------------------------- tools */
+/* --------------------------------------------------------------------- tools */
 
 const argsFor = (t: McpToolInfo): Record<string, unknown> => {
-  // Validation runs read-only tools with no arguments; tools that require an
-  // argument get a safe sample so the call is still meaningful.
   const required = t.inputSchema?.required ?? [];
-  if (required.length === 0) return {};
   const out: Record<string, unknown> = {};
   for (const key of required) out[key] = key === "slug" ? "hello-world" : "";
   return out;
 };
 
-const ToolRow = ({
-  tool,
-  endpoint,
-}: {
-  tool: McpToolInfo;
-  endpoint: string;
-}) => {
+const ToolRow = ({ tool, endpoint }: { tool: McpToolInfo; endpoint: string }) => {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [run, setRun] = useState<McpToolRunResult | null>(null);
-
   const params = Object.keys(tool.inputSchema?.properties ?? {});
-  const destructive = tool.annotations?.destructiveHint;
 
   return (
     <li className="border-b border-border/60 last:border-0">
-      <div className="flex flex-wrap items-center gap-2 px-3 py-3">
+      <div className="flex items-center gap-2 px-3 py-2.5">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
           className="flex min-w-0 flex-1 items-center gap-2 text-left"
         >
           <ChevronRight
-            className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
+            className={cn(
+              "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
+              open && "rotate-90",
+            )}
           />
           <code className="truncate font-mono text-[13px] text-foreground">{tool.name}</code>
-          <span
-            className={cn(
-              "hidden shrink-0 rounded-full border px-1.5 py-0.5 font-mono text-[10px] sm:inline",
-              destructive
-                ? "border-red-500/30 text-red-500"
-                : tool.annotations?.readOnlyHint
-                  ? "border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                  : "border-border text-muted-foreground",
-            )}
-          >
-            {destructive ? "write" : tool.annotations?.readOnlyHint ? "read-only" : "mutating"}
+          <span className="hidden truncate text-xs text-muted-foreground sm:inline">
+            {tool.title}
           </span>
         </button>
-        <div className="flex items-center gap-2">
-          {run && (
-            <span className={cn("font-mono text-[11px]", run.ok ? "text-emerald-500" : "text-red-500")}>
-              {run.ok ? "pass" : "fail"} · {run.ms}ms
-            </span>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 gap-1 px-2 text-xs"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              setOpen(true);
-              setRun(await runMcpTool(endpoint, tool.name, argsFor(tool)));
-              setBusy(false);
-            }}
-          >
-            {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
-            Test
-          </Button>
-        </div>
+        {run && (
+          <span className={cn("font-mono text-[11px]", run.ok ? "text-emerald-500" : "text-red-500")}>
+            {run.ok ? "pass" : "fail"} · {run.ms}ms
+          </span>
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 gap-1 px-2 text-xs"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setOpen(true);
+            setRun(await runMcpTool(endpoint, tool.name, argsFor(tool)));
+            setBusy(false);
+          }}
+        >
+          {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+          Test
+        </Button>
       </div>
 
       {open && (
@@ -304,170 +277,205 @@ const ToolRow = ({
   );
 };
 
-/* --------------------------------------------------------------------- page */
+/* --------------------------------------------------------------------- setup */
+
+const CLIENTS = ["Claude", "ChatGPT", "Terminal"] as const;
+type Client = (typeof CLIENTS)[number];
 
 const claudeConfig = JSON.stringify(
-  { mcpServers: { "somrit-webcv": { type: "http", url: MCP_URL } } },
+  {
+    mcpServers: {
+      somritdasgupta: { type: "http", url: READ_URL },
+      "somritdasgupta-admin": { type: "http", url: WRITE_URL },
+    },
+  },
   null,
   2,
 );
-const cliCommand = `npx -y mcp-remote ${MCP_URL}`;
-const curlProbe = `curl -sS -X POST ${MCP_URL} \\
+
+const cliCommand = `npx -y mcp-remote ${READ_URL}`;
+
+const curlProbe = `curl -sS -X POST ${READ_URL} \\
   -H "Content-Type: application/json" \\
   -H "Accept: application/json, text/event-stream" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`;
 
+const SetupBody = ({ client }: { client: Client }) => {
+  if (client === "Claude")
+    return (
+      <div className="space-y-4">
+        <ol className="space-y-2 text-sm text-foreground/90">
+          <li>
+            1. Settings → Connectors →{" "}
+            <a
+              className="underline underline-offset-4"
+              href="https://claude.ai/customize/connectors?modal=add-custom-connector"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Add custom connector
+            </a>
+            .
+          </li>
+          <li>2. Paste the endpoint, save, and approve the sign-in if you added the authoring one.</li>
+        </ol>
+        <CodeBlock code={claudeConfig} lang="claude_desktop_config.json" id="claude" />
+      </div>
+    );
+
+  if (client === "ChatGPT")
+    return (
+      <ol className="space-y-2 text-sm text-foreground/90">
+        <li>
+          1. Settings → Connectors → Advanced → enable <strong>Developer mode</strong>.
+        </li>
+        <li>2. In the composer, open + → Developer mode.</li>
+        <li>3. Add sources → Connect more → name it and paste the endpoint.</li>
+        <li>4. Ask: “list the latest blog posts from this site”.</li>
+      </ol>
+    );
+
+  return (
+    <div className="space-y-4">
+      <CodeBlock code={cliCommand} lang="bash" id="cli" />
+      <CodeBlock code={curlProbe} lang="bash" id="curl" />
+    </div>
+  );
+};
+
+/* ---------------------------------------------------------------------- page */
+
 const Connect = () => {
   const [result, setResult] = useState<McpCheckResult | null>(null);
   const [running, setRunning] = useState(false);
-  const [validating, setValidating] = useState(false);
+  const [probe, setProbe] = useState(READ_URL);
+  const [client, setClient] = useState<Client>("Claude");
 
   const check = useCallback(async () => {
     setRunning(true);
-    setResult(await runMcpHealthCheck(MCP_URL));
+    let res = await runMcpHealthCheck(READ_URL);
+    let endpoint = READ_URL;
+    // Preview hosts have no /mcp rewrite — fall back to the runtime URL so the
+    // page reports the server's real state rather than a routing artefact.
+    if (!res.ok) {
+      const direct = await runMcpHealthCheck(DIRECT_URL);
+      if (direct.ok) {
+        res = direct;
+        endpoint = DIRECT_URL;
+      }
+    }
+    setProbe(endpoint);
+    setResult(res);
     setRunning(false);
   }, []);
 
-  // Auto health-check on first paint so the page is never stale.
   useEffect(() => {
     void check();
   }, [check]);
-
-  const validateAll = useCallback(async () => {
-    if (!result?.tools.length) return;
-    setValidating(true);
-    // Sequential: keeps GitHub's unauthenticated rate limit happy and avoids
-    // hammering the edge function with parallel cold starts.
-    for (const t of result.tools) {
-      if (t.annotations?.destructiveHint) continue;
-      await runMcpTool(MCP_URL, t.name, argsFor(t));
-    }
-    await check();
-    setValidating(false);
-  }, [result, check]);
 
   return (
     <div className="container-wide max-w-3xl pb-24">
       <Seo
         title="Connect an AI assistant"
-        description="Connect ChatGPT or Claude to this site's MCP server. Live health check, tool list, and setup steps."
+        description="Connect ChatGPT, Claude, or any MCP client to this site. Live status, tool list, and setup steps."
         path="/connect"
       />
 
-      <header className="mb-8">
+      <header className="mb-10 max-w-2xl">
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          Model Context Protocol
+        </p>
         <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
           Connect an AI assistant
         </h1>
-        <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-          This site runs a Model Context Protocol server. Point ChatGPT, Claude, or any MCP client at
-          the endpoint below and it can browse posts, activity, and author info as tools.
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          This site exposes itself as tools. Point any MCP client at the endpoint and it can read
+          posts, activity, and author info — or, with a sign-in, write to the blog.
         </p>
       </header>
 
-      <section className="mb-6 rounded-2xl border border-border bg-secondary/40 p-5 sm:p-6">
-        <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          <Dot ok={running ? null : result ? result.ok : null} />
-          MCP server URL
+      <Section title="Endpoints">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Endpoint
+            id="read"
+            label="Read"
+            url={READ_URL}
+            note="Open to everyone. Read-only tools over public data — no sign-in."
+          />
+          <Endpoint
+            id="write"
+            label="Author"
+            url={WRITE_URL}
+            note="Create, update, and delete posts. Opens a sign-in and consent screen; only the owner's account passes."
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <code className="flex-1 truncate rounded-md border border-border bg-background px-3 py-2 font-mono text-[13px] text-foreground sm:text-sm">
-            {MCP_URL}
-          </code>
-          <CopyButton value={MCP_URL} id="url" />
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">
-          Paste this into your assistant's connector settings. No sign-in required — every tool is
-          read-only and serves public data.
-        </p>
-      </section>
+      </Section>
 
-      <section className="mb-6 rounded-2xl border border-border bg-secondary/40 p-5 sm:p-6">
-        <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          <LockKeyhole className="h-3.5 w-3.5" aria-hidden />
-          Authoring server (owner only)
-        </div>
-        <div className="flex items-center gap-2">
-          <code className="flex-1 truncate rounded-md border border-border bg-background px-3 py-2 font-mono text-[13px] text-foreground sm:text-sm">
-            {MCP_ADMIN_URL}
-          </code>
-          <CopyButton value={MCP_ADMIN_URL} id="admin-url" />
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">
-          A second, OAuth-protected server that can create, update, and delete blog posts. Adding it
-          opens a sign-in and consent screen; only the site owner's account is allowed through, so
-          this endpoint is safe to leave public.
-        </p>
-      </section>
+      <Section title="Status">
+        <StatusStrip result={result} running={running} onRun={check} />
+      </Section>
 
-
-      <div className="grid gap-5 sm:gap-6">
-        <HealthPanel result={result} running={running} onRun={check} />
-
-        <Card
-          title="Tools"
-          icon={Wrench}
-          action={
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              disabled={validating || running || !result?.tools.length}
-              onClick={validateAll}
-            >
-              {validating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
-              {validating ? "Validating" : "Validate all"}
-            </Button>
-          }
-        >
-          {!result?.tools.length ? (
-            <p className="text-sm text-muted-foreground">
-              {running ? "Discovering tools…" : "No tools discovered. Run the health check above."}
-            </p>
-          ) : (
-            <ul className="overflow-hidden rounded-lg border border-border">
-              {result.tools.map((t) => (
-                <ToolRow key={t.name} tool={t} endpoint={MCP_URL} />
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card title="ChatGPT" href="https://chatgpt.com/#settings/Connectors/Advanced">
-          <ol className="space-y-3">
-            <Step n={1}>
-              Open <span className="font-mono text-[12px]">Settings → Connectors → Advanced</span> and
-              enable <strong>Developer mode</strong>.
-            </Step>
-            <Step n={2}>
-              In the composer, open the <strong>+</strong> menu and turn on <strong>Developer mode</strong>.
-            </Step>
-            <Step n={3}>
-              Choose <strong>Add sources → Connect more</strong>, name the connector, and paste the URL.
-            </Step>
-            <Step n={4}>Ask it something like "list the latest blog posts from this site".</Step>
-          </ol>
-        </Card>
-
-        <Card title="Claude" href="https://claude.ai/customize/connectors?modal=add-custom-connector">
-          <ol className="mb-4 space-y-3">
-            <Step n={1}>
-              Open <span className="font-mono text-[12px]">Settings → Connectors → Add custom connector</span>.
-            </Step>
-            <Step n={2}>Name it, paste the URL, and save.</Step>
-          </ol>
-          <p className="mb-2 text-xs text-muted-foreground">
-            Claude Desktop / Code — add to <span className="font-mono">claude_desktop_config.json</span>:
+      <Section
+        title="Tools"
+        hint={result?.instructions}
+        action={
+          <span className="font-mono text-[11px] text-muted-foreground">
+            {result?.tools.length ?? 0} advertised
+          </span>
+        }
+      >
+        {!result?.tools.length ? (
+          <p className="rounded-xl border border-border bg-card/50 px-4 py-6 text-center text-sm text-muted-foreground">
+            {running ? "Discovering tools…" : "No tools discovered."}
           </p>
-          <CodeBlock code={claudeConfig} lang="json" id="claude-config" />
-        </Card>
+        ) : (
+          <ul className="overflow-hidden rounded-xl border border-border bg-card/50">
+            {result.tools.map((t) => (
+              <ToolRow key={t.name} tool={t} endpoint={probe} />
+            ))}
+          </ul>
+        )}
+      </Section>
 
-        <Card title="Terminal">
-          <p className="mb-2 text-xs text-muted-foreground">Bridge the server into any stdio MCP client:</p>
-          <CodeBlock code={cliCommand} lang="bash" id="cli" />
-          <p className="mb-2 mt-4 text-xs text-muted-foreground">Or probe it directly:</p>
-          <CodeBlock code={curlProbe} lang="bash" id="curl" />
-        </Card>
-      </div>
+      <Section
+        title="Setup"
+        action={
+          <div className="flex rounded-lg border border-border p-0.5">
+            {CLIENTS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setClient(c)}
+                className={cn(
+                  "rounded-md px-3 py-1 text-xs transition-colors",
+                  client === c
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        }
+      >
+        <div className="rounded-xl border border-border bg-card/50 p-4 sm:p-5">
+          <SetupBody client={client} />
+        </div>
+      </Section>
+
+      <p className="mt-10 text-xs text-muted-foreground">
+        Built on the{" "}
+        <a
+          className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-foreground"
+          href="https://modelcontextprotocol.io"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Model Context Protocol <ExternalLink className="h-3 w-3" />
+        </a>
+        .
+      </p>
     </div>
   );
 };
