@@ -162,7 +162,10 @@ export const useGithubCommits = (limitPerRepo = 30) =>
       // 2. Pull the newest commits from each repo's default branch.
       let failures = 0;
       const all = await mapLimit(repos, FANOUT_CONCURRENCY, async (r) => {
-        const url = `${GH}/repos/${r.full_name}/commits?per_page=${limitPerRepo}&author=${GITHUB.username}`;
+        // No `author=` filter: commits land under several identities (web UI,
+        // CI bots, a secondary email), and filtering by login silently dropped
+        // the newest pushes — which is exactly why the feed looked stale.
+        const url = `${GH}/repos/${r.full_name}/commits?per_page=${limitPerRepo}`;
         try {
           const res = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
           if (!res.ok) {
