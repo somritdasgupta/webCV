@@ -312,7 +312,7 @@ const SetupBody = ({ client }: { client: Client }) => {
             </a>
             .
           </li>
-          <li>2. Paste the endpoint, save, and approve the sign-in if you added the authoring one.</li>
+          <li>2. Paste the endpoint and save. For authoring, your assistant will start the GitHub device flow when a write is requested.</li>
         </ol>
         <CodeBlock code={claudeConfig} lang="claude_desktop_config.json" id="claude" />
       </div>
@@ -375,7 +375,7 @@ const Connect = () => {
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
           This site exposes itself as tools. Point any MCP client at the endpoint and it can read
-          posts, activity, and author info — or, with a sign-in, write to the blog.
+          posts, activity, and author info — or, after owner verification through GitHub, write to the blog.
         </p>
       </header>
 
@@ -391,7 +391,7 @@ const Connect = () => {
             id="write"
             label="Author"
             url={WRITE_URL}
-            note="Create, update, and delete posts. Opens a sign-in and consent screen; only the owner's account passes."
+            note="Create, update, and delete posts. Write tools verify the owner through the same GitHub device flow used by Admin."
           />
         </div>
       </Section>
