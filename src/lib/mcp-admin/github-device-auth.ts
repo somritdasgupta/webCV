@@ -21,11 +21,11 @@ const decoder = new TextDecoder();
 const bytesToBase64Url = (bytes: Uint8Array): string => {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 };
 
 const base64UrlToBytes = (value: string): Uint8Array => {
-  const padded = value.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
   return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
 };
 
@@ -90,7 +90,7 @@ async function unseal(handle: string): Promise<SessionPayload> {
   if (!ivValue || !ciphertextValue) throw new Error("Invalid authorization handle.");
   try {
     const plaintext = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: base64UrlToBytes(ivValue) },
+      { name: "AES-GCM", iv: base64UrlToBytes(ivValue) as Uint8Array<ArrayBuffer> },
       await encryptionKey(),
       base64UrlToBytes(ciphertextValue),
     );

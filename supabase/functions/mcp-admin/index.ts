@@ -29,10 +29,10 @@ var decoder = new TextDecoder();
 var bytesToBase64Url = (bytes) => {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 };
 var base64UrlToBytes = (value) => {
-  const padded = value.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
   return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
 };
 async function encryptionKey() {
@@ -172,6 +172,7 @@ var complete_github_authorization_default = defineTool2({
 
 // src/lib/mcp-admin/tools/list-all-posts.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z2 } from "npm:zod@^3.25.76";
 
 // src/lib/mcp-admin/guard.ts
 var errorResult = (message) => ({
@@ -336,13 +337,15 @@ var list_all_posts_default = defineTool3({
   name: "list_all_posts",
   title: "List all posts (including drafts)",
   description: "List every MDX post in the content repository, including drafts and future-dated (scheduled) posts that the public site hides. Requires admin sign-in.",
-  inputSchema: {},
+  inputSchema: {
+    authorization: z2.string().min(1).describe("Short-lived handle returned by complete_github_authorization.")
+  },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: (_input, ctx) => adminTool(ctx, async () => {
-    const files = await listPostFiles();
+  handler: (input) => adminTool(input.authorization, async (admin) => {
+    const files = await listPostFiles(admin.token);
     const posts = await Promise.all(
       files.map(async (f) => {
-        const file = await readFile(f.path);
+        const file = await readFile(admin.token, f.path);
         const { data } = parseFrontmatter(file?.content ?? "");
         const slug = f.name.replace(/\.mdx$/, "");
         const date = String(data.date ?? "");
@@ -366,19 +369,20 @@ var list_all_posts_default = defineTool3({
 
 // src/lib/mcp-admin/tools/read-post-source.ts
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z2 } from "npm:zod@^3.25.76";
+import { z as z3 } from "npm:zod@^3.25.76";
 var read_post_source_default = defineTool4({
   name: "read_post_source",
   title: "Read post source",
   description: "Read the raw MDX source, parsed frontmatter, and current blob SHA of a post \u2014 including drafts. The SHA is required to update or delete the post safely.",
   inputSchema: {
-    slug: z2.string().min(1).describe("Post slug, e.g. 'hello-world'.")
+    authorization: z3.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    slug: z3.string().min(1).describe("Post slug, e.g. 'hello-world'.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: ({ slug }, ctx) => adminTool(ctx, async () => {
+  handler: ({ slug, authorization }) => adminTool(authorization, async (admin) => {
     const clean = safeSlug(slug);
     const path = pathForSlug(clean);
-    const file = await readFile(path);
+    const file = await readFile(admin.token, path);
     if (!file) throw new Error(`Post not found: ${clean}`);
     const { data, body } = parseFrontmatter(file.content);
     return {
@@ -394,26 +398,27 @@ var read_post_source_default = defineTool4({
 
 // src/lib/mcp-admin/tools/create-post.ts
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z3 } from "npm:zod@^3.25.76";
+import { z as z4 } from "npm:zod@^3.25.76";
 var create_post_default = defineTool5({
   name: "create_post",
   title: "Create blog post",
   description: "Create a new MDX blog post and commit it to the content repository. Fails if the slug already exists \u2014 use update_post to change an existing post. Set a future date to schedule, or draft to keep it hidden.",
   inputSchema: {
-    slug: z3.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
-    title: z3.string().trim().min(1).max(120).describe("Post title."),
-    description: z3.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
-    body: z3.string().min(1).describe("Post body in MDX (no frontmatter \u2014 it is generated for you)."),
-    date: z3.string().optional().describe("ISO 8601 publish date. Defaults to now. A future date schedules the post."),
-    tags: z3.array(z3.string().trim().min(1)).max(8).optional().describe("Topic tags."),
-    cover: z3.string().url().optional().describe("Absolute cover image URL."),
-    draft: z3.boolean().optional().describe("Keep the post hidden from the public site when true.")
+    authorization: z4.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    slug: z4.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
+    title: z4.string().trim().min(1).max(120).describe("Post title."),
+    description: z4.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
+    body: z4.string().min(1).describe("Post body in MDX (no frontmatter \u2014 it is generated for you)."),
+    date: z4.string().optional().describe("ISO 8601 publish date. Defaults to now. A future date schedules the post."),
+    tags: z4.array(z4.string().trim().min(1)).max(8).optional().describe("Topic tags."),
+    cover: z4.string().url().optional().describe("Absolute cover image URL."),
+    draft: z4.boolean().optional().describe("Keep the post hidden from the public site when true.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  handler: (input, ctx) => adminTool(ctx, async (admin) => {
+  handler: (input) => adminTool(input.authorization, async (admin) => {
     const slug = safeSlug(input.slug);
     const path = pathForSlug(slug);
-    if (await readFile(path)) {
+    if (await readFile(admin.token, path)) {
       throw new Error(
         `Post '${slug}' already exists. Use update_post to modify it, or pick another slug.`
       );
@@ -433,9 +438,10 @@ var create_post_default = defineTool5({
       input.body
     );
     const result = await writeFile({
+      token: admin.token,
       path,
       content: mdx,
-      message: `content: add "${input.title}" (via MCP by ${admin.email})`
+      message: `content: add "${input.title}" (via MCP by ${admin.login})`
     });
     return {
       slug,
@@ -450,27 +456,28 @@ var create_post_default = defineTool5({
 
 // src/lib/mcp-admin/tools/update-post.ts
 import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z4 } from "npm:zod@^3.25.76";
+import { z as z5 } from "npm:zod@^3.25.76";
 var update_post_default = defineTool6({
   name: "update_post",
   title: "Update blog post",
   description: "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
   inputSchema: {
-    slug: z4.string().min(1).describe("Slug of the post to update."),
-    title: z4.string().trim().min(1).max(120).optional(),
-    description: z4.string().trim().min(1).max(160).optional(),
-    body: z4.string().min(1).optional().describe("Replacement MDX body (without frontmatter)."),
-    date: z4.string().optional().describe("New ISO 8601 publish date."),
-    tags: z4.array(z4.string().trim().min(1)).max(8).optional(),
-    cover: z4.string().url().optional(),
-    draft: z4.boolean().optional().describe("Toggle draft visibility."),
-    expected_sha: z4.string().optional().describe("Blob SHA from read_post_source. Rejects the write if the file changed since.")
+    authorization: z5.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    slug: z5.string().min(1).describe("Slug of the post to update."),
+    title: z5.string().trim().min(1).max(120).optional(),
+    description: z5.string().trim().min(1).max(160).optional(),
+    body: z5.string().min(1).optional().describe("Replacement MDX body (without frontmatter)."),
+    date: z5.string().optional().describe("New ISO 8601 publish date."),
+    tags: z5.array(z5.string().trim().min(1)).max(8).optional(),
+    cover: z5.string().url().optional(),
+    draft: z5.boolean().optional().describe("Toggle draft visibility."),
+    expected_sha: z5.string().optional().describe("Blob SHA from read_post_source. Rejects the write if the file changed since.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  handler: (input, ctx) => adminTool(ctx, async (admin) => {
+  handler: (input) => adminTool(input.authorization, async (admin) => {
     const slug = safeSlug(input.slug);
     const path = pathForSlug(slug);
-    const file = await readFile(path);
+    const file = await readFile(admin.token, path);
     if (!file) throw new Error(`Post not found: ${slug}. Use create_post instead.`);
     if (input.expected_sha && input.expected_sha !== file.sha) {
       throw new Error(
@@ -499,10 +506,11 @@ var update_post_default = defineTool6({
       return { slug, path, changed: false, message: "No changes to commit." };
     }
     const result = await writeFile({
+      token: admin.token,
       path,
       content: mdx,
       sha: file.sha,
-      message: `content: update "${slug}" (via MCP by ${admin.email})`
+      message: `content: update "${slug}" (via MCP by ${admin.login})`
     });
     return {
       slug,
@@ -518,21 +526,22 @@ var update_post_default = defineTool6({
 
 // src/lib/mcp-admin/tools/delete-post.ts
 import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z5 } from "npm:zod@^3.25.76";
+import { z as z6 } from "npm:zod@^3.25.76";
 var delete_post_default = defineTool7({
   name: "delete_post",
   title: "Delete blog post",
   description: "Permanently delete a published MDX post from the content repository. Requires confirm: true, so a model cannot delete a post by accident. Prefer update_post with draft: true to unpublish without losing content.",
   inputSchema: {
-    slug: z5.string().min(1).describe("Slug of the post to delete."),
-    confirm: z5.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
-    expected_sha: z5.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")
+    authorization: z6.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    slug: z6.string().min(1).describe("Slug of the post to delete."),
+    confirm: z6.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
+    expected_sha: z6.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")
   },
   annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
-  handler: (input, ctx) => adminTool(ctx, async (admin) => {
+  handler: (input) => adminTool(input.authorization, async (admin) => {
     const slug = safeSlug(input.slug);
     const path = pathForSlug(slug);
-    const file = await readFile(path);
+    const file = await readFile(admin.token, path);
     if (!file) throw new Error(`Post not found: ${slug}. Nothing was deleted.`);
     if (input.expected_sha && input.expected_sha !== file.sha) {
       throw new Error(
@@ -541,9 +550,10 @@ var delete_post_default = defineTool7({
     }
     const { data } = parseFrontmatter(file.content);
     const { commitSha } = await deleteFile({
+      token: admin.token,
       path,
       sha: file.sha,
-      message: `content: delete "${slug}" (via MCP by ${admin.email})`
+      message: `content: delete "${slug}" (via MCP by ${admin.login})`
     });
     return {
       slug,
