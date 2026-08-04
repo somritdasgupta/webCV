@@ -92,7 +92,7 @@ async function unseal(handle: string): Promise<SessionPayload> {
     const plaintext = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: base64UrlToBytes(ivValue) as Uint8Array<ArrayBuffer> },
       await encryptionKey(),
-      base64UrlToBytes(ciphertextValue),
+      base64UrlToBytes(ciphertextValue) as Uint8Array<ArrayBuffer>,
     );
     return JSON.parse(decoder.decode(plaintext)) as SessionPayload;
   } catch {
