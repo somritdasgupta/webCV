@@ -9,22 +9,6 @@
       "destination": "https://github.com/login/oauth/access_token"
     },
     {
-      "source": "/mcp/admin/:path*",
-      "destination": "https://mrbhitfbyqddejzuraim.supabase.co/functions/v1/mcp-admin/:path*"
-    },
-    {
-      "source": "/mcp/admin",
-      "destination": "https://mrbhitfbyqddejzuraim.supabase.co/functions/v1/mcp-admin"
-    },
-    {
-      "source": "/mcp/:path*",
-      "destination": "https://mrbhitfbyqddejzuraim.supabase.co/functions/v1/mcp/:path*"
-    },
-    {
-      "source": "/mcp",
-      "destination": "https://mrbhitfbyqddejzuraim.supabase.co/functions/v1/mcp"
-    },
-    {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }

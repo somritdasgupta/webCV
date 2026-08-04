@@ -21,18 +21,13 @@ import {
 } from "@/lib/mcpClient";
 
 /**
- * Endpoints are advertised on the site's own origin (`/mcp`, `/mcp/admin`) and
- * reverse-proxied to the edge functions by vercel.json. Clients never see the
- * backend host, and the URL survives any future move of the runtime.
- *
- * The direct function URL stays as a health-check fallback: preview builds run
- * on a host without those rewrites, so probing the pretty URL there would show
- * a false outage.
+ * `/mcp` is the human-readable connection guide. Protocol traffic goes to the
+ * dedicated function endpoints below so opening the guide in a browser can
+ * never collide with MCP's Streamable HTTP content negotiation.
  */
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
-const DIRECT_URL = `https://${projectRef}.supabase.co/functions/v1/mcp`;
-const READ_URL = `${SITE.BASE_URL}/mcp`;
-const WRITE_URL = `${SITE.BASE_URL}/mcp/admin`;
+const READ_URL = `https://${projectRef}.supabase.co/functions/v1/mcp`;
+const WRITE_URL = `https://${projectRef}.supabase.co/functions/v1/mcp-admin`;
 
 /* ---------------------------------------------------------------- primitives */
 
@@ -317,7 +312,7 @@ const SetupBody = ({ client }: { client: Client }) => {
             </a>
             .
           </li>
-          <li>2. Paste the endpoint, save, and approve the sign-in if you added the authoring one.</li>
+          <li>2. Paste the endpoint and save. For authoring, your assistant will start the GitHub device flow when a write is requested.</li>
         </ol>
         <CodeBlock code={claudeConfig} lang="claude_desktop_config.json" id="claude" />
       </div>
@@ -353,18 +348,8 @@ const Connect = () => {
 
   const check = useCallback(async () => {
     setRunning(true);
-    let res = await runMcpHealthCheck(READ_URL);
-    let endpoint = READ_URL;
-    // Preview hosts have no /mcp rewrite — fall back to the runtime URL so the
-    // page reports the server's real state rather than a routing artefact.
-    if (!res.ok) {
-      const direct = await runMcpHealthCheck(DIRECT_URL);
-      if (direct.ok) {
-        res = direct;
-        endpoint = DIRECT_URL;
-      }
-    }
-    setProbe(endpoint);
+    const res = await runMcpHealthCheck(READ_URL);
+    setProbe(READ_URL);
     setResult(res);
     setRunning(false);
   }, []);
@@ -378,7 +363,7 @@ const Connect = () => {
       <Seo
         title="Connect an AI assistant"
         description="Connect ChatGPT, Claude, or any MCP client to this site. Live status, tool list, and setup steps."
-        path="/connect"
+        path="/mcp"
       />
 
       <header className="mb-10 max-w-2xl">
@@ -390,7 +375,7 @@ const Connect = () => {
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
           This site exposes itself as tools. Point any MCP client at the endpoint and it can read
-          posts, activity, and author info — or, with a sign-in, write to the blog.
+          posts, activity, and author info — or, after owner verification through GitHub, write to the blog.
         </p>
       </header>
 
@@ -406,7 +391,7 @@ const Connect = () => {
             id="write"
             label="Author"
             url={WRITE_URL}
-            note="Create, update, and delete posts. Opens a sign-in and consent screen; only the owner's account passes."
+            note="Create, update, and delete posts. Write tools verify the owner through the same GitHub device flow used by Admin."
           />
         </div>
       </Section>

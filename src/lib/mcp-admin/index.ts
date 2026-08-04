@@ -1,4 +1,6 @@
-import { auth, defineMcp } from "@lovable.dev/mcp-js";
+import { defineMcp } from "@lovable.dev/mcp-js";
+import startGitHubAuthorization from "./tools/start-github-authorization";
+import completeGitHubAuthorization from "./tools/complete-github-authorization";
 import listAllPosts from "./tools/list-all-posts";
 import readPostSource from "./tools/read-post-source";
 import createPost from "./tools/create-post";
@@ -17,17 +19,11 @@ import deletePost from "./tools/delete-post";
  * rather than SUPABASE_URL, which on Lovable Cloud is a proxy host whose
  * discovery document advertises a different issuer (RFC 8414 §3.3).
  */
-const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
-
 export default defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta — Site Admin",
   version: "0.1.0",
   instructions:
-    "Authoring tools for somritdasgupta.in. Create, update, and delete MDX blog posts in the site's content repository. Every call requires an OAuth sign-in and the signed-in account must be on the site owner's admin allow-list. Read a post with read_post_source before updating or deleting it, and pass the returned expected_sha so concurrent edits are never silently overwritten.",
-  auth: auth.oauth.issuer({
-    issuer: `https://${projectRef}.supabase.co/auth/v1`,
-    acceptedAudiences: "authenticated",
-  }),
-  tools: [listAllPosts, readPostSource, createPost, updatePost, deletePost],
+    "Owner-only authoring tools for somritdasgupta.in. First call start_github_authorization, ask the owner to approve the displayed GitHub device code, then call complete_github_authorization. Pass its short-lived authorization handle to all post tools. Read a post before updating or deleting it and pass expected_sha to prevent stale writes.",
+  tools: [startGitHubAuthorization, completeGitHubAuthorization, listAllPosts, readPostSource, createPost, updatePost, deletePost],
 });

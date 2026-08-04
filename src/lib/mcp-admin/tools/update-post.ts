@@ -10,6 +10,7 @@ export default defineTool({
   description:
     "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
   inputSchema: {
+    authorization: z.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
     slug: z.string().min(1).describe("Slug of the post to update."),
     title: z.string().trim().min(1).max(120).optional(),
     description: z.string().trim().min(1).max(160).optional(),
@@ -28,12 +29,12 @@ export default defineTool({
       .describe("Blob SHA from read_post_source. Rejects the write if the file changed since."),
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  handler: (input, ctx) =>
-    adminTool(ctx, async (admin) => {
+  handler: (input) =>
+    adminTool(input.authorization, async (admin) => {
       const slug = safeSlug(input.slug);
       const path = pathForSlug(slug);
 
-      const file = await readFile(path);
+      const file = await readFile(admin.token, path);
       if (!file) throw new Error(`Post not found: ${slug}. Use create_post instead.`);
       if (input.expected_sha && input.expected_sha !== file.sha) {
         throw new Error(
@@ -67,10 +68,11 @@ export default defineTool({
       }
 
       const result = await writeFile({
+        token: admin.token,
         path,
         content: mdx,
         sha: file.sha,
-        message: `content: update "${slug}" (via MCP by ${admin.email})`,
+        message: `content: update "${slug}" (via MCP by ${admin.login})`,
       });
 
       return {

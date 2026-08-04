@@ -10,6 +10,7 @@ export default defineTool({
   description:
     "Create a new MDX blog post and commit it to the content repository. Fails if the slug already exists — use update_post to change an existing post. Set a future date to schedule, or draft to keep it hidden.",
   inputSchema: {
+    authorization: z.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
     slug: z
       .string()
       .min(1)
@@ -37,12 +38,12 @@ export default defineTool({
       .describe("Keep the post hidden from the public site when true."),
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  handler: (input, ctx) =>
-    adminTool(ctx, async (admin) => {
+  handler: (input) =>
+    adminTool(input.authorization, async (admin) => {
       const slug = safeSlug(input.slug);
       const path = pathForSlug(slug);
 
-      if (await readFile(path)) {
+      if (await readFile(admin.token, path)) {
         throw new Error(
           `Post '${slug}' already exists. Use update_post to modify it, or pick another slug.`,
         );
@@ -65,9 +66,10 @@ export default defineTool({
       );
 
       const result = await writeFile({
+        token: admin.token,
         path,
         content: mdx,
-        message: `content: add "${input.title}" (via MCP by ${admin.email})`,
+        message: `content: add "${input.title}" (via MCP by ${admin.login})`,
       });
 
       return {
