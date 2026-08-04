@@ -21,18 +21,13 @@ import {
 } from "@/lib/mcpClient";
 
 /**
- * Endpoints are advertised on the site's own origin (`/mcp`, `/mcp/admin`) and
- * reverse-proxied to the edge functions by vercel.json. Clients never see the
- * backend host, and the URL survives any future move of the runtime.
- *
- * The direct function URL stays as a health-check fallback: preview builds run
- * on a host without those rewrites, so probing the pretty URL there would show
- * a false outage.
+ * `/mcp` is the human-readable connection guide. Protocol traffic goes to the
+ * dedicated function endpoints below so opening the guide in a browser can
+ * never collide with MCP's Streamable HTTP content negotiation.
  */
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
-const DIRECT_URL = `https://${projectRef}.supabase.co/functions/v1/mcp`;
-const READ_URL = `${SITE.BASE_URL}/mcp`;
-const WRITE_URL = `${SITE.BASE_URL}/mcp/admin`;
+const READ_URL = `https://${projectRef}.supabase.co/functions/v1/mcp`;
+const WRITE_URL = `https://${projectRef}.supabase.co/functions/v1/mcp-admin`;
 
 /* ---------------------------------------------------------------- primitives */
 
@@ -353,18 +348,8 @@ const Connect = () => {
 
   const check = useCallback(async () => {
     setRunning(true);
-    let res = await runMcpHealthCheck(READ_URL);
-    let endpoint = READ_URL;
-    // Preview hosts have no /mcp rewrite — fall back to the runtime URL so the
-    // page reports the server's real state rather than a routing artefact.
-    if (!res.ok) {
-      const direct = await runMcpHealthCheck(DIRECT_URL);
-      if (direct.ok) {
-        res = direct;
-        endpoint = DIRECT_URL;
-      }
-    }
-    setProbe(endpoint);
+    const res = await runMcpHealthCheck(READ_URL);
+    setProbe(READ_URL);
     setResult(res);
     setRunning(false);
   }, []);
@@ -378,7 +363,7 @@ const Connect = () => {
       <Seo
         title="Connect an AI assistant"
         description="Connect ChatGPT, Claude, or any MCP client to this site. Live status, tool list, and setup steps."
-        path="/connect"
+        path="/mcp"
       />
 
       <header className="mb-10 max-w-2xl">

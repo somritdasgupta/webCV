@@ -43,6 +43,7 @@ const App = () => (
               <Route path="/cv" element={<CV />} />
               <Route path="/admin" element={<AdminLogin />} />
               <Route path="/admin/editor" element={<AdminEditor />} />
+              <Route path="/mcp" element={<Connect />} />
               <Route path="/connect" element={<Connect />} />
               <Route path="/auth" element={<AuthSignIn />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />

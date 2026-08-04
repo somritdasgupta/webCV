@@ -1,7 +1,7 @@
 /**
  * Minimal browser-side MCP (Streamable HTTP) client.
  *
- * Used by the /connect page to health-check the site's own MCP endpoint,
+ * Used by the /mcp guide page to health-check the site's MCP endpoint,
  * validate the handshake, and render the live tool list. Stateless: every
  * call opens a fresh session so a failed run can never wedge the UI.
  */
