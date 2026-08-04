@@ -6,8 +6,6 @@
  * The repo coordinates are compile-time constants — never taken from tool input,
  * so a caller cannot redirect a write at another repository.
  */
-import { githubToken } from "./env";
-
 export const REPO = {
   owner: "somritdasgupta",
   name: "webCV",
@@ -17,10 +15,10 @@ export const REPO = {
 
 const API = `https://api.github.com/repos/${REPO.owner}/${REPO.name}`;
 
-const headers = () => ({
+const headers = (token: string) => ({
   Accept: "application/vnd.github+json",
   "Content-Type": "application/json",
-  Authorization: `Bearer ${githubToken()}`,
+  Authorization: `Bearer ${token}`,
   "User-Agent": "somrit-webcv-mcp",
   "X-GitHub-Api-Version": "2022-11-28",
 });
@@ -37,8 +35,8 @@ const fromB64 = (s: string) => {
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 };
 
-async function ghFetch(url: string, init?: RequestInit): Promise<Response> {
-  const res = await fetch(url, { ...init, headers: headers() });
+async function ghFetch(token: string, url: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(url, { ...init, headers: headers(token) });
   return res;
 }
 
@@ -76,8 +74,9 @@ export interface RepoFile {
   sha: string;
 }
 
-export async function listPostFiles(): Promise<RepoFile[]> {
+export async function listPostFiles(token: string): Promise<RepoFile[]> {
   const res = await ghFetch(
+    token,
     `${API}/contents/${REPO.contentDir}?ref=${REPO.branch}`,
   );
   if (res.status === 404) return [];
@@ -89,9 +88,11 @@ export async function listPostFiles(): Promise<RepoFile[]> {
 }
 
 export async function readFile(
+  token: string,
   path: string,
 ): Promise<{ content: string; sha: string } | null> {
   const res = await ghFetch(
+    token,
     `${API}/contents/${encodeURI(path)}?ref=${REPO.branch}`,
   );
   if (res.status === 404) return null;
@@ -107,13 +108,14 @@ export interface WriteResult {
 }
 
 export async function writeFile(opts: {
+  token: string;
   path: string;
   content: string;
   message: string;
   /** Required when replacing an existing file; omit to create. */
   sha?: string;
 }): Promise<WriteResult> {
-  const res = await ghFetch(`${API}/contents/${encodeURI(opts.path)}`, {
+  const res = await ghFetch(opts.token, `${API}/contents/${encodeURI(opts.path)}`, {
     method: "PUT",
     body: JSON.stringify({
       message: opts.message,
@@ -135,11 +137,12 @@ export async function writeFile(opts: {
 }
 
 export async function deleteFile(opts: {
+  token: string;
   path: string;
   sha: string;
   message: string;
 }): Promise<{ commitSha: string }> {
-  const res = await ghFetch(`${API}/contents/${encodeURI(opts.path)}`, {
+  const res = await ghFetch(opts.token, `${API}/contents/${encodeURI(opts.path)}`, {
     method: "DELETE",
     body: JSON.stringify({
       message: opts.message,

@@ -3,9 +3,9 @@
 // supabase function: mcp-admin
 // Bundled from src/lib/mcp-admin/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp-admin/index.ts
-import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.1";
 
-// src/lib/mcp-admin/tools/list-all-posts.ts
+// src/lib/mcp-admin/tools/start-github-authorization.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.1";
 
 // src/lib/mcp-admin/env.ts
@@ -14,52 +14,174 @@ function runtimeEnv(name) {
   const value = runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
   return value?.trim() || void 0;
 }
-function githubToken() {
-  const token = runtimeEnv("GITHUB_ADMIN_TOKEN");
-  if (!token) {
-    throw new Error(
-      "GITHUB_ADMIN_TOKEN is not configured on the server. The site owner must add it before write tools can run."
-    );
-  }
-  return token;
-}
-function adminEmails() {
-  return (runtimeEnv("MCP_ADMIN_EMAILS") ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+function authEncryptionKey() {
+  const key = runtimeEnv("MCP_AUTH_ENCRYPTION_KEY");
+  if (!key) throw new Error("MCP authoring authentication is not configured.");
+  return key;
 }
 
-// src/lib/mcp-admin/guard.ts
-var NotAuthorized = class extends Error {
+// src/lib/mcp-admin/github-device-auth.ts
+var GITHUB_CLIENT_ID = "Ov23li98oVkx9PDOvktP";
+var ADMIN_LOGIN = "somritdasgupta";
+var SESSION_TTL_MS = 60 * 60 * 1e3;
+var encoder = new TextEncoder();
+var decoder = new TextDecoder();
+var bytesToBase64Url = (bytes) => {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
 };
-function requireAdmin(ctx) {
-  if (!ctx.isAuthenticated()) {
-    throw new NotAuthorized("Not signed in. Connect this server with OAuth first.");
-  }
-  const email = (ctx.getUserEmail() ?? "").toLowerCase();
-  const userId = ctx.getUserId() ?? "";
-  if (!email || !userId) {
-    throw new NotAuthorized("Token carries no verified identity.");
-  }
-  const allowed = adminEmails();
-  if (allowed.length === 0) {
-    throw new NotAuthorized(
-      "No admin allow-list configured on the server. Writes are disabled."
-    );
-  }
-  if (!allowed.includes(email)) {
-    throw new NotAuthorized(
-      `${email} is not authorized to modify content on this site.`
-    );
-  }
-  return { userId, email };
+var base64UrlToBytes = (value) => {
+  const padded = value.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
+};
+async function encryptionKey() {
+  const digest = await crypto.subtle.digest("SHA-256", encoder.encode(authEncryptionKey()));
+  return crypto.subtle.importKey("raw", digest, "AES-GCM", false, ["encrypt", "decrypt"]);
 }
+async function createAuthorization() {
+  const response = await fetch("https://github.com/login/device/code", {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ client_id: GITHUB_CLIENT_ID, scope: "repo" })
+  });
+  if (!response.ok) throw new Error(`GitHub authorization failed (${response.status}).`);
+  const data = await response.json();
+  return {
+    deviceCode: String(data.device_code ?? ""),
+    userCode: String(data.user_code ?? ""),
+    verificationUri: String(data.verification_uri ?? "https://github.com/login/device"),
+    expiresIn: Number(data.expires_in ?? 900),
+    interval: Number(data.interval ?? 5)
+  };
+}
+async function exchangeDeviceCode(deviceCode) {
+  const response = await fetch("https://github.com/login/oauth/access_token", {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      client_id: GITHUB_CLIENT_ID,
+      device_code: deviceCode,
+      grant_type: "urn:ietf:params:oauth:grant-type:device_code"
+    })
+  });
+  const data = await response.json();
+  if (data.error === "authorization_pending" || data.error === "slow_down") return null;
+  if (!data.access_token) throw new Error(String(data.error_description ?? data.error ?? "GitHub did not issue a token."));
+  return String(data.access_token);
+}
+async function githubUser(token) {
+  const response = await fetch("https://api.github.com/user", {
+    headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) throw new Error(`GitHub identity check failed (${response.status}).`);
+  return response.json();
+}
+async function seal(payload) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    await encryptionKey(),
+    encoder.encode(JSON.stringify(payload))
+  );
+  return `${bytesToBase64Url(iv)}.${bytesToBase64Url(new Uint8Array(ciphertext))}`;
+}
+async function unseal(handle) {
+  const [ivValue, ciphertextValue] = handle.split(".");
+  if (!ivValue || !ciphertextValue) throw new Error("Invalid authorization handle.");
+  try {
+    const plaintext = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: base64UrlToBytes(ivValue) },
+      await encryptionKey(),
+      base64UrlToBytes(ciphertextValue)
+    );
+    return JSON.parse(decoder.decode(plaintext));
+  } catch {
+    throw new Error("Invalid or expired authorization handle. Run start_github_authorization again.");
+  }
+}
+async function completeAuthorization(deviceCode) {
+  const token = await exchangeDeviceCode(deviceCode);
+  if (!token) return null;
+  const user = await githubUser(token);
+  if (user.login.toLowerCase() !== ADMIN_LOGIN) {
+    throw new Error(`Signed in as ${user.login}. Only ${ADMIN_LOGIN} can authorize publishing.`);
+  }
+  return seal({ token, login: user.login, expiresAt: Date.now() + SESSION_TTL_MS });
+}
+async function authorizedGitHub(handle) {
+  const session = await unseal(handle);
+  if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run start_github_authorization again.");
+  if (session.login.toLowerCase() !== ADMIN_LOGIN) throw new Error("This GitHub account cannot publish.");
+  return { token: session.token, login: session.login };
+}
+
+// src/lib/mcp-admin/tools/start-github-authorization.ts
+var start_github_authorization_default = defineTool({
+  name: "start_github_authorization",
+  title: "Start GitHub authorization",
+  description: "Start the owner-only GitHub Device Flow required before calling blog authoring tools.",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
+  handler: async () => {
+    const authorization = await createAuthorization();
+    return {
+      content: [{
+        type: "text",
+        text: `Open ${authorization.verificationUri} and enter code ${authorization.userCode}. After approving with the somritdasgupta GitHub account, call complete_github_authorization with the device_code below.`
+      }],
+      structuredContent: {
+        device_code: authorization.deviceCode,
+        user_code: authorization.userCode,
+        verification_uri: authorization.verificationUri,
+        expires_in: authorization.expiresIn,
+        interval: authorization.interval
+      }
+    };
+  }
+});
+
+// src/lib/mcp-admin/tools/complete-github-authorization.ts
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z } from "npm:zod@^3.25.76";
+var complete_github_authorization_default = defineTool2({
+  name: "complete_github_authorization",
+  title: "Complete GitHub authorization",
+  description: "Check a GitHub Device Flow approval and return the short-lived authorization handle required by authoring tools.",
+  inputSchema: {
+    device_code: z.string().min(1).describe("Device code returned by start_github_authorization.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
+  handler: async ({ device_code }) => {
+    try {
+      const handle = await completeAuthorization(device_code);
+      if (!handle) return {
+        content: [{ type: "text", text: "Authorization is still pending. Ask the owner to finish GitHub approval, then call this tool again." }],
+        structuredContent: { state: "pending" }
+      };
+      return {
+        content: [{ type: "text", text: "GitHub owner verified. Use the returned authorization handle for authoring tools during this session." }],
+        structuredContent: { state: "ready", authorization: handle, expires_in: 3600 }
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { content: [{ type: "text", text: message }], structuredContent: { state: "failed", error: message }, isError: true };
+    }
+  }
+});
+
+// src/lib/mcp-admin/tools/list-all-posts.ts
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.1";
+
+// src/lib/mcp-admin/guard.ts
 var errorResult = (message) => ({
   content: [{ type: "text", text: message }],
   isError: true,
   structuredContent: { error: message }
 });
-async function adminTool(ctx, run) {
+async function adminTool(authorization, run) {
   try {
-    const value = await run(requireAdmin(ctx));
+    const value = await run(await authorizedGitHub(authorization));
     return {
       content: [{ type: "text", text: JSON.stringify(value, null, 2) }],
       structuredContent: value
@@ -77,10 +199,10 @@ var REPO = {
   contentDir: "content/blog"
 };
 var API = `https://api.github.com/repos/${REPO.owner}/${REPO.name}`;
-var headers = () => ({
+var headers = (token) => ({
   Accept: "application/vnd.github+json",
   "Content-Type": "application/json",
-  Authorization: `Bearer ${githubToken()}`,
+  Authorization: `Bearer ${token}`,
   "User-Agent": "somrit-webcv-mcp",
   "X-GitHub-Api-Version": "2022-11-28"
 });
@@ -94,8 +216,8 @@ var fromB64 = (s) => {
   const bin = atob(s.replace(/\n/g, ""));
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 };
-async function ghFetch(url, init) {
-  const res = await fetch(url, { ...init, headers: headers() });
+async function ghFetch(token, url, init) {
+  const res = await fetch(url, { ...init, headers: headers(token) });
   return res;
 }
 async function fail(res, action) {
@@ -115,8 +237,9 @@ function safeSlug(input) {
   return slug;
 }
 var pathForSlug = (slug) => `${REPO.contentDir}/${slug}.mdx`;
-async function listPostFiles() {
+async function listPostFiles(token) {
   const res = await ghFetch(
+    token,
     `${API}/contents/${REPO.contentDir}?ref=${REPO.branch}`
   );
   if (res.status === 404) return [];
@@ -124,8 +247,9 @@ async function listPostFiles() {
   const data = await res.json();
   return data.filter((f) => f.type === "file" && f.name.endsWith(".mdx")).map(({ name, path, sha }) => ({ name, path, sha }));
 }
-async function readFile(path) {
+async function readFile(token, path) {
   const res = await ghFetch(
+    token,
     `${API}/contents/${encodeURI(path)}?ref=${REPO.branch}`
   );
   if (res.status === 404) return null;
@@ -134,7 +258,7 @@ async function readFile(path) {
   return { content: fromB64(data.content), sha: data.sha };
 }
 async function writeFile(opts) {
-  const res = await ghFetch(`${API}/contents/${encodeURI(opts.path)}`, {
+  const res = await ghFetch(opts.token, `${API}/contents/${encodeURI(opts.path)}`, {
     method: "PUT",
     body: JSON.stringify({
       message: opts.message,
@@ -152,7 +276,7 @@ async function writeFile(opts) {
   };
 }
 async function deleteFile(opts) {
-  const res = await ghFetch(`${API}/contents/${encodeURI(opts.path)}`, {
+  const res = await ghFetch(opts.token, `${API}/contents/${encodeURI(opts.path)}`, {
     method: "DELETE",
     body: JSON.stringify({
       message: opts.message,
@@ -208,7 +332,7 @@ function estimateReadingTime(body) {
 }
 
 // src/lib/mcp-admin/tools/list-all-posts.ts
-var list_all_posts_default = defineTool({
+var list_all_posts_default = defineTool3({
   name: "list_all_posts",
   title: "List all posts (including drafts)",
   description: "List every MDX post in the content repository, including drafts and future-dated (scheduled) posts that the public site hides. Requires admin sign-in.",
@@ -241,14 +365,14 @@ var list_all_posts_default = defineTool({
 });
 
 // src/lib/mcp-admin/tools/read-post-source.ts
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z } from "npm:zod@^3.25.76";
-var read_post_source_default = defineTool2({
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z2 } from "npm:zod@^3.25.76";
+var read_post_source_default = defineTool4({
   name: "read_post_source",
   title: "Read post source",
   description: "Read the raw MDX source, parsed frontmatter, and current blob SHA of a post \u2014 including drafts. The SHA is required to update or delete the post safely.",
   inputSchema: {
-    slug: z.string().min(1).describe("Post slug, e.g. 'hello-world'.")
+    slug: z2.string().min(1).describe("Post slug, e.g. 'hello-world'.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: ({ slug }, ctx) => adminTool(ctx, async () => {
@@ -269,21 +393,21 @@ var read_post_source_default = defineTool2({
 });
 
 // src/lib/mcp-admin/tools/create-post.ts
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z2 } from "npm:zod@^3.25.76";
-var create_post_default = defineTool3({
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z3 } from "npm:zod@^3.25.76";
+var create_post_default = defineTool5({
   name: "create_post",
   title: "Create blog post",
   description: "Create a new MDX blog post and commit it to the content repository. Fails if the slug already exists \u2014 use update_post to change an existing post. Set a future date to schedule, or draft to keep it hidden.",
   inputSchema: {
-    slug: z2.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
-    title: z2.string().trim().min(1).max(120).describe("Post title."),
-    description: z2.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
-    body: z2.string().min(1).describe("Post body in MDX (no frontmatter \u2014 it is generated for you)."),
-    date: z2.string().optional().describe("ISO 8601 publish date. Defaults to now. A future date schedules the post."),
-    tags: z2.array(z2.string().trim().min(1)).max(8).optional().describe("Topic tags."),
-    cover: z2.string().url().optional().describe("Absolute cover image URL."),
-    draft: z2.boolean().optional().describe("Keep the post hidden from the public site when true.")
+    slug: z3.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
+    title: z3.string().trim().min(1).max(120).describe("Post title."),
+    description: z3.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
+    body: z3.string().min(1).describe("Post body in MDX (no frontmatter \u2014 it is generated for you)."),
+    date: z3.string().optional().describe("ISO 8601 publish date. Defaults to now. A future date schedules the post."),
+    tags: z3.array(z3.string().trim().min(1)).max(8).optional().describe("Topic tags."),
+    cover: z3.string().url().optional().describe("Absolute cover image URL."),
+    draft: z3.boolean().optional().describe("Keep the post hidden from the public site when true.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   handler: (input, ctx) => adminTool(ctx, async (admin) => {
@@ -325,22 +449,22 @@ var create_post_default = defineTool3({
 });
 
 // src/lib/mcp-admin/tools/update-post.ts
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z3 } from "npm:zod@^3.25.76";
-var update_post_default = defineTool4({
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z4 } from "npm:zod@^3.25.76";
+var update_post_default = defineTool6({
   name: "update_post",
   title: "Update blog post",
   description: "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
   inputSchema: {
-    slug: z3.string().min(1).describe("Slug of the post to update."),
-    title: z3.string().trim().min(1).max(120).optional(),
-    description: z3.string().trim().min(1).max(160).optional(),
-    body: z3.string().min(1).optional().describe("Replacement MDX body (without frontmatter)."),
-    date: z3.string().optional().describe("New ISO 8601 publish date."),
-    tags: z3.array(z3.string().trim().min(1)).max(8).optional(),
-    cover: z3.string().url().optional(),
-    draft: z3.boolean().optional().describe("Toggle draft visibility."),
-    expected_sha: z3.string().optional().describe("Blob SHA from read_post_source. Rejects the write if the file changed since.")
+    slug: z4.string().min(1).describe("Slug of the post to update."),
+    title: z4.string().trim().min(1).max(120).optional(),
+    description: z4.string().trim().min(1).max(160).optional(),
+    body: z4.string().min(1).optional().describe("Replacement MDX body (without frontmatter)."),
+    date: z4.string().optional().describe("New ISO 8601 publish date."),
+    tags: z4.array(z4.string().trim().min(1)).max(8).optional(),
+    cover: z4.string().url().optional(),
+    draft: z4.boolean().optional().describe("Toggle draft visibility."),
+    expected_sha: z4.string().optional().describe("Blob SHA from read_post_source. Rejects the write if the file changed since.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   handler: (input, ctx) => adminTool(ctx, async (admin) => {
@@ -393,16 +517,16 @@ var update_post_default = defineTool4({
 });
 
 // src/lib/mcp-admin/tools/delete-post.ts
-import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z4 } from "npm:zod@^3.25.76";
-var delete_post_default = defineTool5({
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z5 } from "npm:zod@^3.25.76";
+var delete_post_default = defineTool7({
   name: "delete_post",
   title: "Delete blog post",
   description: "Permanently delete a published MDX post from the content repository. Requires confirm: true, so a model cannot delete a post by accident. Prefer update_post with draft: true to unpublish without losing content.",
   inputSchema: {
-    slug: z4.string().min(1).describe("Slug of the post to delete."),
-    confirm: z4.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
-    expected_sha: z4.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")
+    slug: z5.string().min(1).describe("Slug of the post to delete."),
+    confirm: z5.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
+    expected_sha: z5.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")
   },
   annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
   handler: (input, ctx) => adminTool(ctx, async (admin) => {
@@ -432,17 +556,12 @@ var delete_post_default = defineTool5({
 });
 
 // src/lib/mcp-admin/index.ts
-var projectRef = "mrbhitfbyqddejzuraim";
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
   version: "0.1.0",
-  instructions: "Authoring tools for somritdasgupta.in. Create, update, and delete MDX blog posts in the site's content repository. Every call requires an OAuth sign-in and the signed-in account must be on the site owner's admin allow-list. Read a post with read_post_source before updating or deleting it, and pass the returned expected_sha so concurrent edits are never silently overwritten.",
-  auth: auth.oauth.issuer({
-    issuer: `https://${projectRef}.supabase.co/auth/v1`,
-    acceptedAudiences: "authenticated"
-  }),
-  tools: [list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
+  instructions: "Owner-only authoring tools for somritdasgupta.in. First call start_github_authorization, ask the owner to approve the displayed GitHub device code, then call complete_github_authorization. Pass its short-lived authorization handle to all post tools. Read a post before updating or deleting it and pass expected_sha to prevent stale writes.",
+  tools: [start_github_authorization_default, complete_github_authorization_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
 });
 
 // lovable-mcp-supabase-entry.ts
