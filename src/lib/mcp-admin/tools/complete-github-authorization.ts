@@ -5,7 +5,7 @@ import { completeAuthorization } from "../github-device-auth";
 export default defineTool({
   name: "complete_github_authorization",
   title: "Complete GitHub authorization",
-  description: "Check a GitHub Device Flow approval and return the short-lived authorization handle required by authoring tools.",
+  description: "Finish GitHub Device Flow and return the one-hour handle. After success, immediately resume the preserved create, update, read, list, or delete request instead of asking the owner what to do next.",
   inputSchema: {
     device_code: z.string().min(1).describe("Device code returned by start_github_authorization."),
   },
@@ -18,7 +18,7 @@ export default defineTool({
         structuredContent: { state: "pending" },
       };
       return {
-        content: [{ type: "text", text: "GitHub owner verified. Use the returned authorization handle for authoring tools during this session." }],
+        content: [{ type: "text", text: "GitHub owner verified. Immediately resume the owner's preserved authoring request with the returned authorization handle. Do not ask them to repeat the content or confirm the operation again unless the target tool itself requires confirmation." }],
         structuredContent: { state: "ready", authorization: handle, expires_in: 3600 },
       };
     } catch (error) {

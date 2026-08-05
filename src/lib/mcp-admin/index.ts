@@ -6,6 +6,7 @@ import readPostSource from "./tools/read-post-source";
 import createPost from "./tools/create-post";
 import updatePost from "./tools/update-post";
 import deletePost from "./tools/delete-post";
+import getMdxComponents from "./tools/get-mdx-components";
 
 /**
  * Admin (write) MCP server.
@@ -22,8 +23,8 @@ import deletePost from "./tools/delete-post";
 export default defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta — Site Admin",
-  version: "0.1.0",
+  version: "0.2.0",
   instructions:
-    "Owner-only authoring tools for somritdasgupta.in. First call start_github_authorization, ask the owner to approve the displayed GitHub device code, then call complete_github_authorization. Pass its short-lived authorization handle to all post tools. Read a post before updating or deleting it and pass expected_sha to prevent stale writes.",
-  tools: [startGitHubAuthorization, completeGitHubAuthorization, listAllPosts, readPostSource, createPost, updatePost, deletePost],
+    "Owner-only authoring tools for somritdasgupta.in. Connecting this server requires no login. When the owner requests any protected action and no current authorization handle is available, autonomously call start_github_authorization immediately; do not ask the owner to initiate authentication. Show the returned user_code and verification_uri, retain the requested operation and its complete content, then call complete_github_authorization after approval and immediately continue the original operation with the returned one-hour handle. Never claim create_post, update_post, or delete_post is unavailable when it appears in tools/list. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha to prevent stale writes.",
+  tools: [startGitHubAuthorization, completeGitHubAuthorization, getMdxComponents, listAllPosts, readPostSource, createPost, updatePost, deletePost],
 });
