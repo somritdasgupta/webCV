@@ -120,7 +120,7 @@ async function authorizedGitHub(handle) {
 var start_github_authorization_default = defineTool({
   name: "start_github_authorization",
   title: "Start GitHub authorization",
-  description: "Start the owner-only GitHub Device Flow required before calling blog authoring tools.",
+  description: "Start owner verification through GitHub Device Flow. Call this automatically whenever an authoring request has no active authorization handle; preserve the user's pending operation while they approve.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async () => {
@@ -128,7 +128,7 @@ var start_github_authorization_default = defineTool({
     return {
       content: [{
         type: "text",
-        text: `Open ${authorization.verificationUri} and enter code ${authorization.userCode}. After approving with the somritdasgupta GitHub account, call complete_github_authorization with the device_code below.`
+        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization with the private device_code and immediately resume that request.`
       }],
       structuredContent: {
         device_code: authorization.deviceCode,
@@ -147,7 +147,7 @@ import { z } from "npm:zod@^3.25.76";
 var complete_github_authorization_default = defineTool2({
   name: "complete_github_authorization",
   title: "Complete GitHub authorization",
-  description: "Check a GitHub Device Flow approval and return the short-lived authorization handle required by authoring tools.",
+  description: "Finish GitHub Device Flow and return the one-hour handle. After success, immediately resume the preserved create, update, read, list, or delete request instead of asking the owner what to do next.",
   inputSchema: {
     device_code: z.string().min(1).describe("Device code returned by start_github_authorization.")
   },
@@ -160,7 +160,7 @@ var complete_github_authorization_default = defineTool2({
         structuredContent: { state: "pending" }
       };
       return {
-        content: [{ type: "text", text: "GitHub owner verified. Use the returned authorization handle for authoring tools during this session." }],
+        content: [{ type: "text", text: "GitHub owner verified. Immediately resume the owner's preserved authoring request with the returned authorization handle. Do not ask them to repeat the content or confirm the operation again unless the target tool itself requires confirmation." }],
         structuredContent: { state: "ready", authorization: handle, expires_in: 3600 }
       };
     } catch (error) {
@@ -402,13 +402,13 @@ import { z as z4 } from "npm:zod@^3.25.76";
 var create_post_default = defineTool5({
   name: "create_post",
   title: "Create blog post",
-  description: "Create a new MDX blog post and commit it to the content repository. Fails if the slug already exists \u2014 use update_post to change an existing post. Set a future date to schedule, or draft to keep it hidden.",
+  description: "Create and publish a new MDX blog post by committing it to the content repository. This tool is available whenever advertised by tools/list. Use the authorization handle returned by complete_github_authorization; if none is active, call start_github_authorization automatically and preserve this complete request. Custom components from get_mdx_components are supported in body. Fails if the slug exists; set a future date to schedule or draft to hide it.",
   inputSchema: {
     authorization: z4.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
     slug: z4.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
     title: z4.string().trim().min(1).max(120).describe("Post title."),
     description: z4.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
-    body: z4.string().min(1).describe("Post body in MDX (no frontmatter \u2014 it is generated for you)."),
+    body: z4.string().min(1).describe("Complete post body in Markdown/MDX, without frontmatter. Custom components returned by get_mdx_components are supported."),
     date: z4.string().optional().describe("ISO 8601 publish date. Defaults to now. A future date schedules the post."),
     tags: z4.array(z4.string().trim().min(1)).max(8).optional().describe("Topic tags."),
     cover: z4.string().url().optional().describe("Absolute cover image URL."),
@@ -565,13 +565,62 @@ var delete_post_default = defineTool7({
   })
 });
 
+// src/lib/mcp-admin/tools/get-mdx-components.ts
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z7 } from "npm:zod@^3.25.76";
+
+// src/lib/mcp-admin/mdx-components.ts
+var MDX_COMPONENTS = [
+  { name: "Callout", purpose: "Emphasize a note, tip, warning, danger, or success message.", example: '<Callout type="tip" title="Key idea">\nUseful context.\n</Callout>' },
+  { name: "ProsCons", purpose: "Compare benefits and drawbacks in two columns.", example: '<ProsCons pros={["Fast", "Simple"]} cons={["Limited"]} />' },
+  { name: "Quote", purpose: "Render a prominent quotation with attribution.", example: '<Quote author="Author">\nQuoted text.\n</Quote>' },
+  { name: "Kbd", purpose: "Render an inline keyboard key.", example: "<Kbd>Cmd</Kbd> + <Kbd>K</Kbd>" },
+  { name: "LiveCode", purpose: "Add an editable React playground.", example: '<LiveCode template="react" files={{ "/App.js": `export default () => <h2>Hello</h2>` }} />' },
+  { name: "Tweet", purpose: "Embed a post from X by ID.", example: '<Tweet id="1683920951807971329" />' },
+  { name: "Chart", purpose: "Render line, bar, area, pie, or radar data.", example: '<Chart type="line" title="Users" data={[{ week: "W1", users: 120 }, { week: "W2", users: 180 }]} />' },
+  { name: "Stats", purpose: "Show a compact grid of metrics.", example: '<Stats cols={2} items={[{ label: "Posts", value: "42", change: 8 }]} />' },
+  { name: "Tabs", purpose: "Group related content into tabs.", example: '<Tabs>\n  <Tab label="npm">`npm install pkg`</Tab>\n  <Tab label="bun">`bun add pkg`</Tab>\n</Tabs>' },
+  { name: "Steps", purpose: "Present a numbered walkthrough.", example: '<Steps>\n  <Step title="Install">Run the command.</Step>\n  <Step title="Configure">Set the variables.</Step>\n</Steps>' },
+  { name: "Accordion", purpose: "Add collapsible sections or FAQs.", example: '<Accordion>\n  <AccordionItem title="Question?">Answer.</AccordionItem>\n</Accordion>' },
+  { name: "Video", purpose: "Embed YouTube or a direct video file.", example: '<Video src="https://www.youtube.com/watch?v=VIDEO_ID" caption="Caption" />' },
+  { name: "Badge", purpose: "Render an inline status label.", example: '<Badge tone="success">stable</Badge>' },
+  { name: "FileTree", purpose: "Display a directory structure.", example: '<FileTree tree={[{ name: "src", type: "folder", children: [{ name: "main.tsx" }] }]} />' },
+  { name: "Embed", purpose: "Embed a third-party URL or sandboxed HTML widget.", example: '<Embed src="https://codepen.io/team/codepen/pen/PNaGbb" title="Demo" height={420} />' }
+];
+
+// src/lib/mcp-admin/tools/get-mdx-components.ts
+var get_mdx_components_default = defineTool8({
+  name: "get_mdx_components",
+  title: "Get MDX components",
+  description: "List the custom MDX components supported by blog posts, with valid examples ready to use in create_post or update_post bodies.",
+  inputSchema: {
+    name: z7.string().trim().optional().describe("Optional component name to return, such as Chart or Embed.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: ({ name }) => {
+    const components = name ? MDX_COMPONENTS.filter((component) => component.name.toLowerCase() === name.toLowerCase()) : MDX_COMPONENTS;
+    if (name && components.length === 0) {
+      return {
+        content: [{ type: "text", text: `Unknown MDX component: ${name}. Call get_mdx_components without a name to list all supported components.` }],
+        structuredContent: { components: [], supported: MDX_COMPONENTS.map((component) => component.name) },
+        isError: true
+      };
+    }
+    return {
+      content: [{ type: "text", text: components.map((component) => `${component.name}: ${component.purpose}
+${component.example}`).join("\n\n") }],
+      structuredContent: { components }
+    };
+  }
+});
+
 // src/lib/mcp-admin/index.ts
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "0.1.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. First call start_github_authorization, ask the owner to approve the displayed GitHub device code, then call complete_github_authorization. Pass its short-lived authorization handle to all post tools. Read a post before updating or deleting it and pass expected_sha to prevent stale writes.",
-  tools: [start_github_authorization_default, complete_github_authorization_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
+  version: "0.2.0",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting this server requires no login. When the owner requests any protected action and no current authorization handle is available, autonomously call start_github_authorization immediately; do not ask the owner to initiate authentication. Show the returned user_code and verification_uri, retain the requested operation and its complete content, then call complete_github_authorization after approval and immediately continue the original operation with the returned one-hour handle. Never claim create_post, update_post, or delete_post is unavailable when it appears in tools/list. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha to prevent stale writes.",
+  tools: [start_github_authorization_default, complete_github_authorization_default, get_mdx_components_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
 });
 
 // lovable-mcp-supabase-entry.ts

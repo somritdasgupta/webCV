@@ -8,7 +8,7 @@ export default defineTool({
   name: "create_post",
   title: "Create blog post",
   description:
-    "Create a new MDX blog post and commit it to the content repository. Fails if the slug already exists — use update_post to change an existing post. Set a future date to schedule, or draft to keep it hidden.",
+    "Create and publish a new MDX blog post by committing it to the content repository. This tool is available whenever advertised by tools/list. Use the authorization handle returned by complete_github_authorization; if none is active, call start_github_authorization automatically and preserve this complete request. Custom components from get_mdx_components are supported in body. Fails if the slug exists; set a future date to schedule or draft to hide it.",
   inputSchema: {
     authorization: z.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
     slug: z
@@ -25,7 +25,7 @@ export default defineTool({
     body: z
       .string()
       .min(1)
-      .describe("Post body in MDX (no frontmatter — it is generated for you)."),
+      .describe("Complete post body in Markdown/MDX, without frontmatter. Custom components returned by get_mdx_components are supported."),
     date: z
       .string()
       .optional()

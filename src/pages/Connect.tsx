@@ -110,7 +110,7 @@ const Endpoint = ({
     <div className="mb-2.5 flex items-center justify-between gap-3">
       <span className="text-sm font-medium text-foreground">{label}</span>
       <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-        {id === "read" ? "public" : "oauth"}
+        {id === "read" ? "public" : "device flow"}
       </span>
     </div>
     <div className="flex items-center gap-2">
@@ -312,7 +312,8 @@ const SetupBody = ({ client }: { client: Client }) => {
             </a>
             .
           </li>
-          <li>2. Paste the endpoint and save. For authoring, your assistant will start the GitHub device flow when a write is requested.</li>
+          <li>2. Paste the endpoint and save. Neither endpoint asks you to sign in while connecting.</li>
+          <li>3. Ask for an authoring action normally. The assistant starts GitHub Device Flow automatically only when the protected tool is used, then resumes the original request after approval.</li>
         </ol>
         <CodeBlock code={claudeConfig} lang="claude_desktop_config.json" id="claude" />
       </div>
@@ -325,8 +326,8 @@ const SetupBody = ({ client }: { client: Client }) => {
           1. Settings → Connectors → Advanced → enable <strong>Developer mode</strong>.
         </li>
         <li>2. In the composer, open + → Developer mode.</li>
-        <li>3. Add sources → Connect more → name it and paste the endpoint.</li>
-        <li>4. Ask: “list the latest blog posts from this site”.</li>
+        <li>3. Add sources → Connect more → name it and paste the endpoint. No connection-time login is required.</li>
+        <li>4. Ask for a post to be created or edited. The assistant will initiate owner verification only when needed and continue the request after approval.</li>
       </ol>
     );
 
@@ -391,9 +392,18 @@ const Connect = () => {
             id="write"
             label="Author"
             url={WRITE_URL}
-            note="Create, update, and delete posts. Write tools verify the owner through the same GitHub device flow used by Admin."
+            note="No login while connecting. On the first protected request, the assistant automatically starts GitHub Device Flow, verifies the owner, and resumes the request with a one-hour session."
           />
         </div>
+      </Section>
+
+      <Section title="Authoring flow" hint="Authentication is action-driven, not connection-driven.">
+        <ol className="grid gap-3 text-sm text-foreground/90 sm:grid-cols-3">
+          <li className="rounded-xl border border-border bg-card/50 p-4"><span className="mb-2 block font-mono text-xs text-muted-foreground">01</span>Ask the assistant to create, update, or delete a post. You do not need to ask it to authenticate first.</li>
+          <li className="rounded-xl border border-border bg-card/50 p-4"><span className="mb-2 block font-mono text-xs text-muted-foreground">02</span>The assistant starts GitHub Device Flow and gives you the code. Approve it with the owner account.</li>
+          <li className="rounded-xl border border-border bg-card/50 p-4"><span className="mb-2 block font-mono text-xs text-muted-foreground">03</span>The assistant completes verification and resumes the preserved request. The handle remains valid for about one hour.</li>
+        </ol>
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Rich posts can use Callout, Chart, Stats, Tabs, Steps, Accordion, Video, Embed, LiveCode, FileTree, and the other components returned by <code className="font-mono text-foreground">get_mdx_components</code>.</p>
       </Section>
 
       <Section title="Status">

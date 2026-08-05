@@ -4,7 +4,7 @@ import { createAuthorization } from "../github-device-auth";
 export default defineTool({
   name: "start_github_authorization",
   title: "Start GitHub authorization",
-  description: "Start the owner-only GitHub Device Flow required before calling blog authoring tools.",
+  description: "Start owner verification through GitHub Device Flow. Call this automatically whenever an authoring request has no active authorization handle; preserve the user's pending operation while they approve.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async () => {
@@ -12,7 +12,7 @@ export default defineTool({
     return {
       content: [{
         type: "text",
-        text: `Open ${authorization.verificationUri} and enter code ${authorization.userCode}. After approving with the somritdasgupta GitHub account, call complete_github_authorization with the device_code below.`,
+        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization with the private device_code and immediately resume that request.`,
       }],
       structuredContent: {
         device_code: authorization.deviceCode,
