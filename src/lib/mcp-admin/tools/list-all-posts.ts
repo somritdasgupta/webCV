@@ -10,11 +10,11 @@ export default defineTool({
   description:
     "List every MDX post in the content repository, including drafts and future-dated (scheduled) posts that the public site hides. Requires admin sign-in.",
   inputSchema: {
-    authorization: z.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    owner_session: z.string().min(1).describe("One-hour owner session returned by complete_github_authorization."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: (input) =>
-    adminTool(input.authorization, async (admin) => {
+    adminTool(input.owner_session, async (admin) => {
       const files = await listPostFiles(admin.token);
       const posts = await Promise.all(
         files.map(async (f) => {

@@ -10,12 +10,12 @@ export default defineTool({
   description:
     "Read the raw MDX source, parsed frontmatter, and current blob SHA of a post — including drafts. The SHA is required to update or delete the post safely.",
   inputSchema: {
-    authorization: z.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    owner_session: z.string().min(1).describe("One-hour owner session returned by complete_github_authorization."),
     slug: z.string().min(1).describe("Post slug, e.g. 'hello-world'."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: ({ slug, authorization }) =>
-    adminTool(authorization, async (admin) => {
+  handler: ({ slug, owner_session }) =>
+    adminTool(owner_session, async (admin) => {
       const clean = safeSlug(slug);
       const path = pathForSlug(clean);
       const file = await readFile(admin.token, path);

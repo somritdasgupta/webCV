@@ -18,8 +18,8 @@ export default defineTool({
         structuredContent: { state: "pending" },
       };
       return {
-        content: [{ type: "text", text: "GitHub owner verified. Immediately resume the owner's preserved authoring request with the returned authorization handle. Do not ask them to repeat the content or confirm the operation again unless the target tool itself requires confirmation." }],
-        structuredContent: { state: "ready", authorization: handle, expires_in: 3600 },
+        content: [{ type: "text", text: "GitHub owner verified. Immediately resume the preserved authoring request and pass owner_session to the target tool. Do not claim success until that tool returns published: true (or updated/deleted: true) with a commit SHA." }],
+        structuredContent: { state: "ready", owner_session: handle, expires_in: 3600 },
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

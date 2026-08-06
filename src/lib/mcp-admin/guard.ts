@@ -19,11 +19,11 @@ const errorResult = (message: string) => ({
  * `isError` MCP result carrying the reason, never an unhandled throw.
  */
 export async function adminTool<T>(
-  authorization: string,
+  ownerSession: string,
   run: (admin: AdminIdentity) => Promise<T> | T,
 ) {
   try {
-    const value = await run(await authorizedGitHub(authorization));
+    const value = await run(await authorizedGitHub(ownerSession));
     return {
       content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }],
       structuredContent: value as Record<string, unknown>,

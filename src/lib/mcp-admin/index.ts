@@ -23,8 +23,8 @@ import getMdxComponents from "./tools/get-mdx-components";
 export default defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta — Site Admin",
-  version: "0.2.0",
+  version: "0.3.0",
   instructions:
-    "Owner-only authoring tools for somritdasgupta.in. Connecting this server requires no login. When the owner requests any protected action and no current authorization handle is available, autonomously call start_github_authorization immediately; do not ask the owner to initiate authentication. Show the returned user_code and verification_uri, retain the requested operation and its complete content, then call complete_github_authorization after approval and immediately continue the original operation with the returned one-hour handle. Never claim create_post, update_post, or delete_post is unavailable when it appears in tools/list. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha to prevent stale writes.",
+    "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. For a protected action without an owner_session, immediately call start_github_authorization, retain the complete requested operation, show the device code, then call complete_github_authorization after approval and pass its owner_session directly to the preserved tool call. The owner_session is an opaque workflow value, not a GitHub token. A completed authorization is not a completed publish. Never say a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. If a tool returns isError, an empty result, or no commitSha, report that publishing was not confirmed. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
   tools: [startGitHubAuthorization, completeGitHubAuthorization, getMdxComponents, listAllPosts, readPostSource, createPost, updatePost, deletePost],
 });
