@@ -120,7 +120,7 @@ async function authorizedGitHub(handle) {
 var start_github_authorization_default = defineTool({
   name: "start_github_authorization",
   title: "Start GitHub authorization",
-  description: "Start owner verification through GitHub Device Flow. Call this automatically whenever an authoring request has no active authorization handle; preserve the user's pending operation while they approve.",
+  description: "Start owner verification through GitHub Device Flow. Call this automatically whenever an authoring request has no active owner session; preserve the complete pending operation while approval is in progress.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async () => {
@@ -128,7 +128,7 @@ var start_github_authorization_default = defineTool({
     return {
       content: [{
         type: "text",
-        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization with the private device_code and immediately resume that request.`
+        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization with the private device_code and immediately resume that request using its owner_session.`
       }],
       structuredContent: {
         device_code: authorization.deviceCode,
@@ -160,8 +160,8 @@ var complete_github_authorization_default = defineTool2({
         structuredContent: { state: "pending" }
       };
       return {
-        content: [{ type: "text", text: "GitHub owner verified. Immediately resume the owner's preserved authoring request with the returned authorization handle. Do not ask them to repeat the content or confirm the operation again unless the target tool itself requires confirmation." }],
-        structuredContent: { state: "ready", authorization: handle, expires_in: 3600 }
+        content: [{ type: "text", text: "GitHub owner verified. Immediately resume the preserved authoring request and pass owner_session to the target tool. Do not claim success until that tool returns published: true (or updated/deleted: true) with a commit SHA." }],
+        structuredContent: { state: "ready", owner_session: handle, expires_in: 3600 }
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -180,9 +180,9 @@ var errorResult = (message) => ({
   isError: true,
   structuredContent: { error: message }
 });
-async function adminTool(authorization, run) {
+async function adminTool(ownerSession, run) {
   try {
-    const value = await run(await authorizedGitHub(authorization));
+    const value = await run(await authorizedGitHub(ownerSession));
     return {
       content: [{ type: "text", text: JSON.stringify(value, null, 2) }],
       structuredContent: value
@@ -338,10 +338,10 @@ var list_all_posts_default = defineTool3({
   title: "List all posts (including drafts)",
   description: "List every MDX post in the content repository, including drafts and future-dated (scheduled) posts that the public site hides. Requires admin sign-in.",
   inputSchema: {
-    authorization: z2.string().min(1).describe("Short-lived handle returned by complete_github_authorization.")
+    owner_session: z2.string().min(1).describe("One-hour owner session returned by complete_github_authorization.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: (input) => adminTool(input.authorization, async (admin) => {
+  handler: (input) => adminTool(input.owner_session, async (admin) => {
     const files = await listPostFiles(admin.token);
     const posts = await Promise.all(
       files.map(async (f) => {
@@ -375,11 +375,11 @@ var read_post_source_default = defineTool4({
   title: "Read post source",
   description: "Read the raw MDX source, parsed frontmatter, and current blob SHA of a post \u2014 including drafts. The SHA is required to update or delete the post safely.",
   inputSchema: {
-    authorization: z3.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    owner_session: z3.string().min(1).describe("One-hour owner session returned by complete_github_authorization."),
     slug: z3.string().min(1).describe("Post slug, e.g. 'hello-world'.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: ({ slug, authorization }) => adminTool(authorization, async (admin) => {
+  handler: ({ slug, owner_session }) => adminTool(owner_session, async (admin) => {
     const clean = safeSlug(slug);
     const path = pathForSlug(clean);
     const file = await readFile(admin.token, path);
@@ -402,9 +402,9 @@ import { z as z4 } from "npm:zod@^3.25.76";
 var create_post_default = defineTool5({
   name: "create_post",
   title: "Create blog post",
-  description: "Create and publish a new MDX blog post by committing it to the content repository. This tool is available whenever advertised by tools/list. Use the authorization handle returned by complete_github_authorization; if none is active, call start_github_authorization automatically and preserve this complete request. Custom components from get_mdx_components are supported in body. Fails if the slug exists; set a future date to schedule or draft to hide it.",
+  description: "Create and publish a new MDX blog post, then read the committed file back from GitHub before returning success. Use owner_session from complete_github_authorization; if none is active, call start_github_authorization and preserve this complete request. Use get_mdx_components for rich MDX. Fails if the slug exists; set a future date to schedule or draft to hide it.",
   inputSchema: {
-    authorization: z4.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    owner_session: z4.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
     slug: z4.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
     title: z4.string().trim().min(1).max(120).describe("Post title."),
     description: z4.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
@@ -415,7 +415,7 @@ var create_post_default = defineTool5({
     draft: z4.boolean().optional().describe("Keep the post hidden from the public site when true.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  handler: (input) => adminTool(input.authorization, async (admin) => {
+  handler: (input) => adminTool(input.owner_session, async (admin) => {
     const slug = safeSlug(input.slug);
     const path = pathForSlug(slug);
     if (await readFile(admin.token, path)) {
@@ -443,13 +443,20 @@ var create_post_default = defineTool5({
       content: mdx,
       message: `content: add "${input.title}" (via MCP by ${admin.login})`
     });
+    const committed = await readFile(admin.token, path);
+    if (!committed || committed.sha !== result.fileSha || committed.content !== mdx) {
+      throw new Error("GitHub accepted the write but commit verification failed. Publishing was not confirmed; check the repository before retrying.");
+    }
     return {
+      published: true,
+      verified: true,
       slug,
       path,
       url: `https://somritdasgupta.in/blog/${slug}`,
       scheduled: date.getTime() > Date.now(),
       draft: input.draft === true,
-      ...result
+      ...result,
+      message: `Published and verified commit ${result.commitSha}.`
     };
   })
 });
@@ -462,7 +469,7 @@ var update_post_default = defineTool6({
   title: "Update blog post",
   description: "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
   inputSchema: {
-    authorization: z5.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    owner_session: z5.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
     slug: z5.string().min(1).describe("Slug of the post to update."),
     title: z5.string().trim().min(1).max(120).optional(),
     description: z5.string().trim().min(1).max(160).optional(),
@@ -474,7 +481,7 @@ var update_post_default = defineTool6({
     expected_sha: z5.string().optional().describe("Blob SHA from read_post_source. Rejects the write if the file changed since.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  handler: (input) => adminTool(input.authorization, async (admin) => {
+  handler: (input) => adminTool(input.owner_session, async (admin) => {
     const slug = safeSlug(input.slug);
     const path = pathForSlug(slug);
     const file = await readFile(admin.token, path);
@@ -512,14 +519,21 @@ var update_post_default = defineTool6({
       sha: file.sha,
       message: `content: update "${slug}" (via MCP by ${admin.login})`
     });
+    const committed = await readFile(admin.token, path);
+    if (!committed || committed.sha !== result.fileSha || committed.content !== mdx) {
+      throw new Error("GitHub accepted the update but commit verification failed. The update was not confirmed; check the repository before retrying.");
+    }
     return {
+      updated: true,
       slug,
       path,
       changed: true,
       url: `https://somritdasgupta.in/blog/${slug}`,
       scheduled: date.getTime() > Date.now(),
       draft,
-      ...result
+      ...result,
+      verified: true,
+      message: `Updated and verified commit ${result.commitSha}.`
     };
   })
 });
@@ -532,13 +546,13 @@ var delete_post_default = defineTool7({
   title: "Delete blog post",
   description: "Permanently delete a published MDX post from the content repository. Requires confirm: true, so a model cannot delete a post by accident. Prefer update_post with draft: true to unpublish without losing content.",
   inputSchema: {
-    authorization: z6.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    owner_session: z6.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
     slug: z6.string().min(1).describe("Slug of the post to delete."),
     confirm: z6.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
     expected_sha: z6.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")
   },
   annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
-  handler: (input) => adminTool(input.authorization, async (admin) => {
+  handler: (input) => adminTool(input.owner_session, async (admin) => {
     const slug = safeSlug(input.slug);
     const path = pathForSlug(slug);
     const file = await readFile(admin.token, path);
@@ -555,12 +569,17 @@ var delete_post_default = defineTool7({
       sha: file.sha,
       message: `content: delete "${slug}" (via MCP by ${admin.login})`
     });
+    if (await readFile(admin.token, path)) {
+      throw new Error("GitHub accepted the delete but the file still exists. Deletion was not confirmed.");
+    }
     return {
       slug,
       path,
       deleted: true,
       title: String(data.title ?? slug),
-      commitSha
+      commitSha,
+      verified: true,
+      message: `Deleted and verified commit ${commitSha}.`
     };
   })
 });
@@ -618,8 +637,8 @@ ${component.example}`).join("\n\n") }],
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "0.2.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting this server requires no login. When the owner requests any protected action and no current authorization handle is available, autonomously call start_github_authorization immediately; do not ask the owner to initiate authentication. Show the returned user_code and verification_uri, retain the requested operation and its complete content, then call complete_github_authorization after approval and immediately continue the original operation with the returned one-hour handle. Never claim create_post, update_post, or delete_post is unavailable when it appears in tools/list. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha to prevent stale writes.",
+  version: "0.3.0",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. For a protected action without an owner_session, immediately call start_github_authorization, retain the complete requested operation, show the device code, then call complete_github_authorization after approval and pass its owner_session directly to the preserved tool call. The owner_session is an opaque workflow value, not a GitHub token. A completed authorization is not a completed publish. Never say a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. If a tool returns isError, an empty result, or no commitSha, report that publishing was not confirmed. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
   tools: [start_github_authorization_default, complete_github_authorization_default, get_mdx_components_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
 });
 

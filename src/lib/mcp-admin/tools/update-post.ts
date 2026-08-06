@@ -10,7 +10,7 @@ export default defineTool({
   description:
     "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
   inputSchema: {
-    authorization: z.string().min(1).describe("Short-lived handle returned by complete_github_authorization."),
+    owner_session: z.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
     slug: z.string().min(1).describe("Slug of the post to update."),
     title: z.string().trim().min(1).max(120).optional(),
     description: z.string().trim().min(1).max(160).optional(),
@@ -30,7 +30,7 @@ export default defineTool({
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   handler: (input) =>
-    adminTool(input.authorization, async (admin) => {
+    adminTool(input.owner_session, async (admin) => {
       const slug = safeSlug(input.slug);
       const path = pathForSlug(slug);
 
@@ -75,7 +75,13 @@ export default defineTool({
         message: `content: update "${slug}" (via MCP by ${admin.login})`,
       });
 
+      const committed = await readFile(admin.token, path);
+      if (!committed || committed.sha !== result.fileSha || committed.content !== mdx) {
+        throw new Error("GitHub accepted the update but commit verification failed. The update was not confirmed; check the repository before retrying.");
+      }
+
       return {
+        updated: true,
         slug,
         path,
         changed: true,
@@ -83,6 +89,8 @@ export default defineTool({
         scheduled: date.getTime() > Date.now(),
         draft,
         ...result,
+        verified: true,
+        message: `Updated and verified commit ${result.commitSha}.`,
       };
     }),
 });
