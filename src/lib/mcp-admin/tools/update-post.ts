@@ -81,6 +81,7 @@ export default defineTool({
       }
 
       return {
+        updated: true,
         slug,
         path,
         changed: true,

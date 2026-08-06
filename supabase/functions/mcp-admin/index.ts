@@ -120,7 +120,7 @@ async function authorizedGitHub(handle) {
 var start_github_authorization_default = defineTool({
   name: "start_github_authorization",
   title: "Start GitHub authorization",
-  description: "Start owner verification through GitHub Device Flow. Call this automatically whenever an authoring request has no active authorization handle; preserve the user's pending operation while they approve.",
+  description: "Start owner verification through GitHub Device Flow. Call this automatically whenever an authoring request has no active owner session; preserve the complete pending operation while approval is in progress.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async () => {
@@ -128,7 +128,7 @@ var start_github_authorization_default = defineTool({
     return {
       content: [{
         type: "text",
-        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization with the private device_code and immediately resume that request.`
+        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization with the private device_code and immediately resume that request using its owner_session.`
       }],
       structuredContent: {
         device_code: authorization.deviceCode,
@@ -402,7 +402,7 @@ import { z as z4 } from "npm:zod@^3.25.76";
 var create_post_default = defineTool5({
   name: "create_post",
   title: "Create blog post",
-  description: "Create and publish a new MDX blog post by committing it to the content repository. This tool is available whenever advertised by tools/list. Use the authorization handle returned by complete_github_authorization; if none is active, call start_github_authorization automatically and preserve this complete request. Custom components from get_mdx_components are supported in body. Fails if the slug exists; set a future date to schedule or draft to hide it.",
+  description: "Create and publish a new MDX blog post, then read the committed file back from GitHub before returning success. Use owner_session from complete_github_authorization; if none is active, call start_github_authorization and preserve this complete request. Use get_mdx_components for rich MDX. Fails if the slug exists; set a future date to schedule or draft to hide it.",
   inputSchema: {
     owner_session: z4.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
     slug: z4.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
@@ -524,6 +524,7 @@ var update_post_default = defineTool6({
       throw new Error("GitHub accepted the update but commit verification failed. The update was not confirmed; check the repository before retrying.");
     }
     return {
+      updated: true,
       slug,
       path,
       changed: true,
