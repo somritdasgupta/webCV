@@ -1,1 +1,3 @@
-/*    /index.html   200
+/mcp/read    https://mrbhitfbyqddejzuraim.supabase.co/functions/v1/mcp    200
+/mcp/admin   https://mrbhitfbyqddejzuraim.supabase.co/functions/v1/mcp-admin    200
+/*           /index.html                                                     200

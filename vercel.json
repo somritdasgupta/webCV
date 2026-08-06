@@ -9,6 +9,14 @@
       "destination": "https://github.com/login/oauth/access_token"
     },
     {
+      "source": "/mcp/read",
+      "destination": "https://mrbhitfbyqddejzuraim.supabase.co/functions/v1/mcp"
+    },
+    {
+      "source": "/mcp/admin",
+      "destination": "https://mrbhitfbyqddejzuraim.supabase.co/functions/v1/mcp-admin"
+    },
+    {
       "source": "/((?!.*\\.).*)",
       "destination": "/index.html"
     }

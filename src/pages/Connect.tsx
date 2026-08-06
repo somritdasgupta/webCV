@@ -16,6 +16,7 @@ import {
 import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SITE } from "@/site.config";
 import {
   runMcpHealthCheck,
   runMcpTool,
@@ -24,9 +25,8 @@ import {
   type McpToolRunResult,
 } from "@/lib/mcpClient";
 
-const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
-const READ_URL = `https://${projectRef}.supabase.co/functions/v1/mcp`;
-const AUTHOR_URL = `https://${projectRef}.supabase.co/functions/v1/mcp-admin`;
+const READ_URL = `${SITE.BASE_URL}/mcp/read`;
+const AUTHOR_URL = `${SITE.BASE_URL}/mcp/admin`;
 
 type ServerKind = "read" | "author";
 type ClientKind = "Claude" | "ChatGPT" | "Terminal";
