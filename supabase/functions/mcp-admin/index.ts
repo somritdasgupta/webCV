@@ -47,11 +47,18 @@ async function createAuthorization() {
   });
   if (!response.ok) throw new Error(`GitHub authorization failed (${response.status}).`);
   const data = await response.json();
+  const deviceCode = String(data.device_code ?? "");
+  const expiresIn = Number(data.expires_in ?? 900);
+  if (!deviceCode) throw new Error("GitHub did not return an authorization request.");
   return {
-    deviceCode: String(data.device_code ?? ""),
+    authorizationRequest: await seal({
+      purpose: "github-device",
+      deviceCode,
+      expiresAt: Date.now() + expiresIn * 1e3
+    }),
     userCode: String(data.user_code ?? ""),
     verificationUri: String(data.verification_uri ?? "https://github.com/login/device"),
-    expiresIn: Number(data.expires_in ?? 900),
+    expiresIn,
     interval: Number(data.interval ?? 5)
   };
 }
@@ -100,17 +107,25 @@ async function unseal(handle) {
     throw new Error("Invalid or expired authorization handle. Run start_github_authorization again.");
   }
 }
-async function completeAuthorization(deviceCode) {
-  const token = await exchangeDeviceCode(deviceCode);
+async function completeAuthorization(authorizationRequest) {
+  const request = await unseal(authorizationRequest);
+  if (request.purpose !== "github-device" || !request.deviceCode) {
+    throw new Error("Invalid GitHub authorization request. Start authorization once and use its authorization_request value.");
+  }
+  if (request.expiresAt <= Date.now()) {
+    throw new Error("GitHub authorization expired. Start authorization once more to receive a new code.");
+  }
+  const token = await exchangeDeviceCode(request.deviceCode);
   if (!token) return null;
   const user = await githubUser(token);
   if (user.login.toLowerCase() !== ADMIN_LOGIN) {
     throw new Error(`Signed in as ${user.login}. Only ${ADMIN_LOGIN} can authorize publishing.`);
   }
-  return seal({ token, login: user.login, expiresAt: Date.now() + SESSION_TTL_MS });
+  return seal({ purpose: "owner-session", token, login: user.login, expiresAt: Date.now() + SESSION_TTL_MS });
 }
 async function authorizedGitHub(handle) {
   const session = await unseal(handle);
+  if (session.purpose !== "owner-session") throw new Error("Invalid owner session.");
   if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run start_github_authorization again.");
   if (session.login.toLowerCase() !== ADMIN_LOGIN) throw new Error("This GitHub account cannot publish.");
   return { token: session.token, login: session.login };
@@ -128,10 +143,10 @@ var start_github_authorization_default = defineTool({
     return {
       content: [{
         type: "text",
-        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization with the private device_code and immediately resume that request using its owner_session.`
+        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization once with authorization_request from structuredContent. Never pass the displayed user code and never restart while this request remains valid.`
       }],
       structuredContent: {
-        device_code: authorization.deviceCode,
+        authorization_request: authorization.authorizationRequest,
         user_code: authorization.userCode,
         verification_uri: authorization.verificationUri,
         expires_in: authorization.expiresIn,
@@ -147,17 +162,17 @@ import { z } from "npm:zod@^3.25.76";
 var complete_github_authorization_default = defineTool2({
   name: "complete_github_authorization",
   title: "Complete GitHub authorization",
-  description: "Finish GitHub Device Flow and return the one-hour handle. After success, immediately resume the preserved create, update, read, list, or delete request instead of asking the owner what to do next.",
+  description: "Finish the existing GitHub Device Flow with its opaque authorization request. Retry this same request if approval is pending; never start a new flow unless it expired. After success, immediately resume the preserved action.",
   inputSchema: {
-    device_code: z.string().min(1).describe("Device code returned by start_github_authorization.")
+    authorization_request: z.string().min(20).describe("Opaque authorization_request returned by start_github_authorization. Never use the user-facing code.")
   },
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
-  handler: async ({ device_code }) => {
+  handler: async ({ authorization_request }) => {
     try {
-      const handle = await completeAuthorization(device_code);
+      const handle = await completeAuthorization(authorization_request);
       if (!handle) return {
-        content: [{ type: "text", text: "Authorization is still pending. Ask the owner to finish GitHub approval, then call this tool again." }],
-        structuredContent: { state: "pending" }
+        content: [{ type: "text", text: "Authorization is still pending. Keep the original authoring request and retry complete_github_authorization with this same authorization_request after the owner approves. Do not start a new authorization." }],
+        structuredContent: { state: "pending", authorization_request }
       };
       return {
         content: [{ type: "text", text: "GitHub owner verified. Immediately resume the preserved authoring request and pass owner_session to the target tool. Do not claim success until that tool returns published: true (or updated/deleted: true) with a commit SHA." }],
@@ -637,8 +652,8 @@ ${component.example}`).join("\n\n") }],
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "0.3.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. For a protected action without an owner_session, immediately call start_github_authorization, retain the complete requested operation, show the device code, then call complete_github_authorization after approval and pass its owner_session directly to the preserved tool call. The owner_session is an opaque workflow value, not a GitHub token. A completed authorization is not a completed publish. Never say a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. If a tool returns isError, an empty result, or no commitSha, report that publishing was not confirmed. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
+  version: "0.4.0",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. For a protected action without an owner_session, call start_github_authorization exactly once, retain the complete requested operation, and show only its user_code to the owner. After approval, pass its opaque authorization_request to complete_github_authorization. If pending, retry completion with that same authorization_request; never start another flow unless it explicitly expired. Immediately pass the returned owner_session to the preserved action. A completed authorization is not a completed publish. Never claim a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. If a tool returns isError, an empty result, or no commitSha, report that publishing was not confirmed. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
   tools: [start_github_authorization_default, complete_github_authorization_default, get_mdx_components_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
 });
 

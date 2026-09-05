@@ -256,10 +256,10 @@ export default function Connect() {
         <div>
           <p className="font-mono text-xs uppercase text-muted-foreground">02 / Author</p>
           <h2 id="workflow-heading" className="mt-2 text-2xl font-semibold text-foreground">One request, one continuous flow</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">The assistant must retain your request through verification and may only claim success with a verified commit SHA.</p>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">The assistant keeps one authorization request through verification. It must not generate another code while that request is valid, and may only claim success with a verified commit SHA.</p>
         </div>
         <ol className="grid gap-5 sm:grid-cols-3">
-          {["Ask to create, update, schedule, or delete a post.", "Approve the GitHub code shown in chat. No login is required when adding the server.", "The original action resumes and returns a verified GitHub commit."].map((step, index) => (
+          {["Ask to create, update, schedule, or delete a post.", "Approve the single GitHub code shown in chat. No login is required when adding the server.", "The original action resumes automatically and returns a verified GitHub commit."].map((step, index) => (
             <li key={step} className="border-l border-border pl-4"><span className="font-mono text-xs text-accent">0{index + 1}</span><p className="mt-2 text-sm leading-6 text-foreground">{step}</p></li>
           ))}
         </ol>
