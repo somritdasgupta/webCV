@@ -12,10 +12,10 @@ export default defineTool({
     return {
       content: [{
         type: "text",
-        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization with the private device_code and immediately resume that request using its owner_session.`,
+        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization once with authorization_request from structuredContent. Never pass the displayed user code and never restart while this request remains valid.`,
       }],
       structuredContent: {
-        device_code: authorization.deviceCode,
+        authorization_request: authorization.authorizationRequest,
         user_code: authorization.userCode,
         verification_uri: authorization.verificationUri,
         expires_in: authorization.expiresIn,

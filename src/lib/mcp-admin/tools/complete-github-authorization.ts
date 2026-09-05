@@ -5,17 +5,17 @@ import { completeAuthorization } from "../github-device-auth";
 export default defineTool({
   name: "complete_github_authorization",
   title: "Complete GitHub authorization",
-  description: "Finish GitHub Device Flow and return the one-hour handle. After success, immediately resume the preserved create, update, read, list, or delete request instead of asking the owner what to do next.",
+  description: "Finish the existing GitHub Device Flow with its opaque authorization request. Retry this same request if approval is pending; never start a new flow unless it expired. After success, immediately resume the preserved action.",
   inputSchema: {
-    device_code: z.string().min(1).describe("Device code returned by start_github_authorization."),
+    authorization_request: z.string().min(20).describe("Opaque authorization_request returned by start_github_authorization. Never use the user-facing code."),
   },
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
-  handler: async ({ device_code }) => {
+  handler: async ({ authorization_request }) => {
     try {
-      const handle = await completeAuthorization(device_code);
+      const handle = await completeAuthorization(authorization_request);
       if (!handle) return {
-        content: [{ type: "text", text: "Authorization is still pending. Ask the owner to finish GitHub approval, then call this tool again." }],
-        structuredContent: { state: "pending" },
+        content: [{ type: "text", text: "Authorization is still pending. Keep the original authoring request and retry complete_github_authorization with this same authorization_request after the owner approves. Do not start a new authorization." }],
+        structuredContent: { state: "pending", authorization_request },
       };
       return {
         content: [{ type: "text", text: "GitHub owner verified. Immediately resume the preserved authoring request and pass owner_session to the target tool. Do not claim success until that tool returns published: true (or updated/deleted: true) with a commit SHA." }],

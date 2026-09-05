@@ -5,7 +5,7 @@ const ADMIN_LOGIN = "somritdasgupta";
 const SESSION_TTL_MS = 60 * 60 * 1000;
 
 export interface DeviceAuthorization {
-  deviceCode: string;
+  authorizationRequest: string;
   userCode: string;
   verificationUri: string;
   expiresIn: number;
@@ -13,7 +13,8 @@ export interface DeviceAuthorization {
 }
 
 interface GitHubUser { login: string }
-interface SessionPayload { token: string; login: string; expiresAt: number }
+interface AuthorizationPayload { purpose: "github-device"; deviceCode: string; expiresAt: number }
+interface SessionPayload { purpose: "owner-session"; token: string; login: string; expiresAt: number }
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -42,11 +43,18 @@ export async function createAuthorization(): Promise<DeviceAuthorization> {
   });
   if (!response.ok) throw new Error(`GitHub authorization failed (${response.status}).`);
   const data = (await response.json()) as Record<string, unknown>;
+  const deviceCode = String(data.device_code ?? "");
+  const expiresIn = Number(data.expires_in ?? 900);
+  if (!deviceCode) throw new Error("GitHub did not return an authorization request.");
   return {
-    deviceCode: String(data.device_code ?? ""),
+    authorizationRequest: await seal({
+      purpose: "github-device",
+      deviceCode,
+      expiresAt: Date.now() + expiresIn * 1000,
+    }),
     userCode: String(data.user_code ?? ""),
     verificationUri: String(data.verification_uri ?? "https://github.com/login/device"),
-    expiresIn: Number(data.expires_in ?? 900),
+    expiresIn,
     interval: Number(data.interval ?? 5),
   };
 }
@@ -75,7 +83,7 @@ async function githubUser(token: string): Promise<GitHubUser> {
   return response.json() as Promise<GitHubUser>;
 }
 
-async function seal(payload: SessionPayload): Promise<string> {
+async function seal(payload: AuthorizationPayload | SessionPayload): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ciphertext = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
@@ -85,7 +93,7 @@ async function seal(payload: SessionPayload): Promise<string> {
   return `${bytesToBase64Url(iv)}.${bytesToBase64Url(new Uint8Array(ciphertext))}`;
 }
 
-async function unseal(handle: string): Promise<SessionPayload> {
+async function unseal<T extends AuthorizationPayload | SessionPayload>(handle: string): Promise<T> {
   const [ivValue, ciphertextValue] = handle.split(".");
   if (!ivValue || !ciphertextValue) throw new Error("Invalid authorization handle.");
   try {
@@ -94,24 +102,32 @@ async function unseal(handle: string): Promise<SessionPayload> {
       await encryptionKey(),
       base64UrlToBytes(ciphertextValue) as Uint8Array<ArrayBuffer>,
     );
-    return JSON.parse(decoder.decode(plaintext)) as SessionPayload;
+    return JSON.parse(decoder.decode(plaintext)) as T;
   } catch {
     throw new Error("Invalid or expired authorization handle. Run start_github_authorization again.");
   }
 }
 
-export async function completeAuthorization(deviceCode: string): Promise<string | null> {
-  const token = await exchangeDeviceCode(deviceCode);
+export async function completeAuthorization(authorizationRequest: string): Promise<string | null> {
+  const request = await unseal<AuthorizationPayload>(authorizationRequest);
+  if (request.purpose !== "github-device" || !request.deviceCode) {
+    throw new Error("Invalid GitHub authorization request. Start authorization once and use its authorization_request value.");
+  }
+  if (request.expiresAt <= Date.now()) {
+    throw new Error("GitHub authorization expired. Start authorization once more to receive a new code.");
+  }
+  const token = await exchangeDeviceCode(request.deviceCode);
   if (!token) return null;
   const user = await githubUser(token);
   if (user.login.toLowerCase() !== ADMIN_LOGIN) {
     throw new Error(`Signed in as ${user.login}. Only ${ADMIN_LOGIN} can authorize publishing.`);
   }
-  return seal({ token, login: user.login, expiresAt: Date.now() + SESSION_TTL_MS });
+  return seal({ purpose: "owner-session", token, login: user.login, expiresAt: Date.now() + SESSION_TTL_MS });
 }
 
 export async function authorizedGitHub(handle: string): Promise<{ token: string; login: string }> {
-  const session = await unseal(handle);
+  const session = await unseal<SessionPayload>(handle);
+  if (session.purpose !== "owner-session") throw new Error("Invalid owner session.");
   if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run start_github_authorization again.");
   if (session.login.toLowerCase() !== ADMIN_LOGIN) throw new Error("This GitHub account cannot publish.");
   return { token: session.token, login: session.login };
