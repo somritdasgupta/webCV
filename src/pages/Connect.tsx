@@ -252,18 +252,22 @@ export default function Connect() {
         <div className="border-y border-border lg:grid lg:grid-cols-2"><EndpointCard kind="read" /><EndpointCard kind="author" /></div>
       </section>
 
-      <section className="grid gap-8 border-y border-border py-10 lg:grid-cols-[minmax(18rem,.7fr)_minmax(0,1.3fr)]" aria-labelledby="workflow-heading">
+      <section className="grid gap-8 border-y border-border py-10 lg:grid-cols-[minmax(18rem,.8fr)_minmax(0,1.2fr)]" aria-labelledby="workflow-heading">
         <div>
           <p className="font-mono text-xs uppercase text-muted-foreground">02 / Author</p>
-          <h2 id="workflow-heading" className="mt-2 text-2xl font-semibold text-foreground">One request, one continuous flow</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">The assistant keeps one authorization request through verification. It must not generate another code while that request is valid, and may only claim success with a verified commit SHA.</p>
+          <h2 id="workflow-heading" className="mt-2 text-2xl font-semibold text-foreground">One call, auto-polled approval</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            <code className="font-mono text-xs text-foreground">authenticate_for_blog_posting</code> returns a code and an opaque request valid for 180 seconds. The assistant polls <code className="font-mono text-xs text-foreground">check_auth_status</code> itself until GitHub reports approval, then resumes the original action. No manual confirmation, and a post is only reported as live with a verified commit SHA.
+          </p>
+          <ol className="mt-6 space-y-3">
+            {["Ask to create, update, schedule, or delete a post.", "Approve the single code on GitHub while the countdown runs.", "Publishing resumes automatically and returns a verified commit."].map((step, index) => (
+              <li key={step} className="flex gap-3 text-sm leading-6 text-foreground"><span className="font-mono text-xs text-accent">0{index + 1}</span><span>{step}</span></li>
+            ))}
+          </ol>
         </div>
-        <ol className="grid gap-5 sm:grid-cols-3">
-          {["Ask to create, update, schedule, or delete a post.", "Approve the single GitHub code shown in chat. No login is required when adding the server.", "The original action resumes automatically and returns a verified GitHub commit."].map((step, index) => (
-            <li key={step} className="border-l border-border pl-4"><span className="font-mono text-xs text-accent">0{index + 1}</span><p className="mt-2 text-sm leading-6 text-foreground">{step}</p></li>
-          ))}
-        </ol>
+        <ApprovalTimer />
       </section>
+
 
       <section className="py-10" aria-labelledby="status-heading">
         <div className="mb-6"><p className="font-mono text-xs uppercase text-muted-foreground">03 / Verify</p><h2 id="status-heading" className="mt-2 text-2xl font-semibold text-foreground">Live server checks</h2></div>
