@@ -113,12 +113,12 @@ async function githubUser(token) {
   return response.json();
 }
 var secondsLeft = (expiresAt) => Math.max(0, Math.round((expiresAt - Date.now()) / 1e3));
-async function pollAuthorization(authorizationRequest) {
+async function pollAuthorization(authorizationRequest, maxWaitMs = MAX_LONG_POLL_MS) {
   const request = await unseal(authorizationRequest);
   if (request.purpose !== "github-device" || !request.deviceCode) {
     throw new Error("Invalid authorization request. Call authenticate_for_blog_posting once and reuse its authorization_request.");
   }
-  const deadline = Math.min(Date.now() + MAX_LONG_POLL_MS, request.expiresAt);
+  const deadline = Math.min(Date.now() + maxWaitMs, request.expiresAt);
   const intervalMs = Math.max(request.interval, 2) * 1e3;
   for (; ; ) {
     if (Date.now() >= request.expiresAt) {

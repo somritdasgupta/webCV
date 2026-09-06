@@ -145,13 +145,13 @@ const secondsLeft = (expiresAt: number) => Math.max(0, Math.round((expiresAt - D
  * single follow-up call: approval is picked up as soon as GitHub reports it,
  * without the user ever confirming manually.
  */
-export async function pollAuthorization(authorizationRequest: string): Promise<AuthorizationStatus> {
+export async function pollAuthorization(authorizationRequest: string, maxWaitMs = MAX_LONG_POLL_MS): Promise<AuthorizationStatus> {
   const request = await unseal<AuthorizationPayload>(authorizationRequest);
   if (request.purpose !== "github-device" || !request.deviceCode) {
     throw new Error("Invalid authorization request. Call authenticate_for_blog_posting once and reuse its authorization_request.");
   }
 
-  const deadline = Math.min(Date.now() + MAX_LONG_POLL_MS, request.expiresAt);
+  const deadline = Math.min(Date.now() + maxWaitMs, request.expiresAt);
   const intervalMs = Math.max(request.interval, 2) * 1000;
 
   for (;;) {

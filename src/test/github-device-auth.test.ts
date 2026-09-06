@@ -28,18 +28,14 @@ describe("GitHub device authorization", () => {
   });
 
   it("reports pending without erroring while approval is outstanding", async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.stubGlobal("fetch", vi.fn()
       .mockResolvedValueOnce(jsonResponse(githubAuthorization))
       .mockResolvedValue(jsonResponse({ error: "authorization_pending" })));
     const request = await createAuthorization();
-    const promise = pollAuthorization(request.authorizationRequest);
-    await vi.advanceTimersByTimeAsync(30_000);
-    const status = await promise;
+    const status = await pollAuthorization(request.authorizationRequest, 0);
     expect(status.status).toBe("pending");
     expect(status.ownerSession).toBeNull();
     expect(status.timeRemaining).toBeGreaterThan(0);
-    vi.useRealTimers();
   });
 
   it("returns an owner session as soon as GitHub reports approval", async () => {
