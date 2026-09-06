@@ -5,7 +5,7 @@
 // src/lib/mcp-admin/index.ts
 import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.1";
 
-// src/lib/mcp-admin/tools/start-github-authorization.ts
+// src/lib/mcp-admin/tools/authenticate-for-blog-posting.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.1";
 
 // src/lib/mcp-admin/env.ts
@@ -24,6 +24,8 @@ function authEncryptionKey() {
 var GITHUB_CLIENT_ID = "Ov23li98oVkx9PDOvktP";
 var ADMIN_LOGIN = "somritdasgupta";
 var SESSION_TTL_MS = 60 * 60 * 1e3;
+var APPROVAL_WINDOW_SECONDS = 180;
+var MAX_LONG_POLL_MS = 2e4;
 var encoder = new TextEncoder();
 var decoder = new TextDecoder();
 var bytesToBase64Url = (bytes) => {
@@ -35,9 +37,33 @@ var base64UrlToBytes = (value) => {
   const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
   return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
 };
+var sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function encryptionKey() {
   const digest = await crypto.subtle.digest("SHA-256", encoder.encode(authEncryptionKey()));
   return crypto.subtle.importKey("raw", digest, "AES-GCM", false, ["encrypt", "decrypt"]);
+}
+async function seal(payload) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    await encryptionKey(),
+    encoder.encode(JSON.stringify(payload))
+  );
+  return `${bytesToBase64Url(iv)}.${bytesToBase64Url(new Uint8Array(ciphertext))}`;
+}
+async function unseal(handle) {
+  const [ivValue, ciphertextValue] = handle.split(".");
+  if (!ivValue || !ciphertextValue) throw new Error("Invalid or expired authorization handle. Run authenticate_for_blog_posting again.");
+  try {
+    const plaintext = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: base64UrlToBytes(ivValue) },
+      await encryptionKey(),
+      base64UrlToBytes(ciphertextValue)
+    );
+    return JSON.parse(decoder.decode(plaintext));
+  } catch {
+    throw new Error("Invalid or expired authorization handle. Run authenticate_for_blog_posting again.");
+  }
 }
 async function createAuthorization() {
   const response = await fetch("https://github.com/login/device/code", {
@@ -48,18 +74,17 @@ async function createAuthorization() {
   if (!response.ok) throw new Error(`GitHub authorization failed (${response.status}).`);
   const data = await response.json();
   const deviceCode = String(data.device_code ?? "");
-  const expiresIn = Number(data.expires_in ?? 900);
   if (!deviceCode) throw new Error("GitHub did not return an authorization request.");
+  const interval = Math.max(Number(data.interval ?? 5), 2);
+  const expiresIn = Math.min(Number(data.expires_in ?? APPROVAL_WINDOW_SECONDS), APPROVAL_WINDOW_SECONDS);
+  const expiresAt = Date.now() + expiresIn * 1e3;
   return {
-    authorizationRequest: await seal({
-      purpose: "github-device",
-      deviceCode,
-      expiresAt: Date.now() + expiresIn * 1e3
-    }),
+    authorizationRequest: await seal({ purpose: "github-device", deviceCode, expiresAt, interval }),
     userCode: String(data.user_code ?? ""),
     verificationUri: String(data.verification_uri ?? "https://github.com/login/device"),
     expiresIn,
-    interval: Number(data.interval ?? 5)
+    pollUntil: new Date(expiresAt).toISOString(),
+    interval
   };
 }
 async function exchangeDeviceCode(deviceCode) {
@@ -73,9 +98,12 @@ async function exchangeDeviceCode(deviceCode) {
     })
   });
   const data = await response.json();
-  if (data.error === "authorization_pending" || data.error === "slow_down") return null;
-  if (!data.access_token) throw new Error(String(data.error_description ?? data.error ?? "GitHub did not issue a token."));
-  return String(data.access_token);
+  if (data.access_token) return { state: "approved", token: String(data.access_token) };
+  const error = String(data.error ?? "authorization_pending");
+  const detail = String(data.error_description ?? error);
+  if (error === "authorization_pending" || error === "slow_down") return { state: "pending" };
+  if (error === "expired_token") return { state: "expired", detail: "The approval window closed before GitHub confirmed it." };
+  return { state: "denied", detail };
 }
 async function githubUser(token) {
   const response = await fetch("https://api.github.com/user", {
@@ -84,58 +112,54 @@ async function githubUser(token) {
   if (!response.ok) throw new Error(`GitHub identity check failed (${response.status}).`);
   return response.json();
 }
-async function seal(payload) {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    await encryptionKey(),
-    encoder.encode(JSON.stringify(payload))
-  );
-  return `${bytesToBase64Url(iv)}.${bytesToBase64Url(new Uint8Array(ciphertext))}`;
-}
-async function unseal(handle) {
-  const [ivValue, ciphertextValue] = handle.split(".");
-  if (!ivValue || !ciphertextValue) throw new Error("Invalid authorization handle.");
-  try {
-    const plaintext = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: base64UrlToBytes(ivValue) },
-      await encryptionKey(),
-      base64UrlToBytes(ciphertextValue)
-    );
-    return JSON.parse(decoder.decode(plaintext));
-  } catch {
-    throw new Error("Invalid or expired authorization handle. Run start_github_authorization again.");
-  }
-}
-async function completeAuthorization(authorizationRequest) {
+var secondsLeft = (expiresAt) => Math.max(0, Math.round((expiresAt - Date.now()) / 1e3));
+async function pollAuthorization(authorizationRequest) {
   const request = await unseal(authorizationRequest);
   if (request.purpose !== "github-device" || !request.deviceCode) {
-    throw new Error("Invalid GitHub authorization request. Start authorization once and use its authorization_request value.");
+    throw new Error("Invalid authorization request. Call authenticate_for_blog_posting once and reuse its authorization_request.");
   }
-  if (request.expiresAt <= Date.now()) {
-    throw new Error("GitHub authorization expired. Start authorization once more to receive a new code.");
+  const deadline = Math.min(Date.now() + MAX_LONG_POLL_MS, request.expiresAt);
+  const intervalMs = Math.max(request.interval, 2) * 1e3;
+  for (; ; ) {
+    if (Date.now() >= request.expiresAt) {
+      return { status: "expired", ownerSession: null, timeRemaining: 0, detail: "The approval window closed. Start authentication once more." };
+    }
+    const result = await exchangeDeviceCode(request.deviceCode);
+    if (result.state === "approved") {
+      const user = await githubUser(result.token);
+      if (user.login.toLowerCase() !== ADMIN_LOGIN) {
+        return { status: "denied", ownerSession: null, timeRemaining: 0, detail: `Signed in as ${user.login}. Only ${ADMIN_LOGIN} can author posts.` };
+      }
+      const ownerSession = await seal({ purpose: "owner-session", token: result.token, login: user.login, expiresAt: Date.now() + SESSION_TTL_MS });
+      return { status: "approved", ownerSession, timeRemaining: 0, detail: "Owner verified. Resume the pending authoring request now." };
+    }
+    if (result.state === "denied" || result.state === "expired") {
+      return { status: result.state, ownerSession: null, timeRemaining: secondsLeft(request.expiresAt), detail: result.detail };
+    }
+    if (Date.now() + intervalMs >= deadline) {
+      return {
+        status: "pending",
+        ownerSession: null,
+        timeRemaining: secondsLeft(request.expiresAt),
+        detail: "Waiting for GitHub approval. Call check_auth_status again with the same authorization_request."
+      };
+    }
+    await sleep(intervalMs);
   }
-  const token = await exchangeDeviceCode(request.deviceCode);
-  if (!token) return null;
-  const user = await githubUser(token);
-  if (user.login.toLowerCase() !== ADMIN_LOGIN) {
-    throw new Error(`Signed in as ${user.login}. Only ${ADMIN_LOGIN} can authorize publishing.`);
-  }
-  return seal({ purpose: "owner-session", token, login: user.login, expiresAt: Date.now() + SESSION_TTL_MS });
 }
 async function authorizedGitHub(handle) {
   const session = await unseal(handle);
   if (session.purpose !== "owner-session") throw new Error("Invalid owner session.");
-  if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run start_github_authorization again.");
+  if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run authenticate_for_blog_posting again.");
   if (session.login.toLowerCase() !== ADMIN_LOGIN) throw new Error("This GitHub account cannot publish.");
   return { token: session.token, login: session.login };
 }
 
-// src/lib/mcp-admin/tools/start-github-authorization.ts
-var start_github_authorization_default = defineTool({
-  name: "start_github_authorization",
-  title: "Start GitHub authorization",
-  description: "Start owner verification through GitHub Device Flow. Call this automatically whenever an authoring request has no active owner session; preserve the complete pending operation while approval is in progress.",
+// src/lib/mcp-admin/tools/authenticate-for-blog-posting.ts
+var authenticate_for_blog_posting_default = defineTool({
+  name: "authenticate_for_blog_posting",
+  title: "Authenticate for blog posting",
+  description: "Start owner verification for any authoring action. Call this automatically when no owner_session is active, keep the pending authoring request in memory, show the user_code with a live countdown of expires_in, then poll check_auth_status with the returned authorization_request until it reports approved. Never ask the user to confirm manually and never start a second authentication while the first is valid.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async () => {
@@ -143,44 +167,48 @@ var start_github_authorization_default = defineTool({
     return {
       content: [{
         type: "text",
-        text: `Owner verification required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Preserve the complete pending authoring request. After approval, call complete_github_authorization once with authorization_request from structuredContent. Never pass the displayed user code and never restart while this request remains valid.`
+        text: `Owner approval required. Show the user: open ${authorization.verificationUri} and enter code ${authorization.userCode}. Display a countdown from ${authorization.expiresIn} seconds. Immediately begin polling check_auth_status with the authorization_request from structuredContent until it returns approved, then resume the preserved authoring request. Do not ask the user to confirm approval.`
       }],
       structuredContent: {
-        authorization_request: authorization.authorizationRequest,
         user_code: authorization.userCode,
         verification_uri: authorization.verificationUri,
+        authorization_request: authorization.authorizationRequest,
         expires_in: authorization.expiresIn,
-        interval: authorization.interval
+        poll_until: authorization.pollUntil,
+        interval: authorization.interval,
+        owner_session: null
       }
     };
   }
 });
 
-// src/lib/mcp-admin/tools/complete-github-authorization.ts
+// src/lib/mcp-admin/tools/check-auth-status.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.1";
 import { z } from "npm:zod@^3.25.76";
-var complete_github_authorization_default = defineTool2({
-  name: "complete_github_authorization",
-  title: "Complete GitHub authorization",
-  description: "Finish the existing GitHub Device Flow with its opaque authorization request. Retry this same request if approval is pending; never start a new flow unless it expired. After success, immediately resume the preserved action.",
+var check_auth_status_default = defineTool2({
+  name: "check_auth_status",
+  title: "Check authorization status",
+  description: "Poll the pending GitHub approval. Blocks briefly while waiting, so call it repeatedly with the same authorization_request until status is approved, denied, or expired. Pending is not an error. On approved, pass owner_session straight into the preserved authoring tool.",
   inputSchema: {
-    authorization_request: z.string().min(20).describe("Opaque authorization_request returned by start_github_authorization. Never use the user-facing code.")
+    authorization_request: z.string().min(20).describe("Opaque authorization_request from authenticate_for_blog_posting. Never the user-facing code.")
   },
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async ({ authorization_request }) => {
     try {
-      const handle = await completeAuthorization(authorization_request);
-      if (!handle) return {
-        content: [{ type: "text", text: "Authorization is still pending. Keep the original authoring request and retry complete_github_authorization with this same authorization_request after the owner approves. Do not start a new authorization." }],
-        structuredContent: { state: "pending", authorization_request }
-      };
+      const status = await pollAuthorization(authorization_request);
       return {
-        content: [{ type: "text", text: "GitHub owner verified. Immediately resume the preserved authoring request and pass owner_session to the target tool. Do not claim success until that tool returns published: true (or updated/deleted: true) with a commit SHA." }],
-        structuredContent: { state: "ready", owner_session: handle, expires_in: 3600 }
+        content: [{ type: "text", text: status.detail }],
+        structuredContent: {
+          status: status.status,
+          owner_session: status.ownerSession,
+          time_remaining: status.timeRemaining,
+          authorization_request: status.status === "pending" ? authorization_request : void 0,
+          detail: status.detail
+        }
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      return { content: [{ type: "text", text: message }], structuredContent: { state: "failed", error: message }, isError: true };
+      return { content: [{ type: "text", text: message }], structuredContent: { status: "expired", owner_session: null, time_remaining: 0, detail: message }, isError: true };
     }
   }
 });
@@ -652,9 +680,9 @@ ${component.example}`).join("\n\n") }],
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "0.4.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. For a protected action without an owner_session, call start_github_authorization exactly once, retain the complete requested operation, and show only its user_code to the owner. After approval, pass its opaque authorization_request to complete_github_authorization. If pending, retry completion with that same authorization_request; never start another flow unless it explicitly expired. Immediately pass the returned owner_session to the preserved action. A completed authorization is not a completed publish. Never claim a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. If a tool returns isError, an empty result, or no commitSha, report that publishing was not confirmed. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
-  tools: [start_github_authorization_default, complete_github_authorization_default, get_mdx_components_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
+  version: "0.5.0",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. When an authoring request arrives without an owner_session: retain the full pending request, call authenticate_for_blog_posting exactly once, show the user_code and verification link with a countdown from expires_in, and then poll check_auth_status with the same authorization_request until it returns approved. Pending is normal, not an error; never ask the user to confirm approval and never start a second authentication while the first has time remaining. On approved, immediately resume the preserved action with owner_session. A completed authorization is not a completed publish: never claim a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
+  tools: [authenticate_for_blog_posting_default, check_auth_status_default, get_mdx_components_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
 });
 
 // lovable-mcp-supabase-entry.ts

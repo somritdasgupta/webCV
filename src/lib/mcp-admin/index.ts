@@ -1,6 +1,6 @@
 import { defineMcp } from "@lovable.dev/mcp-js";
-import startGitHubAuthorization from "./tools/start-github-authorization";
-import completeGitHubAuthorization from "./tools/complete-github-authorization";
+import authenticateForBlogPosting from "./tools/authenticate-for-blog-posting";
+import checkAuthStatus from "./tools/check-auth-status";
 import listAllPosts from "./tools/list-all-posts";
 import readPostSource from "./tools/read-post-source";
 import createPost from "./tools/create-post";
@@ -15,16 +15,12 @@ import getMdxComponents from "./tools/get-mdx-components";
  * function: mcp-js applies auth per server, so folding write tools into the
  * public one would force every anonymous reader through OAuth. Splitting them
  * keeps the public surface open and the mutating surface locked.
- *
- * The issuer is built from the project ref (inlined by Vite at build time)
- * rather than SUPABASE_URL, which on Lovable Cloud is a proxy host whose
- * discovery document advertises a different issuer (RFC 8414 §3.3).
  */
 export default defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta — Site Admin",
-  version: "0.4.0",
+  version: "0.5.0",
   instructions:
-    "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. For a protected action without an owner_session, call start_github_authorization exactly once, retain the complete requested operation, and show only its user_code to the owner. After approval, pass its opaque authorization_request to complete_github_authorization. If pending, retry completion with that same authorization_request; never start another flow unless it explicitly expired. Immediately pass the returned owner_session to the preserved action. A completed authorization is not a completed publish. Never claim a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. If a tool returns isError, an empty result, or no commitSha, report that publishing was not confirmed. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
-  tools: [startGitHubAuthorization, completeGitHubAuthorization, getMdxComponents, listAllPosts, readPostSource, createPost, updatePost, deletePost],
+    "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. When an authoring request arrives without an owner_session: retain the full pending request, call authenticate_for_blog_posting exactly once, show the user_code and verification link with a countdown from expires_in, and then poll check_auth_status with the same authorization_request until it returns approved. Pending is normal, not an error; never ask the user to confirm approval and never start a second authentication while the first has time remaining. On approved, immediately resume the preserved action with owner_session. A completed authorization is not a completed publish: never claim a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
+  tools: [authenticateForBlogPosting, checkAuthStatus, getMdxComponents, listAllPosts, readPostSource, createPost, updatePost, deletePost],
 });
