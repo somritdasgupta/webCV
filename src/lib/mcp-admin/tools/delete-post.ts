@@ -10,7 +10,7 @@ export default defineTool({
   description:
     "Permanently delete a published MDX post from the content repository. Requires confirm: true, so a model cannot delete a post by accident. Prefer update_post with draft: true to unpublish without losing content.",
   inputSchema: {
-    owner_session: z.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
+    owner_session: z.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
     slug: z.string().min(1).describe("Slug of the post to delete."),
     confirm: z
       .literal(true)

@@ -10,7 +10,7 @@ export default defineTool({
   description:
     "List every MDX post in the content repository, including drafts and future-dated (scheduled) posts that the public site hides. Requires admin sign-in.",
   inputSchema: {
-    owner_session: z.string().min(1).describe("One-hour owner session returned by complete_github_authorization."),
+    owner_session: z.string().min(1).describe("One-hour owner session returned by check_auth_status."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: (input) =>

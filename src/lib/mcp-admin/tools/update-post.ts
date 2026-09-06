@@ -10,7 +10,7 @@ export default defineTool({
   description:
     "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
   inputSchema: {
-    owner_session: z.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
+    owner_session: z.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
     slug: z.string().min(1).describe("Slug of the post to update."),
     title: z.string().trim().min(1).max(120).optional(),
     description: z.string().trim().min(1).max(160).optional(),
