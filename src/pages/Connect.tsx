@@ -203,6 +203,68 @@ function SetupPanel({ client }: { client: ClientKind }) {
   );
 }
 
+const APPROVAL_WINDOW = 180;
+
+/** Live preview of what an assistant renders while owner approval is pending. */
+function ApprovalTimer() {
+  const [remaining, setRemaining] = useState(APPROVAL_WINDOW);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    if (!isRunning) return;
+    const id = window.setInterval(() => {
+      setRemaining((value) => {
+        if (value <= 1) {
+          setIsRunning(false);
+          return 0;
+        }
+        return value - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [isRunning]);
+
+  const percent = Math.round((remaining / APPROVAL_WINDOW) * 100);
+  const clock = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`;
+  const state = isRunning ? "Waiting for GitHub approval" : remaining === 0 ? "Window closed" : "Idle";
+
+  return (
+    <div className="min-w-0 rounded-lg border border-border bg-card p-5 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground"><Timer className="h-3.5 w-3.5" />Approval window</span>
+        <span className={cn("flex items-center gap-1.5 text-xs", isRunning ? "text-accent" : remaining === 0 ? "text-destructive" : "text-muted-foreground")}>
+          <span className={cn("h-2 w-2 rounded-full bg-current", isRunning && "animate-pulse")} />
+          {state}
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <div className="min-w-0 rounded-lg border border-border bg-background px-3 py-2">
+          <p className="font-mono text-[10px] uppercase text-muted-foreground">github.com/login/device</p>
+          <p className="truncate font-mono text-lg tracking-[0.2em] text-foreground">2AB3-C4D5</p>
+        </div>
+        <p className="font-mono text-3xl tabular-nums text-foreground sm:text-4xl">{clock}</p>
+      </div>
+
+      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+        <div className="h-full rounded-full bg-accent transition-[width] duration-1000 ease-linear" style={{ width: `${percent}%` }} />
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <Button size="sm" variant="outline" className="gap-2" onClick={() => { setRemaining(APPROVAL_WINDOW); setIsRunning(true); }}>
+          <Play className="h-3.5 w-3.5" />Simulate
+        </Button>
+        <Button size="sm" variant="ghost" className="gap-2" onClick={() => { setIsRunning(false); setRemaining(APPROVAL_WINDOW); }}>
+          <RefreshCw className="h-3.5 w-3.5" />Reset
+        </Button>
+        <span className="font-mono text-[11px] text-muted-foreground">check_auth_status polled every {5}s</span>
+      </div>
+    </div>
+  );
+}
+
+
+
 export default function Connect() {
   const [results, setResults] = useState<Record<ServerKind, McpCheckResult | null>>({ read: null, author: null });
   const [running, setRunning] = useState<ServerKind | "all" | null>(null);
