@@ -381,7 +381,7 @@ var list_all_posts_default = defineTool3({
   title: "List all posts (including drafts)",
   description: "List every MDX post in the content repository, including drafts and future-dated (scheduled) posts that the public site hides. Requires admin sign-in.",
   inputSchema: {
-    owner_session: z2.string().min(1).describe("One-hour owner session returned by complete_github_authorization.")
+    owner_session: z2.string().min(1).describe("One-hour owner session returned by check_auth_status.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: (input) => adminTool(input.owner_session, async (admin) => {
@@ -418,7 +418,7 @@ var read_post_source_default = defineTool4({
   title: "Read post source",
   description: "Read the raw MDX source, parsed frontmatter, and current blob SHA of a post \u2014 including drafts. The SHA is required to update or delete the post safely.",
   inputSchema: {
-    owner_session: z3.string().min(1).describe("One-hour owner session returned by complete_github_authorization."),
+    owner_session: z3.string().min(1).describe("One-hour owner session returned by check_auth_status."),
     slug: z3.string().min(1).describe("Post slug, e.g. 'hello-world'.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
@@ -445,9 +445,9 @@ import { z as z4 } from "npm:zod@^3.25.76";
 var create_post_default = defineTool5({
   name: "create_post",
   title: "Create blog post",
-  description: "Create and publish a new MDX blog post, then read the committed file back from GitHub before returning success. Use owner_session from complete_github_authorization; if none is active, call start_github_authorization and preserve this complete request. Use get_mdx_components for rich MDX. Fails if the slug exists; set a future date to schedule or draft to hide it.",
+  description: "Create and publish a new MDX blog post, then read the committed file back from GitHub before returning success. Use owner_session from check_auth_status; if none is active, call authenticate_for_blog_posting, preserve this complete request, and poll until approved. Use get_mdx_components for rich MDX. Fails if the slug exists; set a future date to schedule or draft to hide it.",
   inputSchema: {
-    owner_session: z4.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
+    owner_session: z4.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
     slug: z4.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
     title: z4.string().trim().min(1).max(120).describe("Post title."),
     description: z4.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
@@ -512,7 +512,7 @@ var update_post_default = defineTool6({
   title: "Update blog post",
   description: "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
   inputSchema: {
-    owner_session: z5.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
+    owner_session: z5.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
     slug: z5.string().min(1).describe("Slug of the post to update."),
     title: z5.string().trim().min(1).max(120).optional(),
     description: z5.string().trim().min(1).max(160).optional(),
@@ -589,7 +589,7 @@ var delete_post_default = defineTool7({
   title: "Delete blog post",
   description: "Permanently delete a published MDX post from the content repository. Requires confirm: true, so a model cannot delete a post by accident. Prefer update_post with draft: true to unpublish without losing content.",
   inputSchema: {
-    owner_session: z6.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
+    owner_session: z6.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
     slug: z6.string().min(1).describe("Slug of the post to delete."),
     confirm: z6.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
     expected_sha: z6.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")

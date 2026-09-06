@@ -10,7 +10,7 @@ export default defineTool({
   description:
     "Read the raw MDX source, parsed frontmatter, and current blob SHA of a post — including drafts. The SHA is required to update or delete the post safely.",
   inputSchema: {
-    owner_session: z.string().min(1).describe("One-hour owner session returned by complete_github_authorization."),
+    owner_session: z.string().min(1).describe("One-hour owner session returned by check_auth_status."),
     slug: z.string().min(1).describe("Post slug, e.g. 'hello-world'."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },

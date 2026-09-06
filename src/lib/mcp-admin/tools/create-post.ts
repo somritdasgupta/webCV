@@ -8,9 +8,9 @@ export default defineTool({
   name: "create_post",
   title: "Create blog post",
   description:
-    "Create and publish a new MDX blog post, then read the committed file back from GitHub before returning success. Use owner_session from complete_github_authorization; if none is active, call start_github_authorization and preserve this complete request. Use get_mdx_components for rich MDX. Fails if the slug exists; set a future date to schedule or draft to hide it.",
+    "Create and publish a new MDX blog post, then read the committed file back from GitHub before returning success. Use owner_session from check_auth_status; if none is active, call authenticate_for_blog_posting, preserve this complete request, and poll until approved. Use get_mdx_components for rich MDX. Fails if the slug exists; set a future date to schedule or draft to hide it.",
   inputSchema: {
-    owner_session: z.string().min(1).describe("One-hour owner session returned by complete_github_authorization. This is an opaque workflow value, not a GitHub token."),
+    owner_session: z.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
     slug: z
       .string()
       .min(1)
