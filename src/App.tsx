@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SiteLayout } from "@/components/SiteLayout";
 import Home from "./pages/Home";
+import Connect from "./pages/Connect";
 
 // Route-level code splitting — keeps the initial JS bundle small so the
 // homepage paints fast (massive LCP win on mobile/slow networks).
@@ -16,7 +17,6 @@ const Activity = lazy(() => import("./pages/Activity"));
 const CV = lazy(() => import("./pages/CV"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminEditor = lazy(() => import("./pages/admin/AdminEditor"));
-const Connect = lazy(() => import("./pages/Connect"));
 const AuthSignIn = lazy(() => import("./pages/AuthSignIn"));
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));

@@ -7,6 +7,7 @@ import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.1";
 
 // src/lib/mcp-admin/tools/authenticate-for-blog-posting.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z } from "npm:zod@^3.25.76";
 
 // src/lib/mcp-admin/env.ts
 function runtimeEnv(name) {
@@ -161,50 +162,72 @@ var authenticate_for_blog_posting_default = defineTool({
   title: "Authenticate for blog posting",
   description: "Start owner verification for any authoring action. Call this automatically when no owner_session is active, keep the pending authoring request in memory, show the user_code with a live countdown of expires_in, then poll check_auth_status with the returned authorization_request until it reports approved. Never ask the user to confirm manually and never start a second authentication while the first is valid.",
   inputSchema: {},
+  outputSchema: {
+    user_code: z.string(),
+    verification_uri: z.string().url(),
+    authorization_request: z.string().min(20),
+    expires_in: z.number().int().positive(),
+    poll_until: z.string(),
+    interval: z.number().positive(),
+    owner_session: z.null()
+  },
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async () => {
     const authorization = await createAuthorization();
+    const payload = {
+      user_code: authorization.userCode,
+      verification_uri: authorization.verificationUri,
+      authorization_request: authorization.authorizationRequest,
+      expires_in: authorization.expiresIn,
+      poll_until: authorization.pollUntil,
+      interval: authorization.interval,
+      owner_session: null
+    };
     return {
       content: [{
         type: "text",
-        text: `Owner approval required. Show the user: open ${authorization.verificationUri} and enter code ${authorization.userCode}. Display a countdown from ${authorization.expiresIn} seconds. Immediately begin polling check_auth_status with the authorization_request from structuredContent until it returns approved, then resume the preserved authoring request. Do not ask the user to confirm approval.`
+        text: `Owner approval required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Immediately call check_auth_status with authorization_request from the JSON below. Reuse that exact value while pending; do not restart authentication or ask for confirmation.
+
+${JSON.stringify(payload, null, 2)}`
       }],
-      structuredContent: {
-        user_code: authorization.userCode,
-        verification_uri: authorization.verificationUri,
-        authorization_request: authorization.authorizationRequest,
-        expires_in: authorization.expiresIn,
-        poll_until: authorization.pollUntil,
-        interval: authorization.interval,
-        owner_session: null
-      }
+      structuredContent: payload
     };
   }
 });
 
 // src/lib/mcp-admin/tools/check-auth-status.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z } from "npm:zod@^3.25.76";
+import { z as z2 } from "npm:zod@^3.25.76";
 var check_auth_status_default = defineTool2({
   name: "check_auth_status",
   title: "Check authorization status",
   description: "Poll the pending GitHub approval. Blocks briefly while waiting, so call it repeatedly with the same authorization_request until status is approved, denied, or expired. Pending is not an error. On approved, pass owner_session straight into the preserved authoring tool.",
   inputSchema: {
-    authorization_request: z.string().min(20).describe("Opaque authorization_request from authenticate_for_blog_posting. Never the user-facing code.")
+    authorization_request: z2.string().min(20).describe("Opaque authorization_request from authenticate_for_blog_posting. Never the user-facing code.")
+  },
+  outputSchema: {
+    status: z2.enum(["pending", "approved", "denied", "expired"]),
+    owner_session: z2.string().nullable(),
+    time_remaining: z2.number().int().nonnegative(),
+    authorization_request: z2.string().optional(),
+    detail: z2.string()
   },
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async ({ authorization_request }) => {
     try {
       const status = await pollAuthorization(authorization_request);
+      const payload = {
+        status: status.status,
+        owner_session: status.ownerSession,
+        time_remaining: status.timeRemaining,
+        authorization_request: status.status === "pending" ? authorization_request : void 0,
+        detail: status.detail
+      };
       return {
-        content: [{ type: "text", text: status.detail }],
-        structuredContent: {
-          status: status.status,
-          owner_session: status.ownerSession,
-          time_remaining: status.timeRemaining,
-          authorization_request: status.status === "pending" ? authorization_request : void 0,
-          detail: status.detail
-        }
+        content: [{ type: "text", text: `${status.detail}
+
+${JSON.stringify(payload, null, 2)}` }],
+        structuredContent: payload
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -215,7 +238,7 @@ var check_auth_status_default = defineTool2({
 
 // src/lib/mcp-admin/tools/list-all-posts.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z2 } from "npm:zod@^3.25.76";
+import { z as z3 } from "npm:zod@^3.25.76";
 
 // src/lib/mcp-admin/guard.ts
 var errorResult = (message) => ({
@@ -381,7 +404,7 @@ var list_all_posts_default = defineTool3({
   title: "List all posts (including drafts)",
   description: "List every MDX post in the content repository, including drafts and future-dated (scheduled) posts that the public site hides. Requires admin sign-in.",
   inputSchema: {
-    owner_session: z2.string().min(1).describe("One-hour owner session returned by check_auth_status.")
+    owner_session: z3.string().min(1).describe("One-hour owner session returned by check_auth_status.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: (input) => adminTool(input.owner_session, async (admin) => {
@@ -412,14 +435,14 @@ var list_all_posts_default = defineTool3({
 
 // src/lib/mcp-admin/tools/read-post-source.ts
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z3 } from "npm:zod@^3.25.76";
+import { z as z4 } from "npm:zod@^3.25.76";
 var read_post_source_default = defineTool4({
   name: "read_post_source",
   title: "Read post source",
   description: "Read the raw MDX source, parsed frontmatter, and current blob SHA of a post \u2014 including drafts. The SHA is required to update or delete the post safely.",
   inputSchema: {
-    owner_session: z3.string().min(1).describe("One-hour owner session returned by check_auth_status."),
-    slug: z3.string().min(1).describe("Post slug, e.g. 'hello-world'.")
+    owner_session: z4.string().min(1).describe("One-hour owner session returned by check_auth_status."),
+    slug: z4.string().min(1).describe("Post slug, e.g. 'hello-world'.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: ({ slug, owner_session }) => adminTool(owner_session, async (admin) => {
@@ -441,21 +464,21 @@ var read_post_source_default = defineTool4({
 
 // src/lib/mcp-admin/tools/create-post.ts
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z4 } from "npm:zod@^3.25.76";
+import { z as z5 } from "npm:zod@^3.25.76";
 var create_post_default = defineTool5({
   name: "create_post",
   title: "Create blog post",
   description: "Create and publish a new MDX blog post, then read the committed file back from GitHub before returning success. Use owner_session from check_auth_status; if none is active, call authenticate_for_blog_posting, preserve this complete request, and poll until approved. Use get_mdx_components for rich MDX. Fails if the slug exists; set a future date to schedule or draft to hide it.",
   inputSchema: {
-    owner_session: z4.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
-    slug: z4.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
-    title: z4.string().trim().min(1).max(120).describe("Post title."),
-    description: z4.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
-    body: z4.string().min(1).describe("Complete post body in Markdown/MDX, without frontmatter. Custom components returned by get_mdx_components are supported."),
-    date: z4.string().optional().describe("ISO 8601 publish date. Defaults to now. A future date schedules the post."),
-    tags: z4.array(z4.string().trim().min(1)).max(8).optional().describe("Topic tags."),
-    cover: z4.string().url().optional().describe("Absolute cover image URL."),
-    draft: z4.boolean().optional().describe("Keep the post hidden from the public site when true.")
+    owner_session: z5.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
+    slug: z5.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
+    title: z5.string().trim().min(1).max(120).describe("Post title."),
+    description: z5.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
+    body: z5.string().min(1).describe("Complete post body in Markdown/MDX, without frontmatter. Custom components returned by get_mdx_components are supported."),
+    date: z5.string().optional().describe("ISO 8601 publish date. Defaults to now. A future date schedules the post."),
+    tags: z5.array(z5.string().trim().min(1)).max(8).optional().describe("Topic tags."),
+    cover: z5.string().url().optional().describe("Absolute cover image URL."),
+    draft: z5.boolean().optional().describe("Keep the post hidden from the public site when true.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   handler: (input) => adminTool(input.owner_session, async (admin) => {
@@ -506,22 +529,22 @@ var create_post_default = defineTool5({
 
 // src/lib/mcp-admin/tools/update-post.ts
 import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z5 } from "npm:zod@^3.25.76";
+import { z as z6 } from "npm:zod@^3.25.76";
 var update_post_default = defineTool6({
   name: "update_post",
   title: "Update blog post",
   description: "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
   inputSchema: {
-    owner_session: z5.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
-    slug: z5.string().min(1).describe("Slug of the post to update."),
-    title: z5.string().trim().min(1).max(120).optional(),
-    description: z5.string().trim().min(1).max(160).optional(),
-    body: z5.string().min(1).optional().describe("Replacement MDX body (without frontmatter)."),
-    date: z5.string().optional().describe("New ISO 8601 publish date."),
-    tags: z5.array(z5.string().trim().min(1)).max(8).optional(),
-    cover: z5.string().url().optional(),
-    draft: z5.boolean().optional().describe("Toggle draft visibility."),
-    expected_sha: z5.string().optional().describe("Blob SHA from read_post_source. Rejects the write if the file changed since.")
+    owner_session: z6.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
+    slug: z6.string().min(1).describe("Slug of the post to update."),
+    title: z6.string().trim().min(1).max(120).optional(),
+    description: z6.string().trim().min(1).max(160).optional(),
+    body: z6.string().min(1).optional().describe("Replacement MDX body (without frontmatter)."),
+    date: z6.string().optional().describe("New ISO 8601 publish date."),
+    tags: z6.array(z6.string().trim().min(1)).max(8).optional(),
+    cover: z6.string().url().optional(),
+    draft: z6.boolean().optional().describe("Toggle draft visibility."),
+    expected_sha: z6.string().optional().describe("Blob SHA from read_post_source. Rejects the write if the file changed since.")
   },
   annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   handler: (input) => adminTool(input.owner_session, async (admin) => {
@@ -583,16 +606,16 @@ var update_post_default = defineTool6({
 
 // src/lib/mcp-admin/tools/delete-post.ts
 import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z6 } from "npm:zod@^3.25.76";
+import { z as z7 } from "npm:zod@^3.25.76";
 var delete_post_default = defineTool7({
   name: "delete_post",
   title: "Delete blog post",
   description: "Permanently delete a published MDX post from the content repository. Requires confirm: true, so a model cannot delete a post by accident. Prefer update_post with draft: true to unpublish without losing content.",
   inputSchema: {
-    owner_session: z6.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
-    slug: z6.string().min(1).describe("Slug of the post to delete."),
-    confirm: z6.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
-    expected_sha: z6.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")
+    owner_session: z7.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
+    slug: z7.string().min(1).describe("Slug of the post to delete."),
+    confirm: z7.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
+    expected_sha: z7.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")
   },
   annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
   handler: (input) => adminTool(input.owner_session, async (admin) => {
@@ -629,7 +652,7 @@ var delete_post_default = defineTool7({
 
 // src/lib/mcp-admin/tools/get-mdx-components.ts
 import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z7 } from "npm:zod@^3.25.76";
+import { z as z8 } from "npm:zod@^3.25.76";
 
 // src/lib/mcp-admin/mdx-components.ts
 var MDX_COMPONENTS = [
@@ -656,7 +679,7 @@ var get_mdx_components_default = defineTool8({
   title: "Get MDX components",
   description: "List the custom MDX components supported by blog posts, with valid examples ready to use in create_post or update_post bodies.",
   inputSchema: {
-    name: z7.string().trim().optional().describe("Optional component name to return, such as Chart or Embed.")
+    name: z8.string().trim().optional().describe("Optional component name to return, such as Chart or Embed.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: ({ name }) => {
@@ -680,8 +703,8 @@ ${component.example}`).join("\n\n") }],
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "0.5.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. When an authoring request arrives without an owner_session: retain the full pending request, call authenticate_for_blog_posting exactly once, show the user_code and verification link with a countdown from expires_in, and then poll check_auth_status with the same authorization_request until it returns approved. Pending is normal, not an error; never ask the user to confirm approval and never start a second authentication while the first has time remaining. On approved, immediately resume the preserved action with owner_session. A completed authorization is not a completed publish: never claim a post was published, updated, or deleted unless the mutation tool returns published/updated/deleted: true, verified: true, and a commitSha. Use get_mdx_components before composing rich MDX. Read a post before updating or deleting it and pass expected_sha.",
+  version: "0.6.0",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. When an authoring request has no owner_session, preserve every argument, call authenticate_for_blog_posting exactly once, and read authorization_request from structuredContent or the identical JSON in text. Show only user_code and verification_uri to the user. Poll check_auth_status with the exact same authorization_request until approved, denied, or expired. Pending is expected: retry it, never ask the user to confirm, and never start another authorization while time_remaining is positive. When approved, immediately call the originally requested authoring tool with owner_session. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted: true, verified: true, and commitSha. Use get_mdx_components before rich MDX. Read before updating or deleting and pass expected_sha.",
   tools: [authenticate_for_blog_posting_default, check_auth_status_default, get_mdx_components_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
 });
 
