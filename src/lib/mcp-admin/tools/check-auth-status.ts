@@ -13,19 +13,27 @@ export default defineTool({
       .min(20)
       .describe("Opaque authorization_request from authenticate_for_blog_posting. Never the user-facing code."),
   },
+  outputSchema: {
+    status: z.enum(["pending", "approved", "denied", "expired"]),
+    owner_session: z.string().nullable(),
+    time_remaining: z.number().int().nonnegative(),
+    authorization_request: z.string().optional(),
+    detail: z.string(),
+  },
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async ({ authorization_request }) => {
     try {
       const status = await pollAuthorization(authorization_request);
+      const payload = {
+        status: status.status,
+        owner_session: status.ownerSession,
+        time_remaining: status.timeRemaining,
+        authorization_request: status.status === "pending" ? authorization_request : undefined,
+        detail: status.detail,
+      };
       return {
-        content: [{ type: "text", text: status.detail }],
-        structuredContent: {
-          status: status.status,
-          owner_session: status.ownerSession,
-          time_remaining: status.timeRemaining,
-          authorization_request: status.status === "pending" ? authorization_request : undefined,
-          detail: status.detail,
-        },
+        content: [{ type: "text", text: `${status.detail}\n\n${JSON.stringify(payload, null, 2)}` }],
+        structuredContent: payload,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
