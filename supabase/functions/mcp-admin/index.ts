@@ -108,7 +108,7 @@ async function seal(payload) {
 }
 async function unseal(handle) {
   const [ivValue, ciphertextValue] = handle.split(".");
-  if (!ivValue || !ciphertextValue) throw new Error("Invalid or expired authorization handle. Run authenticate_for_blog_posting again.");
+  if (!ivValue || !ciphertextValue) throw new Error("Invalid or expired authorization handle. Run blog_auth_request again.");
   try {
     const plaintext = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: base64UrlToBytes(ivValue) },
@@ -117,7 +117,7 @@ async function unseal(handle) {
     );
     return JSON.parse(decoder.decode(plaintext));
   } catch {
-    throw new Error("Invalid or expired authorization handle. Run authenticate_for_blog_posting again.");
+    throw new Error("Invalid or expired authorization handle. Run blog_auth_request again.");
   }
 }
 async function createAuthorization() {
@@ -171,7 +171,7 @@ var secondsLeft = (expiresAt) => Math.max(0, Math.round((expiresAt - Date.now())
 async function pollAuthorization(authorizationRequest, maxWaitMs = MAX_LONG_POLL_MS) {
   const request = await unseal(authorizationRequest);
   if (request.purpose !== "github-device" || !request.deviceCode) {
-    throw new Error("Invalid authorization request. Call authenticate_for_blog_posting once and reuse its authorization_request.");
+    throw new Error("Invalid authorization request. Call blog_auth_request once and reuse its auth_token.");
   }
   const deadline = Math.min(Date.now() + maxWaitMs, request.expiresAt);
   const intervalMs = Math.max(request.interval, 2) * 1e3;
@@ -196,7 +196,7 @@ async function pollAuthorization(authorizationRequest, maxWaitMs = MAX_LONG_POLL
         status: "pending",
         ownerSession: null,
         timeRemaining: secondsLeft(request.expiresAt),
-        detail: "Waiting for GitHub approval. Call check_auth_status again with the same authorization_request."
+        detail: "Waiting for GitHub approval. Call blog_auth_verify again with the same auth_token."
       };
     }
     await sleep(intervalMs);
@@ -205,7 +205,7 @@ async function pollAuthorization(authorizationRequest, maxWaitMs = MAX_LONG_POLL
 async function authorizedGitHub(handle) {
   const session = await unseal(handle);
   if (session.purpose !== "owner-session") throw new Error("Invalid owner session.");
-  if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run authenticate_for_blog_posting again.");
+  if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run blog_auth_request again.");
   if (session.login.toLowerCase() !== ADMIN_LOGIN) throw new Error("This GitHub account cannot publish.");
   return { token: session.token, login: session.login };
 }
