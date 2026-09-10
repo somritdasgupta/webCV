@@ -1,0 +1,161 @@
+---
+title: "Cult AI: Why Engineers Miss Where It Actually Matters"
+description: "Engineers are drowning AI in trivial tasks while ignoring where it can unlock real innovation. Here's why and how to fix it."
+date: "2026-09-10T18:38:42.191Z"
+tags: ["ai", "engineering", "productivity", "opinion", "workflow"]
+readingTime: 6
+---
+
+Everyone's shipping AI into production. ChatGPT for customer support. Claude to write your emails. GitHub Copilot in your IDE. Your friend's startup just pivoted to "AI-powered" something. It's everywhere.
+
+And it's almost entirely pointless.
+
+Not because AI isn't useful. Not because the technology is weak. But because we're operating inside a cult—and like all cults, we're not questioning the doctrine, just following the ritual. We're automating the wrong things, optimizing the trivial, and completely missing where AI could actually reshape how we work.
+
+The ritual looks like this: Find a task that's tedious. Throw AI at it. Ship it. Call it innovation. Repeat.
+
+Meanwhile, the problems that could genuinely unlock new ways to think and solve are sitting right there, untouched.
+
+## The Cult in Action
+
+Look at what's actually happening in most teams:
+
+**What we're doing:**
+
+- Auto-generating commit messages (nobody reads them)
+- AI-written documentation (outdated before it's published)
+- "Smart" code review bots (they catch obvious stuff; they miss judgment calls)
+- Automated ticket summaries (fine, maybe, but not a competitive advantage)
+- Chatbots answering FAQs (redirects work just as well)
+- AI writing your emails (you spend 20 minutes prompt-tuning it anyway)
+
+These aren't innovations. They're comfort objects. They feel productive because you're using AI, not because the outcome is better.
+
+<ProsCons
+  pros={["Feels cutting-edge", "Easy to ship", "Looks good in status updates", "Takes 2 hours to integrate"]}
+  cons={["No actual value to users", "Maintains status quo", "Wastes engineering time", "Blocks investment in what matters"]}
+/>
+
+**What we're ignoring:**
+
+- AI for reasoning through architectural decisions in real time (not just code generation)
+- Analyzing your entire codebase to surface hidden dependencies and debt
+- Detecting patterns in production errors that humans miss across thousands of logs
+- Helping engineers actually understand legacy systems faster than months of documentation reading
+- Simulating system behavior under load or failure scenarios before they happen
+- Identifying security vulnerabilities by understanding intent, not regex
+- Real-time learning from how teams actually work to suggest process improvements that matter
+
+These require thought. They're harder to measure. They won't make a press release. So they get ignored.
+
+## Why We Worship at the Altar of Trivial AI
+
+Three reasons:
+
+**1. Visibility trap.** AI-generated PRs, commit messages, and emails are tangible. You see them ship. You point to them. The work that actually matters—understanding your system better—lives in someone's head or a Slack thread. It's invisible unless you're obsessing over it.
+
+**2. Incentive misalignment.** Your metrics reward shipping. Using AI on a tedious task ships instantly. Building something genuinely useful takes iteration, experimentation, and failure. So we default to easy wins that look like progress.
+
+**3. Cult psychology.** Everyone else is doing it. If your team isn't "AI-powered," you look behind. So you scramble to find something—anything—to AI-ify. Doesn't matter if it helps. It matters that you're at the ritual.
+
+<Callout type="warning" title="The Real Cost">
+Every hour spent tweaking an AI-generated email is an hour not spent on the problem that AI could actually solve. The opportunity cost is disguised as productivity.
+</Callout>
+
+## Where the Actual Unlock Is
+
+Here's what's real: AI is best at pattern recognition, synthesis, and reasoning—things your brain does slower than a computer but better than brute force.
+
+That means it's built for problems like:
+
+**Understanding complexity.** Your codebase has 10 years of history, three rewrites, and four different architectures tangled together. A human could spend weeks understanding it. AI can synthesize that knowledge in hours and explain it in a way that actually sticks.
+
+**Finding what you're missing.** Bugs aren't always in the code; they're in the assumptions. Error logs contain patterns humans dismiss as noise. Performance bottlenecks hide in interactions between systems. AI can surface these because it doesn't have the cognitive biases that make us miss them.
+
+**Accelerating reasoning, not automating tasks.** When you have an architectural decision to make, AI can play out implications faster than you can. When you're optimizing a query, it can explore solution space. When you're designing an API, it can stress-test your thinking. That's fundamentally different from writing your Slack message.
+
+**Turning data into insight.** You have deployment metrics, error rates, user behavior, team velocity data. Most teams treat it as noise. AI can find the signal: this feature is causing 40% of errors but users love it; deployment safety is fine but team burnout is rising; this service is a hidden bottleneck.
+
+<Accordion>
+  <AccordionItem title="Real Example: One Company's Turnaround">
+    A mid-size platform had a 3-day incident in production. Post-mortem: the infrastructure team didn't understand how the feature team's new code interacted with database replication. They knew the pieces; they missed the connection.
+    
+They threw an LLM at their entire commit history, architecture docs, and error logs, asking: "What scenarios could cause cascading failures?" It surfaced a 20-minute dependency chain nobody had mapped. They never would have found it in review—it required holding too many threads.
+    
+Result: caught the issue in staging within a week. No incident repeat. But how many teams are doing this? Almost none. They're using AI to write deploy messages instead.
+  </AccordionItem>
+</Accordion>
+
+## The Framework: AI Worth Your Time
+
+Stop asking "What can we automate?" Start asking "What's hard to think about that we're getting wrong?"
+
+<Steps>
+  <Step title="Identify the pain that's costing you">
+    Not friction—pain. Friction is easy to spot (this review takes forever). Pain is hidden (we don't understand our system, we keep making the same mistakes, we're slow to respond). Where's the real cost in your engineering?
+  </Step>
+  <Step title="Ask what reasoning is hard">
+    Can you solve this with more compute, or do you need pattern recognition and synthesis? Does it require holding multiple threads of context? If yes, that's where AI wins. If it's just repetition, skip it.
+  </Step>
+  <Step title="Prototype with AI as a thought partner">
+    Feed it your data, your context, your constraints. Not to generate output you'll use directly—to help you understand the problem faster. Ask it for implications, edge cases, alternatives.
+  </Step>
+  <Step title="Measure what actually matters">
+    Not "Did we ship faster?" but "Did we make a better decision?" "Did we catch something we would've missed?" "Did we understand our system better?" These are harder to measure, but they're what matters.
+  </Step>
+  <Step title="Iterate on the real problem">
+    Don't settle on the first thing that works. The goal isn't to automate—it's to augment how engineers think and build. Adjust based on what actually makes a difference.
+  </Step>
+</Steps>
+
+<Callout type="tip" title="Quick Test">
+If you can replace your AI solution with a script, a spreadsheet, or Google search and get the same outcome, you're in the cult. If the value is in how it helps you think differently, you're onto something.
+</Callout>
+
+## What This Looks Like in Practice
+
+<Tabs>
+  <Tab label="Not This">
+"We built a bot to write deployment runbooks."
+
+Why? Because writing them is tedious. Did it improve deployments? Nobody measures. Is anyone reading the runbooks? Probably not. Did it ship fast? Yes.
+  </Tab>
+  <Tab label="This">
+"We fed AI our last 50 incidents, all our runbooks, and our architecture docs. It found a pattern: 7 out of 50 incidents involved the same database replication lag, but nobody connected them because they surfaced differently. Now we're redesigning that part."
+
+Why? Because understanding the system better prevents incidents. Did it take more thought? Yes. Is it shipping immediately? No. Will it matter? Yes.
+  </Tab>
+</Tabs>
+
+## The Hard Part
+
+This requires resisting the cult. It means:
+
+- Not using AI because it's trendy, but because you have a specific reasoning problem
+- Shipping less obviously, but impacting more meaningfully
+- Defending your approach when leadership asks "But why aren't we AI-powered like our competitors?"
+- Being honest that the work is harder and slower—and worth it
+
+<Quote author="An engineer who gets this">
+We're not trying to do more with AI. We're trying to do better.
+</Quote>
+
+## The Real Opportunity
+
+AI is only useful when it's harder to not use it. When the alternative is leaving money on the table, missing bugs, or shipping slower decisions.
+
+Most teams are nowhere near that threshold because they're automating the wrong things.
+
+The ones who'll actually get compounding value? They'll be quiet about it. They won't announce an "AI strategy." They'll just ship better, understand faster, and catch problems everyone else misses.
+
+And they won't be writing AI-generated commit messages to do it.
+
+---
+
+The cult will keep growing. More startups will pivot to AI. More teams will add it to things that don't need it. More engineers will feel like they're falling behind because their org isn't "leveraging AI" (awful phrase).
+
+But you don't have to be in it.
+
+Ask yourself: Are we using AI because it's genuinely hard to solve this without it? Or are we just following the ritual?
+
+The answer changes everything.
