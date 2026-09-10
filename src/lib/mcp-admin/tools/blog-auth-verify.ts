@@ -4,6 +4,10 @@ import { OperationError } from "../errors";
 import { pollAuthorization } from "../github-device-auth";
 import { respond } from "../response";
 
+type AuthVerifyData =
+  | { status: "approved"; session_token: string; expires_in_seconds: number; guidance: string }
+  | { status: "pending"; seconds_remaining: number; auth_token: string; guidance: string };
+
 /**
  * Step 2 of authorization.
  *
@@ -23,7 +27,7 @@ export default defineTool({
   },
   annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
   handler: async ({ auth_token }) =>
-    respond("blog_auth_verify", async () => {
+    respond<AuthVerifyData>("blog_auth_verify", async () => {
       const status = await pollAuthorization(auth_token);
 
       if (status.status === "approved" && status.ownerSession) {

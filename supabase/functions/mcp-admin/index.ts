@@ -5,9 +5,63 @@
 // src/lib/mcp-admin/index.ts
 import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.1";
 
-// src/lib/mcp-admin/tools/authenticate-for-blog-posting.ts
+// src/lib/mcp-admin/tools/mcp-schema-get.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z } from "npm:zod@^3.25.76";
+
+// src/lib/mcp-admin/errors.ts
+var ERROR_CODES = [
+  "VALIDATION_ERROR",
+  "INVALID_SLUG",
+  "SLUG_EXISTS",
+  "TITLE_TOO_LONG",
+  "AUTH_REQUIRED",
+  "AUTH_EXPIRED",
+  "AUTH_FAILED",
+  "AUTH_DENIED",
+  "GITHUB_UNAVAILABLE",
+  "COMMIT_FAILED",
+  "POST_NOT_FOUND",
+  "CONFLICT",
+  "RATE_LIMITED",
+  "INTERNAL_ERROR"
+];
+var OperationError = class extends Error {
+  code;
+  field;
+  guidance;
+  nextSteps;
+  constructor(code, message, options = {}) {
+    super(message);
+    this.name = "OperationError";
+    this.code = code;
+    this.field = options.field;
+    this.guidance = options.guidance;
+    this.nextSteps = options.nextSteps;
+  }
+};
+function toOperationError(error) {
+  if (error instanceof OperationError) return error;
+  const message = error instanceof Error ? error.message : String(error);
+  if (/rate limit/i.test(message)) {
+    return new OperationError("RATE_LIMITED", message, {
+      guidance: "Wait for the GitHub rate-limit window to reset, then retry the same call."
+    });
+  }
+  if (/authoriz|session|expired/i.test(message)) {
+    return new OperationError("AUTH_EXPIRED", message, {
+      guidance: "Call blog_auth_request to obtain a new session, then retry.",
+      nextSteps: ["blog_auth_request", "blog_auth_verify"]
+    });
+  }
+  if (/github/i.test(message)) {
+    return new OperationError("GITHUB_UNAVAILABLE", message, {
+      guidance: "GitHub rejected or failed the request. Retry once; if it persists, check repository access."
+    });
+  }
+  return new OperationError("INTERNAL_ERROR", message, {
+    guidance: "Retry the call. If the failure repeats, report the message verbatim."
+  });
+}
 
 // src/lib/mcp-admin/env.ts
 function runtimeEnv(name) {
@@ -54,7 +108,7 @@ async function seal(payload) {
 }
 async function unseal(handle) {
   const [ivValue, ciphertextValue] = handle.split(".");
-  if (!ivValue || !ciphertextValue) throw new Error("Invalid or expired authorization handle. Run authenticate_for_blog_posting again.");
+  if (!ivValue || !ciphertextValue) throw new Error("Invalid or expired authorization handle. Run blog_auth_request again.");
   try {
     const plaintext = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: base64UrlToBytes(ivValue) },
@@ -63,7 +117,7 @@ async function unseal(handle) {
     );
     return JSON.parse(decoder.decode(plaintext));
   } catch {
-    throw new Error("Invalid or expired authorization handle. Run authenticate_for_blog_posting again.");
+    throw new Error("Invalid or expired authorization handle. Run blog_auth_request again.");
   }
 }
 async function createAuthorization() {
@@ -117,7 +171,7 @@ var secondsLeft = (expiresAt) => Math.max(0, Math.round((expiresAt - Date.now())
 async function pollAuthorization(authorizationRequest, maxWaitMs = MAX_LONG_POLL_MS) {
   const request = await unseal(authorizationRequest);
   if (request.purpose !== "github-device" || !request.deviceCode) {
-    throw new Error("Invalid authorization request. Call authenticate_for_blog_posting once and reuse its authorization_request.");
+    throw new Error("Invalid authorization request. Call blog_auth_request once and reuse its auth_token.");
   }
   const deadline = Math.min(Date.now() + maxWaitMs, request.expiresAt);
   const intervalMs = Math.max(request.interval, 2) * 1e3;
@@ -142,7 +196,7 @@ async function pollAuthorization(authorizationRequest, maxWaitMs = MAX_LONG_POLL
         status: "pending",
         ownerSession: null,
         timeRemaining: secondsLeft(request.expiresAt),
-        detail: "Waiting for GitHub approval. Call check_auth_status again with the same authorization_request."
+        detail: "Waiting for GitHub approval. Call blog_auth_verify again with the same auth_token."
       };
     }
     await sleep(intervalMs);
@@ -151,112 +205,588 @@ async function pollAuthorization(authorizationRequest, maxWaitMs = MAX_LONG_POLL
 async function authorizedGitHub(handle) {
   const session = await unseal(handle);
   if (session.purpose !== "owner-session") throw new Error("Invalid owner session.");
-  if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run authenticate_for_blog_posting again.");
+  if (session.expiresAt <= Date.now()) throw new Error("Authorization expired. Run blog_auth_request again.");
   if (session.login.toLowerCase() !== ADMIN_LOGIN) throw new Error("This GitHub account cannot publish.");
   return { token: session.token, login: session.login };
 }
 
-// src/lib/mcp-admin/tools/authenticate-for-blog-posting.ts
-var authenticate_for_blog_posting_default = defineTool({
-  name: "authenticate_for_blog_posting",
-  title: "Authenticate for blog posting",
-  description: "Start owner verification for any authoring action. Call this automatically when no owner_session is active, keep the pending authoring request in memory, show the user_code with a live countdown of expires_in, then poll check_auth_status with the returned authorization_request until it reports approved. Never ask the user to confirm manually and never start a second authentication while the first is valid.",
-  inputSchema: {},
-  outputSchema: {
-    user_code: z.string(),
-    verification_uri: z.string().url(),
-    authorization_request: z.string().min(20),
-    expires_in: z.number().int().positive(),
-    poll_until: z.string(),
-    interval: z.number().positive(),
-    owner_session: z.null()
-  },
-  annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
-  handler: async () => {
-    const authorization = await createAuthorization();
+// src/lib/mcp-admin/response.ts
+var serialize = (payload) => JSON.stringify(payload, null, 2);
+async function respond(operation, run) {
+  const startedAt = Date.now();
+  const timestamp = () => (/* @__PURE__ */ new Date()).toISOString();
+  try {
+    const outcome = await run();
     const payload = {
-      user_code: authorization.userCode,
-      verification_uri: authorization.verificationUri,
-      authorization_request: authorization.authorizationRequest,
-      expires_in: authorization.expiresIn,
-      poll_until: authorization.pollUntil,
-      interval: authorization.interval,
-      owner_session: null
+      success: true,
+      data: outcome.data,
+      userMessage: outcome.userMessage,
+      meta: {
+        operation,
+        durationMs: Date.now() - startedAt,
+        timestamp: timestamp(),
+        nextSteps: outcome.nextSteps
+      }
     };
     return {
-      content: [{
-        type: "text",
-        text: `Owner approval required. Open ${authorization.verificationUri} and enter code ${authorization.userCode}. Immediately call check_auth_status with authorization_request from the JSON below. Reuse that exact value while pending; do not restart authentication or ask for confirmation.
-
-${JSON.stringify(payload, null, 2)}`
-      }],
+      content: [{ type: "text", text: serialize(payload) }],
       structuredContent: payload
     };
-  }
-});
-
-// src/lib/mcp-admin/tools/check-auth-status.ts
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z2 } from "npm:zod@^3.25.76";
-var check_auth_status_default = defineTool2({
-  name: "check_auth_status",
-  title: "Check authorization status",
-  description: "Poll the pending GitHub approval. Blocks briefly while waiting, so call it repeatedly with the same authorization_request until status is approved, denied, or expired. Pending is not an error. On approved, pass owner_session straight into the preserved authoring tool.",
-  inputSchema: {
-    authorization_request: z2.string().min(20).describe("Opaque authorization_request from authenticate_for_blog_posting. Never the user-facing code.")
-  },
-  outputSchema: {
-    status: z2.enum(["pending", "approved", "denied", "expired"]),
-    owner_session: z2.string().nullable(),
-    time_remaining: z2.number().int().nonnegative(),
-    authorization_request: z2.string().optional(),
-    detail: z2.string()
-  },
-  annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
-  handler: async ({ authorization_request }) => {
-    try {
-      const status = await pollAuthorization(authorization_request);
-      const payload = {
-        status: status.status,
-        owner_session: status.ownerSession,
-        time_remaining: status.timeRemaining,
-        authorization_request: status.status === "pending" ? authorization_request : void 0,
-        detail: status.detail
-      };
-      return {
-        content: [{ type: "text", text: `${status.detail}
-
-${JSON.stringify(payload, null, 2)}` }],
-        structuredContent: payload
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return { content: [{ type: "text", text: message }], structuredContent: { status: "expired", owner_session: null, time_remaining: 0, detail: message }, isError: true };
-    }
-  }
-});
-
-// src/lib/mcp-admin/tools/list-all-posts.ts
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z3 } from "npm:zod@^3.25.76";
-
-// src/lib/mcp-admin/guard.ts
-var errorResult = (message) => ({
-  content: [{ type: "text", text: message }],
-  isError: true,
-  structuredContent: { error: message }
-});
-async function adminTool(ownerSession, run) {
-  try {
-    const value = await run(await authorizedGitHub(ownerSession));
-    return {
-      content: [{ type: "text", text: JSON.stringify(value, null, 2) }],
-      structuredContent: value
+  } catch (error) {
+    const failure = toOperationError(error);
+    const payload = {
+      success: false,
+      error: {
+        code: failure.code,
+        message: failure.message,
+        field: failure.field,
+        guidance: failure.guidance
+      },
+      meta: {
+        operation,
+        durationMs: Date.now() - startedAt,
+        timestamp: timestamp(),
+        nextSteps: failure.nextSteps
+      }
     };
-  } catch (e) {
-    return errorResult(e instanceof Error ? e.message : String(e));
+    return {
+      content: [{ type: "text", text: serialize(payload) }],
+      structuredContent: payload,
+      isError: true
+    };
   }
 }
+async function requireOwner(sessionToken) {
+  if (!sessionToken?.trim()) {
+    throw new OperationError("AUTH_REQUIRED", "No session token was supplied.", {
+      field: "session_token",
+      guidance: "Call blog_auth_request, poll blog_auth_verify until approved, then retry with the returned session_token.",
+      nextSteps: ["blog_auth_request", "blog_auth_verify"]
+    });
+  }
+  try {
+    return await authorizedGitHub(sessionToken);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new OperationError("AUTH_EXPIRED", message, {
+      field: "session_token",
+      guidance: "The session is no longer valid. Call blog_auth_request to create a new one, then retry this operation.",
+      nextSteps: ["blog_auth_request", "blog_auth_verify"]
+    });
+  }
+}
+function ownerOperation(operation, sessionToken, run) {
+  return respond(operation, async () => run(await requireOwner(sessionToken)));
+}
+
+// src/lib/mcp-admin/tools/mcp-schema-get.ts
+var mcp_schema_get_default = defineTool({
+  name: "mcp_schema_get",
+  title: "Describe this server",
+  description: "Return the complete contract of this server: tool catalogue, response envelope, error codes, and the authoring and editing workflows. Call this first when unsure which tool to use.",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async () => respond("mcp_schema_get", () => ({
+    data: {
+      server: {
+        name: "somrit-webcv-admin",
+        title: "Somrit Dasgupta \u2014 Site Admin",
+        owner: "somritdasgupta",
+        purpose: "Author and maintain blog posts on somritdasgupta.in, stored as MDX in GitHub."
+      },
+      naming: {
+        pattern: "{domain}_{resource}_{action}",
+        domains: ["blog", "mcp"]
+      },
+      response_envelope: {
+        success: "boolean",
+        data: "operation payload when success is true",
+        error: "{ code, message, field?, guidance? } when success is false",
+        userMessage: "single sentence safe to show the user verbatim",
+        meta: "{ operation, durationMs, timestamp, nextSteps? }",
+        note: "The identical payload is returned in both the text content and structuredContent channels."
+      },
+      tools: [
+        { name: "mcp_schema_get", auth: false, purpose: "Describe this server." },
+        { name: "blog_auth_request", auth: false, purpose: "Start owner authorization." },
+        { name: "blog_auth_verify", auth: false, purpose: "Poll authorization until approved." },
+        { name: "blog_components_list", auth: false, purpose: "List supported MDX components." },
+        { name: "blog_posts_suggest_slug", auth: false, purpose: "Derive slug candidates from a title." },
+        { name: "blog_posts_validate", auth: false, purpose: "Check a draft against every rule." },
+        { name: "blog_posts_list", auth: true, purpose: "List posts including drafts." },
+        { name: "blog_posts_read", auth: true, purpose: "Read source, frontmatter, and sha." },
+        { name: "blog_posts_create", auth: true, purpose: "Publish a new post." },
+        { name: "blog_posts_update", auth: true, purpose: "Edit an existing post." },
+        { name: "blog_posts_delete", auth: true, purpose: "Remove a post." }
+      ],
+      workflows: {
+        publish: [
+          "blog_components_list (optional, before rich MDX)",
+          "blog_posts_validate",
+          "blog_auth_request \u2014 show device_code and verification_url only",
+          "blog_auth_verify \u2014 repeat with the same auth_token while status is pending",
+          "blog_posts_create with session_token",
+          "Report success only when published and verified are true and commit_sha is present"
+        ],
+        edit: [
+          "blog_auth_request",
+          "blog_auth_verify",
+          "blog_posts_read \u2014 keep the returned sha",
+          "blog_posts_update with expected_sha"
+        ]
+      },
+      rules: [
+        "Never show auth_token, session_token, or any GitHub token to the user.",
+        "Pending authorization is normal \u2014 keep polling, never restart while time remains.",
+        "Authorization succeeding is not the same as content changing.",
+        "Read before updating or deleting, and pass expected_sha."
+      ],
+      error_codes: ERROR_CODES
+    }
+  }))
+});
+
+// src/lib/mcp-admin/tools/blog-auth-request.ts
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var blog_auth_request_default = defineTool2({
+  name: "blog_auth_request",
+  title: "Request publishing authorization",
+  description: "Start owner authorization for blog writes. Show device_code and verification_url to the user, keep auth_token internal, then poll blog_auth_verify with that auth_token.",
+  inputSchema: {},
+  annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
+  handler: async () => respond("blog_auth_request", async () => {
+    const authorization = await createAuthorization();
+    return {
+      data: {
+        device_code: authorization.userCode,
+        verification_url: authorization.verificationUri,
+        auth_token: authorization.authorizationRequest,
+        expires_in_seconds: authorization.expiresIn,
+        poll_interval_seconds: authorization.interval,
+        poll_until: authorization.pollUntil,
+        user_action: `Open ${authorization.verificationUri} and enter the code ${authorization.userCode}.`
+      },
+      userMessage: `Open ${authorization.verificationUri} and enter the code ${authorization.userCode}. I will continue as soon as GitHub confirms the approval.`,
+      nextSteps: ["blog_auth_verify"]
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-auth-verify.ts
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z } from "npm:zod@^3.25.76";
+var blog_auth_verify_default = defineTool3({
+  name: "blog_auth_verify",
+  title: "Verify publishing authorization",
+  description: "Poll the authorization started by blog_auth_request. Repeat with the same auth_token while status is pending. On approved, use the returned session_token for every blog write.",
+  inputSchema: {
+    auth_token: z.string().min(1).describe("The exact opaque auth_token returned by blog_auth_request. Never shown to the user.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: false, openWorldHint: true },
+  handler: async ({ auth_token }) => respond("blog_auth_verify", async () => {
+    const status = await pollAuthorization(auth_token);
+    if (status.status === "approved" && status.ownerSession) {
+      return {
+        data: {
+          status: "approved",
+          session_token: status.ownerSession,
+          expires_in_seconds: 3600,
+          guidance: "Use session_token for every blog operation. It is valid for one hour."
+        },
+        userMessage: "Authorization confirmed. Continuing with the requested change.",
+        nextSteps: ["retry the original authoring tool with session_token"]
+      };
+    }
+    if (status.status === "pending") {
+      return {
+        data: {
+          status: "pending",
+          seconds_remaining: status.timeRemaining,
+          auth_token,
+          guidance: "The approval is not confirmed yet. Call blog_auth_verify again with the same auth_token. Do not ask the user to confirm and do not start a new authorization."
+        },
+        nextSteps: ["blog_auth_verify"]
+      };
+    }
+    throw new OperationError(
+      status.status === "denied" ? "AUTH_DENIED" : "AUTH_EXPIRED",
+      status.detail,
+      {
+        field: "auth_token",
+        guidance: "Call blog_auth_request to start a new authorization, then poll blog_auth_verify again.",
+        nextSteps: ["blog_auth_request", "blog_auth_verify"]
+      }
+    );
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-components-list.ts
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z2 } from "npm:zod@^3.25.76";
+
+// src/lib/mcp-admin/mdx-components.ts
+var MDX_COMPONENTS = [
+  {
+    name: "Callout",
+    category: "emphasis",
+    purpose: "Highlight a note, tip, warning, danger, or success message.",
+    props: [
+      { name: "type", type: "enum", description: "Visual style and colour.", values: ["note", "tip", "warning", "danger", "success"] },
+      { name: "title", type: "string", description: "Short heading shown above the content." }
+    ],
+    example: '<Callout type="tip" title="Key idea">\nUseful context.\n</Callout>'
+  },
+  {
+    name: "ProsCons",
+    category: "layout",
+    purpose: "Compare benefits and drawbacks in two columns.",
+    props: [
+      { name: "pros", type: "string[]", description: "Benefit lines.", required: true },
+      { name: "cons", type: "string[]", description: "Drawback lines.", required: true }
+    ],
+    example: '<ProsCons pros={["Fast", "Simple"]} cons={["Limited"]} />'
+  },
+  {
+    name: "Quote",
+    category: "emphasis",
+    purpose: "Render a prominent quotation with attribution.",
+    props: [{ name: "author", type: "string", description: "Attribution line." }],
+    example: '<Quote author="Author">\nQuoted text.\n</Quote>'
+  },
+  {
+    name: "Kbd",
+    category: "inline",
+    purpose: "Render an inline keyboard key.",
+    props: [],
+    example: "<Kbd>Cmd</Kbd> + <Kbd>K</Kbd>"
+  },
+  {
+    name: "LiveCode",
+    category: "code",
+    purpose: "Embed an editable React playground.",
+    props: [
+      { name: "template", type: "string", description: 'Sandbox template, typically "react".' },
+      { name: "files", type: "object", description: "Map of file path to file contents.", required: true }
+    ],
+    example: '<LiveCode template="react" files={{ "/App.js": `export default () => <h2>Hello</h2>` }} />'
+  },
+  {
+    name: "Tweet",
+    category: "media",
+    purpose: "Embed a post from X by its numeric ID.",
+    props: [{ name: "id", type: "string", description: "Post ID.", required: true }],
+    example: '<Tweet id="1683920951807971329" />'
+  },
+  {
+    name: "Chart",
+    category: "data",
+    purpose: "Render line, bar, area, pie, or radar data.",
+    props: [
+      { name: "type", type: "enum", description: "Chart form.", values: ["line", "bar", "area", "pie", "radar"], required: true },
+      { name: "title", type: "string", description: "Chart heading." },
+      { name: "data", type: "object[]", description: "Row objects keyed by axis and series names.", required: true }
+    ],
+    example: '<Chart type="line" title="Users" data={[{ week: "W1", users: 120 }, { week: "W2", users: 180 }]} />'
+  },
+  {
+    name: "Stats",
+    category: "data",
+    purpose: "Show a compact grid of metrics.",
+    props: [
+      { name: "cols", type: "number", description: "Column count." },
+      { name: "items", type: "object[]", description: "Entries of label, value, and optional change.", required: true }
+    ],
+    example: '<Stats cols={2} items={[{ label: "Posts", value: "42", change: 8 }]} />'
+  },
+  {
+    name: "Tabs",
+    category: "layout",
+    purpose: "Group related content, typically per language or package manager.",
+    props: [{ name: "label", type: "string", description: "Set on each child Tab.", required: true }],
+    example: '<Tabs>\n  <Tab label="npm">`npm install pkg`</Tab>\n  <Tab label="bun">`bun add pkg`</Tab>\n</Tabs>'
+  },
+  {
+    name: "Steps",
+    category: "layout",
+    purpose: "Present a numbered walkthrough.",
+    props: [{ name: "title", type: "string", description: "Set on each child Step.", required: true }],
+    example: '<Steps>\n  <Step title="Install">Run the command.</Step>\n  <Step title="Configure">Set the variables.</Step>\n</Steps>'
+  },
+  {
+    name: "Accordion",
+    category: "layout",
+    purpose: "Add collapsible sections or a FAQ block.",
+    props: [{ name: "title", type: "string", description: "Set on each child AccordionItem.", required: true }],
+    example: '<Accordion>\n  <AccordionItem title="Question?">Answer.</AccordionItem>\n</Accordion>'
+  },
+  {
+    name: "Video",
+    category: "media",
+    purpose: "Embed a YouTube video or a direct video file.",
+    props: [
+      { name: "src", type: "string", description: "Video URL.", required: true },
+      { name: "caption", type: "string", description: "Caption below the player." }
+    ],
+    example: '<Video src="https://www.youtube.com/watch?v=VIDEO_ID" caption="Caption" />'
+  },
+  {
+    name: "Badge",
+    category: "inline",
+    purpose: "Render an inline status label.",
+    props: [{ name: "tone", type: "enum", description: "Colour tone.", values: ["default", "success", "warning", "danger"] }],
+    example: '<Badge tone="success">stable</Badge>'
+  },
+  {
+    name: "FileTree",
+    category: "layout",
+    purpose: "Display a directory structure.",
+    props: [{ name: "tree", type: "object[]", description: "Nodes of name, type, and children.", required: true }],
+    example: '<FileTree tree={[{ name: "src", type: "folder", children: [{ name: "main.tsx" }] }]} />'
+  },
+  {
+    name: "Embed",
+    category: "media",
+    purpose: "Embed a third-party URL or sandboxed HTML widget.",
+    props: [
+      { name: "src", type: "string", description: "URL to embed.", required: true },
+      { name: "title", type: "string", description: "Accessible frame title." },
+      { name: "height", type: "number", description: "Frame height in pixels." }
+    ],
+    example: '<Embed src="https://codepen.io/team/codepen/pen/PNaGbb" title="Demo" height={420} />'
+  }
+];
+var MDX_BEST_PRACTICES = [
+  "Use Callout for warnings and key takeaways rather than bold paragraphs.",
+  "Use Tabs to group the same instruction across package managers or languages.",
+  "Use Chart or Stats when a claim is numeric; keep raw tables for reference data.",
+  "Use LiveCode only for short, self-contained React examples.",
+  "Open with a plain paragraph before the first component so previews read well."
+];
+
+// src/lib/mcp-admin/tools/blog-components-list.ts
+var blog_components_list_default = defineTool4({
+  name: "blog_components_list",
+  title: "List MDX components",
+  description: "Return every custom MDX component the blog renderer supports, with category, props, and a working example. Call this before writing rich MDX.",
+  inputSchema: {
+    category: z2.enum(["emphasis", "data", "layout", "media", "code", "inline"]).optional().describe("Restrict the result to a single category.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ category }) => respond("blog_components_list", () => {
+    const components = category ? MDX_COMPONENTS.filter((c) => c.category === category) : MDX_COMPONENTS;
+    return {
+      data: {
+        count: components.length,
+        components,
+        best_practices: MDX_BEST_PRACTICES,
+        notes: [
+          "Standard Markdown works everywhere; these components are additions.",
+          "Do not include frontmatter in the body \u2014 the tools generate it."
+        ]
+      },
+      nextSteps: ["blog_posts_validate", "blog_posts_create"]
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-suggest-slug.ts
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z4 } from "npm:zod@^3.25.76";
+
+// src/lib/mcp-admin/fields.ts
+import { z as z3 } from "npm:zod@^3.25.76";
+var SLUG_PATTERN = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+var sessionTokenField = z3.string().min(1).describe(
+  'Opaque owner session returned by blog_auth_verify. Valid for one hour. Never a GitHub token and never shown to the user. Example: "owner_session_...".'
+);
+var slugField = z3.string().min(1).describe(
+  'URL-safe slug in kebab-case, normalized to lowercase. Pattern ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$. Examples: "hello-world", "mcp-integration-test".'
+);
+var titleField = z3.string().trim().min(1).max(120).describe(
+  'Post title, 1-120 characters. Used in the page heading and meta tags. Examples: "MCP Integration Test", "Getting Started with Claude".'
+);
+var descriptionField = z3.string().trim().min(20).max(160).describe(
+  'SEO meta description, 20-160 characters. Example: "A short introduction to MCP servers and how they work".'
+);
+var bodyField = z3.string().min(1).describe(
+  "Complete post body in Markdown/MDX without frontmatter. Custom components listed by blog_components_list are supported."
+);
+var dateField = z3.string().optional().describe(
+  'ISO 8601 publish date. Defaults to the current UTC time. A future value schedules the post. Examples: "2026-09-07", "2026-09-07T14:30:00Z".'
+);
+var tagsField = z3.array(z3.string().trim().min(1)).max(8).optional().describe('Topic tags for filtering, maximum 8. Example: ["mcp", "api", "integration"].');
+var coverField = z3.string().url().optional().describe(
+  'Absolute URL of the cover image. 1200x630 is recommended for social previews. Example: "https://example.com/images/cover.png".'
+);
+var draftField = z3.boolean().optional().describe("Hide the post from the public site when true. Defaults to false.");
+var expectedShaField = z3.string().optional().describe(
+  "Blob SHA returned by blog_posts_read. The write is rejected when the file changed since that read."
+);
+var postContentShape = {
+  slug: slugField,
+  title: titleField,
+  description: descriptionField,
+  body: bodyField,
+  date: dateField,
+  tags: tagsField,
+  cover: coverField,
+  draft: draftField
+};
+var postContentObject = z3.object(postContentShape);
+
+// src/lib/mcp-admin/validation.ts
+function normalizeSlug(input) {
+  const slug = input.toLowerCase().trim().replace(/\.mdx$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80).replace(/-+$/, "");
+  if (!slug || !SLUG_PATTERN.test(slug)) {
+    throw new OperationError("INVALID_SLUG", `"${input}" cannot be turned into a valid slug.`, {
+      field: "slug",
+      guidance: 'Supply a slug containing at least one letter or digit, for example "hello-world".'
+    });
+  }
+  return slug;
+}
+function collectIssues(input, options) {
+  const issues = [];
+  const required = options.requireAll;
+  const missing = (field, guidance) => issues.push({ field, code: "VALIDATION_ERROR", message: `${field} is required.`, guidance });
+  if (input.title === void 0) {
+    if (required) missing("title", "Provide a title of 1-120 characters.");
+  } else if (input.title.trim().length === 0) {
+    issues.push({ field: "title", code: "VALIDATION_ERROR", message: "Title is empty.", guidance: "Provide a title of 1-120 characters." });
+  } else if (input.title.length > 120) {
+    issues.push({
+      field: "title",
+      code: "TITLE_TOO_LONG",
+      message: `Title exceeds 120 characters (current: ${input.title.length}).`,
+      guidance: `Shorten the title by ${input.title.length - 120} characters.`
+    });
+  }
+  if (input.description === void 0) {
+    if (required) missing("description", "Provide a meta description of 20-160 characters.");
+  } else if (input.description.length < 20 || input.description.length > 160) {
+    issues.push({
+      field: "description",
+      code: "VALIDATION_ERROR",
+      message: `Description must be 20-160 characters (current: ${input.description.length}).`,
+      guidance: "Rewrite the description to fit the 20-160 character range used for search previews."
+    });
+  }
+  if (input.body === void 0) {
+    if (required) missing("body", "Provide the MDX body without frontmatter.");
+  } else if (input.body.trim().length === 0) {
+    issues.push({ field: "body", code: "VALIDATION_ERROR", message: "Body is empty.", guidance: "Provide the MDX body without frontmatter." });
+  }
+  if (input.slug === void 0) {
+    if (required) missing("slug", "Provide a kebab-case slug, or call blog_posts_suggest_slug with the title.");
+  } else {
+    try {
+      normalizeSlug(input.slug);
+    } catch {
+      issues.push({
+        field: "slug",
+        code: "INVALID_SLUG",
+        message: `"${input.slug}" is not a usable slug.`,
+        guidance: "Call blog_posts_suggest_slug with the title to obtain valid alternatives."
+      });
+    }
+  }
+  if (input.date !== void 0 && Number.isNaN(new Date(input.date).getTime())) {
+    issues.push({
+      field: "date",
+      code: "VALIDATION_ERROR",
+      message: `"${input.date}" is not a valid ISO 8601 date.`,
+      guidance: 'Use a value such as "2026-09-07" or "2026-09-07T14:30:00Z".'
+    });
+  }
+  if (input.tags && input.tags.length > 8) {
+    issues.push({
+      field: "tags",
+      code: "VALIDATION_ERROR",
+      message: `Too many tags (${input.tags.length}). Maximum is 8.`,
+      guidance: "Keep the eight most relevant tags and remove the rest."
+    });
+  }
+  if (input.cover !== void 0 && !/^https?:\/\/\S+$/.test(input.cover)) {
+    issues.push({
+      field: "cover",
+      code: "VALIDATION_ERROR",
+      message: "Cover must be an absolute http(s) URL.",
+      guidance: 'Supply a full URL such as "https://example.com/images/cover.png".'
+    });
+  }
+  return issues;
+}
+function assertValid(input, options) {
+  const [issue] = collectIssues(input, options);
+  if (!issue) return;
+  throw new OperationError(issue.code, issue.message, {
+    field: issue.field,
+    guidance: issue.guidance,
+    nextSteps: ["blog_posts_validate", "retry the original operation"]
+  });
+}
+function slugCandidates(title) {
+  const base = normalizeSlug(title);
+  const words = base.split("-").filter(Boolean);
+  const shortened = words.slice(0, 4).join("-");
+  const candidates = [base, `${base}-2`, `${base}-3`, shortened, `${base}-${(/* @__PURE__ */ new Date()).getFullYear()}`];
+  return [...new Set(candidates)].filter((value) => SLUG_PATTERN.test(value));
+}
+
+// src/lib/mcp-admin/tools/blog-posts-suggest-slug.ts
+var blog_posts_suggest_slug_default = defineTool5({
+  name: "blog_posts_suggest_slug",
+  title: "Suggest a slug",
+  description: "Turn a title into valid kebab-case slug candidates. Requires no authorization. Use the first candidate unless it is already taken.",
+  inputSchema: { title: z4.string().min(1).describe("The post title to derive slugs from.") },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ title }) => respond("blog_posts_suggest_slug", () => ({
+    data: { preferred: normalizeSlug(title), candidates: slugCandidates(title) },
+    nextSteps: ["blog_posts_validate", "blog_posts_create"]
+  }))
+});
+
+// src/lib/mcp-admin/tools/blog-posts-validate.ts
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z5 } from "npm:zod@^3.25.76";
+var blog_posts_validate_default = defineTool6({
+  name: "blog_posts_validate",
+  title: "Validate a draft",
+  description: "Check a draft against every publishing rule and return all problems at once. Requires no authorization. Run this before blog_posts_create to avoid a failed commit.",
+  inputSchema: {
+    title: z5.string().optional().describe("Proposed title."),
+    slug: z5.string().optional().describe("Proposed slug."),
+    description: z5.string().optional().describe("Proposed meta description."),
+    body: z5.string().optional().describe("Proposed MDX body without frontmatter."),
+    date: z5.string().optional().describe("Proposed ISO 8601 publish date."),
+    tags: z5.array(z5.string()).optional().describe("Proposed tags."),
+    cover: z5.string().optional().describe("Proposed cover image URL.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async (input) => respond("blog_posts_validate", () => {
+    const issues = collectIssues(input, { requireAll: true });
+    let normalized = null;
+    try {
+      normalized = input.slug ? normalizeSlug(input.slug) : input.title ? normalizeSlug(input.title) : null;
+    } catch {
+      normalized = null;
+    }
+    return {
+      data: {
+        valid: issues.length === 0,
+        issues,
+        normalized_slug: normalized,
+        slug_suggestions: input.title ? slugCandidates(input.title) : []
+      },
+      userMessage: issues.length === 0 ? "The draft satisfies every publishing rule." : `The draft has ${issues.length} problem${issues.length === 1 ? "" : "s"} to fix before publishing.`,
+      nextSteps: issues.length === 0 ? ["blog_auth_request", "blog_posts_create"] : ["fix the listed fields", "blog_posts_validate"]
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-list.ts
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z6 } from "npm:zod@^3.25.76";
 
 // src/lib/mcp-admin/github.ts
 var REPO = {
@@ -297,11 +827,6 @@ async function fail(res, action) {
   } catch {
   }
   throw new Error(`${action} failed (${res.status}): ${message}`);
-}
-function safeSlug(input) {
-  const slug = input.toLowerCase().trim().replace(/\.mdx$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
-  if (!slug) throw new Error("Slug is empty after normalization.");
-  return slug;
 }
 var pathForSlug = (slug) => `${REPO.contentDir}/${slug}.mdx`;
 async function listPostFiles(token) {
@@ -398,104 +923,106 @@ function estimateReadingTime(body) {
   return Math.max(1, Math.round(words / 220));
 }
 
-// src/lib/mcp-admin/tools/list-all-posts.ts
-var list_all_posts_default = defineTool3({
-  name: "list_all_posts",
-  title: "List all posts (including drafts)",
-  description: "List every MDX post in the content repository, including drafts and future-dated (scheduled) posts that the public site hides. Requires admin sign-in.",
+// src/lib/mcp-admin/tools/blog-posts-list.ts
+var blog_posts_list_default = defineTool7({
+  name: "blog_posts_list",
+  title: "List posts",
+  description: "List every post in the repository, including drafts and scheduled posts, with slug, title, date, tags, draft flag, and blob sha.",
   inputSchema: {
-    owner_session: z3.string().min(1).describe("One-hour owner session returned by check_auth_status.")
+    session_token: sessionTokenField,
+    include_drafts: z6.boolean().optional().describe("Include draft posts in the result. Defaults to true."),
+    query: z6.string().optional().describe("Case-insensitive filter applied to slug, title, description, and tags.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: (input) => adminTool(input.owner_session, async (admin) => {
-    const files = await listPostFiles(admin.token);
+  handler: async ({ session_token, include_drafts, query }) => ownerOperation("blog_posts_list", session_token, async (owner) => {
+    const files = await listPostFiles(owner.token);
     const posts = await Promise.all(
-      files.map(async (f) => {
-        const file = await readFile(admin.token, f.path);
-        const { data } = parseFrontmatter(file?.content ?? "");
-        const slug = f.name.replace(/\.mdx$/, "");
-        const date = String(data.date ?? "");
+      files.map(async (file) => {
+        const slug = file.name.replace(/\.mdx$/, "");
+        const source = await readFile(owner.token, file.path);
+        const { data } = parseFrontmatter(source?.content ?? "");
         return {
           slug,
-          path: f.path,
-          sha: f.sha,
           title: String(data.title ?? slug),
           description: String(data.description ?? ""),
-          date,
+          date: String(data.date ?? ""),
           tags: Array.isArray(data.tags) ? data.tags : [],
           draft: data.draft === true,
-          scheduled: Boolean(date) && new Date(date).getTime() > Date.now()
+          sha: source?.sha ?? file.sha,
+          url: `https://somritdasgupta.in/blog/${slug}`
         };
       })
     );
-    posts.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-    return { count: posts.length, posts };
-  })
-});
-
-// src/lib/mcp-admin/tools/read-post-source.ts
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z4 } from "npm:zod@^3.25.76";
-var read_post_source_default = defineTool4({
-  name: "read_post_source",
-  title: "Read post source",
-  description: "Read the raw MDX source, parsed frontmatter, and current blob SHA of a post \u2014 including drafts. The SHA is required to update or delete the post safely.",
-  inputSchema: {
-    owner_session: z4.string().min(1).describe("One-hour owner session returned by check_auth_status."),
-    slug: z4.string().min(1).describe("Post slug, e.g. 'hello-world'.")
-  },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: ({ slug, owner_session }) => adminTool(owner_session, async (admin) => {
-    const clean = safeSlug(slug);
-    const path = pathForSlug(clean);
-    const file = await readFile(admin.token, path);
-    if (!file) throw new Error(`Post not found: ${clean}`);
-    const { data, body } = parseFrontmatter(file.content);
+    const needle = query?.trim().toLowerCase();
+    const filtered = posts.filter((post) => include_drafts === false ? !post.draft : true).filter(
+      (post) => needle ? [post.slug, post.title, post.description, post.tags.join(" ")].join(" ").toLowerCase().includes(needle) : true
+    ).sort((a, b) => a.date < b.date ? 1 : -1);
     return {
-      slug: clean,
-      path,
-      sha: file.sha,
-      frontmatter: data,
-      body,
-      source: file.content
+      data: { count: filtered.length, posts: filtered },
+      userMessage: `Found ${filtered.length} post${filtered.length === 1 ? "" : "s"}.`,
+      nextSteps: ["blog_posts_read"]
     };
   })
 });
 
-// src/lib/mcp-admin/tools/create-post.ts
-import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z5 } from "npm:zod@^3.25.76";
-var create_post_default = defineTool5({
-  name: "create_post",
-  title: "Create blog post",
-  description: "Create and publish a new MDX blog post, then read the committed file back from GitHub before returning success. Use owner_session from check_auth_status; if none is active, call authenticate_for_blog_posting, preserve this complete request, and poll until approved. Use get_mdx_components for rich MDX. Fails if the slug exists; set a future date to schedule or draft to hide it.",
-  inputSchema: {
-    owner_session: z5.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
-    slug: z5.string().min(1).describe("URL slug, e.g. 'why-rust-wins'. Normalized to lowercase kebab-case."),
-    title: z5.string().trim().min(1).max(120).describe("Post title."),
-    description: z5.string().trim().min(1).max(160).describe("Meta description, kept under 160 characters for SEO."),
-    body: z5.string().min(1).describe("Complete post body in Markdown/MDX, without frontmatter. Custom components returned by get_mdx_components are supported."),
-    date: z5.string().optional().describe("ISO 8601 publish date. Defaults to now. A future date schedules the post."),
-    tags: z5.array(z5.string().trim().min(1)).max(8).optional().describe("Topic tags."),
-    cover: z5.string().url().optional().describe("Absolute cover image URL."),
-    draft: z5.boolean().optional().describe("Keep the post hidden from the public site when true.")
-  },
-  annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  handler: (input) => adminTool(input.owner_session, async (admin) => {
-    const slug = safeSlug(input.slug);
-    const path = pathForSlug(slug);
-    if (await readFile(admin.token, path)) {
-      throw new Error(
-        `Post '${slug}' already exists. Use update_post to modify it, or pick another slug.`
-      );
+// src/lib/mcp-admin/tools/blog-posts-read.ts
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var blog_posts_read_default = defineTool8({
+  name: "blog_posts_read",
+  title: "Read a post",
+  description: "Read one post's frontmatter, body, and blob sha. Always read before updating or deleting, and pass the returned sha as expected_sha.",
+  inputSchema: { session_token: sessionTokenField, slug: slugField },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async ({ session_token, slug }) => ownerOperation("blog_posts_read", session_token, async (owner) => {
+    const safe = normalizeSlug(slug);
+    const file = await readFile(owner.token, pathForSlug(safe));
+    if (!file) {
+      throw new OperationError("POST_NOT_FOUND", `No post exists with slug "${safe}".`, {
+        field: "slug",
+        guidance: "Call blog_posts_list to see the available slugs.",
+        nextSteps: ["blog_posts_list"]
+      });
     }
-    const date = input.date ? new Date(input.date) : /* @__PURE__ */ new Date();
-    if (Number.isNaN(date.getTime())) throw new Error(`Invalid date: ${input.date}`);
-    const mdx = buildMdx(
+    const { data, body } = parseFrontmatter(file.content);
+    return {
+      data: {
+        slug: safe,
+        sha: file.sha,
+        frontmatter: data,
+        body,
+        source: file.content,
+        url: `https://somritdasgupta.in/blog/${safe}`
+      },
+      nextSteps: ["blog_posts_update", "blog_posts_delete"]
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-create.ts
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var blog_posts_create_default = defineTool9({
+  name: "blog_posts_create",
+  title: "Create a post",
+  description: "Validate and publish a new post as an MDX commit. Fails if the slug already exists. Report success only when published is true and a commit_sha is returned.",
+  inputSchema: { session_token: sessionTokenField, ...postContentShape },
+  annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
+  handler: async (input) => ownerOperation("blog_posts_create", input.session_token, async (owner) => {
+    assertValid(input, { requireAll: true });
+    const slug = normalizeSlug(input.slug);
+    const path = pathForSlug(slug);
+    if (await readFile(owner.token, path)) {
+      throw new OperationError("SLUG_EXISTS", `A post already exists at "${slug}".`, {
+        field: "slug",
+        guidance: `Choose a different slug, for example ${slugCandidates(input.title).slice(1, 3).join(" or ")}, or call blog_posts_update to edit the existing post.`,
+        nextSteps: ["blog_posts_update"]
+      });
+    }
+    const date = input.date ? new Date(input.date).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
+    const source = buildMdx(
       {
         title: input.title,
         description: input.description,
-        date: date.toISOString(),
+        date,
         tags: input.tags,
         cover: input.cover,
         draft: input.draft,
@@ -503,209 +1030,186 @@ var create_post_default = defineTool5({
       },
       input.body
     );
-    const result = await writeFile({
-      token: admin.token,
+    const commit = await writeFile({
+      token: owner.token,
       path,
-      content: mdx,
-      message: `content: add "${input.title}" (via MCP by ${admin.login})`
+      content: source,
+      message: `content: add ${slug}`
     });
-    const committed = await readFile(admin.token, path);
-    if (!committed || committed.sha !== result.fileSha || committed.content !== mdx) {
-      throw new Error("GitHub accepted the write but commit verification failed. Publishing was not confirmed; check the repository before retrying.");
+    const verified = Boolean(await readFile(owner.token, path));
+    if (!verified) {
+      throw new OperationError("COMMIT_FAILED", "The commit was accepted but the file could not be read back.", {
+        guidance: "Call blog_posts_read with the same slug to confirm the current state before retrying.",
+        nextSteps: ["blog_posts_read"]
+      });
     }
+    const scheduled = new Date(date).getTime() > Date.now();
     return {
-      published: true,
-      verified: true,
-      slug,
-      path,
-      url: `https://somritdasgupta.in/blog/${slug}`,
-      scheduled: date.getTime() > Date.now(),
-      draft: input.draft === true,
-      ...result,
-      message: `Published and verified commit ${result.commitSha}.`
+      data: {
+        published: true,
+        verified: true,
+        slug,
+        path,
+        draft: input.draft === true,
+        scheduled,
+        date,
+        commit_sha: commit.commitSha,
+        sha: commit.fileSha,
+        url: `https://somritdasgupta.in/blog/${slug}`,
+        commit_url: commit.htmlUrl
+      },
+      userMessage: input.draft ? `Saved "${input.title}" as a draft. It stays hidden until the draft flag is removed.` : scheduled ? `Scheduled "${input.title}" for ${date}.` : `Published "${input.title}" at https://somritdasgupta.in/blog/${slug}.`,
+      nextSteps: ["blog_posts_read"]
     };
   })
 });
 
-// src/lib/mcp-admin/tools/update-post.ts
-import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z6 } from "npm:zod@^3.25.76";
-var update_post_default = defineTool6({
-  name: "update_post",
-  title: "Update blog post",
-  description: "Update an existing MDX post. Only the fields you pass are changed; everything else is preserved. Pass expected_sha from read_post_source to guard against overwriting concurrent edits.",
+// src/lib/mcp-admin/tools/blog-posts-update.ts
+import { defineTool as defineTool10 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var optional = (schema) => schema.optional();
+var blog_posts_update_default = defineTool10({
+  name: "blog_posts_update",
+  title: "Update a post",
+  description: "Update an existing post. Only the supplied fields change. Read the post first and pass expected_sha so a concurrent edit is never overwritten.",
   inputSchema: {
-    owner_session: z6.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
-    slug: z6.string().min(1).describe("Slug of the post to update."),
-    title: z6.string().trim().min(1).max(120).optional(),
-    description: z6.string().trim().min(1).max(160).optional(),
-    body: z6.string().min(1).optional().describe("Replacement MDX body (without frontmatter)."),
-    date: z6.string().optional().describe("New ISO 8601 publish date."),
-    tags: z6.array(z6.string().trim().min(1)).max(8).optional(),
-    cover: z6.string().url().optional(),
-    draft: z6.boolean().optional().describe("Toggle draft visibility."),
-    expected_sha: z6.string().optional().describe("Blob SHA from read_post_source. Rejects the write if the file changed since.")
+    session_token: sessionTokenField,
+    slug: slugField,
+    title: optional(titleField),
+    description: optional(descriptionField),
+    body: optional(bodyField),
+    date: dateField,
+    tags: tagsField,
+    cover: coverField,
+    draft: draftField,
+    expected_sha: expectedShaField
   },
-  annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
-  handler: (input) => adminTool(input.owner_session, async (admin) => {
-    const slug = safeSlug(input.slug);
+  annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
+  handler: async (input) => ownerOperation("blog_posts_update", input.session_token, async (owner) => {
+    assertValid(input, { requireAll: false });
+    const slug = normalizeSlug(input.slug);
     const path = pathForSlug(slug);
-    const file = await readFile(admin.token, path);
-    if (!file) throw new Error(`Post not found: ${slug}. Use create_post instead.`);
-    if (input.expected_sha && input.expected_sha !== file.sha) {
-      throw new Error(
-        `Stale write rejected: the post changed since you read it (expected ${input.expected_sha}, found ${file.sha}). Re-read it and retry.`
-      );
+    const current = await readFile(owner.token, path);
+    if (!current) {
+      throw new OperationError("POST_NOT_FOUND", `No post exists with slug "${slug}".`, {
+        field: "slug",
+        guidance: "Call blog_posts_list to see the available slugs, or blog_posts_create to add a new post.",
+        nextSteps: ["blog_posts_list", "blog_posts_create"]
+      });
     }
-    const { data, body: currentBody } = parseFrontmatter(file.content);
-    const body = input.body ?? currentBody;
-    const rawDate = input.date ?? String(data.date ?? (/* @__PURE__ */ new Date()).toISOString());
-    const date = new Date(rawDate);
-    if (Number.isNaN(date.getTime())) throw new Error(`Invalid date: ${rawDate}`);
-    const draft = input.draft ?? data.draft === true;
-    const mdx = buildMdx(
+    if (input.expected_sha && input.expected_sha !== current.sha) {
+      throw new OperationError("CONFLICT", "The post changed since it was read.", {
+        field: "expected_sha",
+        guidance: "Call blog_posts_read again, reapply the edit to the fresh content, then retry with the new sha.",
+        nextSteps: ["blog_posts_read"]
+      });
+    }
+    const { data, body } = parseFrontmatter(current.content);
+    const nextBody = input.body ?? body;
+    const source = buildMdx(
       {
         title: input.title ?? String(data.title ?? slug),
         description: input.description ?? String(data.description ?? ""),
-        date: date.toISOString(),
+        date: input.date ? new Date(input.date).toISOString() : String(data.date ?? (/* @__PURE__ */ new Date()).toISOString()),
         tags: input.tags ?? (Array.isArray(data.tags) ? data.tags : void 0),
         cover: input.cover ?? (data.cover ? String(data.cover) : void 0),
-        draft,
-        readingTime: estimateReadingTime(body)
+        draft: input.draft ?? data.draft === true,
+        readingTime: estimateReadingTime(nextBody)
       },
-      body
+      nextBody
     );
-    if (mdx === file.content) {
-      return { slug, path, changed: false, message: "No changes to commit." };
-    }
-    const result = await writeFile({
-      token: admin.token,
+    const commit = await writeFile({
+      token: owner.token,
       path,
-      content: mdx,
-      sha: file.sha,
-      message: `content: update "${slug}" (via MCP by ${admin.login})`
+      content: source,
+      message: `content: update ${slug}`,
+      sha: current.sha
     });
-    const committed = await readFile(admin.token, path);
-    if (!committed || committed.sha !== result.fileSha || committed.content !== mdx) {
-      throw new Error("GitHub accepted the update but commit verification failed. The update was not confirmed; check the repository before retrying.");
-    }
     return {
-      updated: true,
-      slug,
-      path,
-      changed: true,
-      url: `https://somritdasgupta.in/blog/${slug}`,
-      scheduled: date.getTime() > Date.now(),
-      draft,
-      ...result,
-      verified: true,
-      message: `Updated and verified commit ${result.commitSha}.`
+      data: {
+        updated: true,
+        verified: Boolean(await readFile(owner.token, path)),
+        slug,
+        commit_sha: commit.commitSha,
+        sha: commit.fileSha,
+        url: `https://somritdasgupta.in/blog/${slug}`,
+        commit_url: commit.htmlUrl
+      },
+      userMessage: `Updated the post "${input.title ?? data.title ?? slug}".`,
+      nextSteps: ["blog_posts_read"]
     };
   })
 });
 
-// src/lib/mcp-admin/tools/delete-post.ts
-import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.20.1";
+// src/lib/mcp-admin/tools/blog-posts-delete.ts
+import { defineTool as defineTool11 } from "npm:@lovable.dev/mcp-js@0.20.1";
 import { z as z7 } from "npm:zod@^3.25.76";
-var delete_post_default = defineTool7({
-  name: "delete_post",
-  title: "Delete blog post",
-  description: "Permanently delete a published MDX post from the content repository. Requires confirm: true, so a model cannot delete a post by accident. Prefer update_post with draft: true to unpublish without losing content.",
+var blog_posts_delete_default = defineTool11({
+  name: "blog_posts_delete",
+  title: "Delete a post",
+  description: "Permanently remove a post from the repository. Requires explicit confirmation and, when supplied, a matching expected_sha.",
   inputSchema: {
-    owner_session: z7.string().min(1).describe("One-hour owner session returned by check_auth_status. This is an opaque workflow value, not a GitHub token."),
-    slug: z7.string().min(1).describe("Slug of the post to delete."),
-    confirm: z7.literal(true).describe("Must be true. Explicit acknowledgement that the file will be removed."),
-    expected_sha: z7.string().optional().describe("Blob SHA from read_post_source. Rejects the delete if the file changed since.")
+    session_token: sessionTokenField,
+    slug: slugField,
+    confirm: z7.literal(true).describe("Must be true. Set it only after the user has explicitly asked for the deletion."),
+    expected_sha: expectedShaField
   },
-  annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
-  handler: (input) => adminTool(input.owner_session, async (admin) => {
-    const slug = safeSlug(input.slug);
-    const path = pathForSlug(slug);
-    const file = await readFile(admin.token, path);
-    if (!file) throw new Error(`Post not found: ${slug}. Nothing was deleted.`);
-    if (input.expected_sha && input.expected_sha !== file.sha) {
-      throw new Error(
-        `Stale delete rejected: the post changed since you read it (expected ${input.expected_sha}, found ${file.sha}).`
-      );
+  annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
+  handler: async ({ session_token, slug, expected_sha }) => ownerOperation("blog_posts_delete", session_token, async (owner) => {
+    const safe = normalizeSlug(slug);
+    const path = pathForSlug(safe);
+    const current = await readFile(owner.token, path);
+    if (!current) {
+      throw new OperationError("POST_NOT_FOUND", `No post exists with slug "${safe}".`, {
+        field: "slug",
+        guidance: "Call blog_posts_list to see the available slugs.",
+        nextSteps: ["blog_posts_list"]
+      });
     }
-    const { data } = parseFrontmatter(file.content);
-    const { commitSha } = await deleteFile({
-      token: admin.token,
+    if (expected_sha && expected_sha !== current.sha) {
+      throw new OperationError("CONFLICT", "The post changed since it was read.", {
+        field: "expected_sha",
+        guidance: "Call blog_posts_read again and retry the deletion with the fresh sha.",
+        nextSteps: ["blog_posts_read"]
+      });
+    }
+    const commit = await deleteFile({
+      token: owner.token,
       path,
-      sha: file.sha,
-      message: `content: delete "${slug}" (via MCP by ${admin.login})`
+      sha: current.sha,
+      message: `content: remove ${safe}`
     });
-    if (await readFile(admin.token, path)) {
-      throw new Error("GitHub accepted the delete but the file still exists. Deletion was not confirmed.");
-    }
     return {
-      slug,
-      path,
-      deleted: true,
-      title: String(data.title ?? slug),
-      commitSha,
-      verified: true,
-      message: `Deleted and verified commit ${commitSha}.`
+      data: {
+        deleted: true,
+        verified: await readFile(owner.token, path) === null,
+        slug: safe,
+        commit_sha: commit.commitSha
+      },
+      userMessage: `Deleted the post "${safe}".`,
+      nextSteps: ["blog_posts_list"]
     };
   })
-});
-
-// src/lib/mcp-admin/tools/get-mdx-components.ts
-import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.20.1";
-import { z as z8 } from "npm:zod@^3.25.76";
-
-// src/lib/mcp-admin/mdx-components.ts
-var MDX_COMPONENTS = [
-  { name: "Callout", purpose: "Emphasize a note, tip, warning, danger, or success message.", example: '<Callout type="tip" title="Key idea">\nUseful context.\n</Callout>' },
-  { name: "ProsCons", purpose: "Compare benefits and drawbacks in two columns.", example: '<ProsCons pros={["Fast", "Simple"]} cons={["Limited"]} />' },
-  { name: "Quote", purpose: "Render a prominent quotation with attribution.", example: '<Quote author="Author">\nQuoted text.\n</Quote>' },
-  { name: "Kbd", purpose: "Render an inline keyboard key.", example: "<Kbd>Cmd</Kbd> + <Kbd>K</Kbd>" },
-  { name: "LiveCode", purpose: "Add an editable React playground.", example: '<LiveCode template="react" files={{ "/App.js": `export default () => <h2>Hello</h2>` }} />' },
-  { name: "Tweet", purpose: "Embed a post from X by ID.", example: '<Tweet id="1683920951807971329" />' },
-  { name: "Chart", purpose: "Render line, bar, area, pie, or radar data.", example: '<Chart type="line" title="Users" data={[{ week: "W1", users: 120 }, { week: "W2", users: 180 }]} />' },
-  { name: "Stats", purpose: "Show a compact grid of metrics.", example: '<Stats cols={2} items={[{ label: "Posts", value: "42", change: 8 }]} />' },
-  { name: "Tabs", purpose: "Group related content into tabs.", example: '<Tabs>\n  <Tab label="npm">`npm install pkg`</Tab>\n  <Tab label="bun">`bun add pkg`</Tab>\n</Tabs>' },
-  { name: "Steps", purpose: "Present a numbered walkthrough.", example: '<Steps>\n  <Step title="Install">Run the command.</Step>\n  <Step title="Configure">Set the variables.</Step>\n</Steps>' },
-  { name: "Accordion", purpose: "Add collapsible sections or FAQs.", example: '<Accordion>\n  <AccordionItem title="Question?">Answer.</AccordionItem>\n</Accordion>' },
-  { name: "Video", purpose: "Embed YouTube or a direct video file.", example: '<Video src="https://www.youtube.com/watch?v=VIDEO_ID" caption="Caption" />' },
-  { name: "Badge", purpose: "Render an inline status label.", example: '<Badge tone="success">stable</Badge>' },
-  { name: "FileTree", purpose: "Display a directory structure.", example: '<FileTree tree={[{ name: "src", type: "folder", children: [{ name: "main.tsx" }] }]} />' },
-  { name: "Embed", purpose: "Embed a third-party URL or sandboxed HTML widget.", example: '<Embed src="https://codepen.io/team/codepen/pen/PNaGbb" title="Demo" height={420} />' }
-];
-
-// src/lib/mcp-admin/tools/get-mdx-components.ts
-var get_mdx_components_default = defineTool8({
-  name: "get_mdx_components",
-  title: "Get MDX components",
-  description: "List the custom MDX components supported by blog posts, with valid examples ready to use in create_post or update_post bodies.",
-  inputSchema: {
-    name: z8.string().trim().optional().describe("Optional component name to return, such as Chart or Embed.")
-  },
-  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: ({ name }) => {
-    const components = name ? MDX_COMPONENTS.filter((component) => component.name.toLowerCase() === name.toLowerCase()) : MDX_COMPONENTS;
-    if (name && components.length === 0) {
-      return {
-        content: [{ type: "text", text: `Unknown MDX component: ${name}. Call get_mdx_components without a name to list all supported components.` }],
-        structuredContent: { components: [], supported: MDX_COMPONENTS.map((component) => component.name) },
-        isError: true
-      };
-    }
-    return {
-      content: [{ type: "text", text: components.map((component) => `${component.name}: ${component.purpose}
-${component.example}`).join("\n\n") }],
-      structuredContent: { components }
-    };
-  }
 });
 
 // src/lib/mcp-admin/index.ts
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "0.6.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. When an authoring request has no owner_session, preserve every argument, call authenticate_for_blog_posting exactly once, and read authorization_request from structuredContent or the identical JSON in text. Show only user_code and verification_uri to the user. Poll check_auth_status with the exact same authorization_request until approved, denied, or expired. Pending is expected: retry it, never ask the user to confirm, and never start another authorization while time_remaining is positive. When approved, immediately call the originally requested authoring tool with owner_session. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted: true, verified: true, and commitSha. Use get_mdx_components before rich MDX. Read before updating or deleting and pass expected_sha.",
-  tools: [authenticate_for_blog_posting_default, check_auth_status_default, get_mdx_components_default, list_all_posts_default, read_post_source_default, create_post_default, update_post_default, delete_post_default]
+  version: "1.0.0",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. Every tool returns one envelope: success, data, error {code, message, field, guidance}, meta {operation, nextSteps}. Follow error.guidance and meta.nextSteps literally. Call mcp_schema_get when unsure which tool to use. Before publishing, call blog_posts_validate and fix every reported issue. For any write: call blog_auth_request once, show the user only user_code and verification_uri, then poll blog_auth_verify with the same auth_token until approved, denied, or expired. Pending is expected; keep polling, never ask the user to confirm, and never start a second authorization while seconds_remaining is positive. On approved, immediately retry the original tool with session_token, which is valid for one hour. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted true, verified true, and a commit_sha. Call blog_components_list before writing rich MDX. Call blog_posts_read before updating or deleting and pass expected_sha.",
+  tools: [
+    mcp_schema_get_default,
+    blog_auth_request_default,
+    blog_auth_verify_default,
+    blog_components_list_default,
+    blog_posts_suggest_slug_default,
+    blog_posts_validate_default,
+    blog_posts_list_default,
+    blog_posts_read_default,
+    blog_posts_create_default,
+    blog_posts_update_default,
+    blog_posts_delete_default
+  ]
 });
 
 // lovable-mcp-supabase-entry.ts
