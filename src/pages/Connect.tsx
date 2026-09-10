@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Check,
   CheckCircle2,
@@ -11,7 +11,6 @@ import {
   RefreshCw,
   ShieldCheck,
   Terminal,
-  Timer,
   Wrench,
 } from "lucide-react";
 import { Seo } from "@/components/Seo";
@@ -30,20 +29,62 @@ const READ_URL = `${SITE.BASE_URL}/mcp/read`;
 const AUTHOR_URL = `${SITE.BASE_URL}/mcp/admin`;
 
 type ServerKind = "read" | "author";
-type ClientKind = "Claude" | "ChatGPT" | "Terminal";
+type ClientKind = "ChatGPT" | "Claude" | "Terminal";
 
 const SERVERS = {
   read: {
     label: "Public reader",
-    summary: "Blog posts, activity, repositories, and author information.",
+    summary: "Published posts, GitHub activity, repositories, and author details. Open to any client.",
     url: READ_URL,
+    badge: "No sign-in",
   },
   author: {
     label: "Owner authoring",
-    summary: "Create, edit, schedule, draft, and delete posts after GitHub verification.",
+    summary: "Create, edit, schedule, draft, and delete posts once GitHub confirms the owner.",
     url: AUTHOR_URL,
+    badge: "Owner only",
   },
 } as const;
+
+/** Reference table rendered in the tool section. Mirrors mcp_schema_get. */
+const TOOL_REFERENCE: { name: string; auth: boolean; purpose: string }[] = [
+  { name: "mcp_schema_get", auth: false, purpose: "Describes the server, its tools, and the publishing workflow." },
+  { name: "blog_auth_request", auth: false, purpose: "Starts owner authorization and returns the device code." },
+  { name: "blog_auth_verify", auth: false, purpose: "Polls the authorization until it is approved, denied, or expired." },
+  { name: "blog_components_list", auth: false, purpose: "Lists supported MDX components with props and examples." },
+  { name: "blog_posts_suggest_slug", auth: false, purpose: "Derives slug candidates from a proposed title." },
+  { name: "blog_posts_validate", auth: false, purpose: "Checks a draft against every publishing rule at once." },
+  { name: "blog_posts_list", auth: true, purpose: "Lists all posts, including drafts and scheduled entries." },
+  { name: "blog_posts_read", auth: true, purpose: "Returns the source, frontmatter, and blob sha of one post." },
+  { name: "blog_posts_create", auth: true, purpose: "Publishes a new post as a verified commit." },
+  { name: "blog_posts_update", auth: true, purpose: "Edits an existing post using the sha recorded at read time." },
+  { name: "blog_posts_delete", auth: true, purpose: "Removes a post after explicit confirmation." },
+];
+
+const ERROR_REFERENCE: { code: string; meaning: string }[] = [
+  { code: "VALIDATION_ERROR", meaning: "One or more fields break a publishing rule. Read error.field and correct it." },
+  { code: "INVALID_SLUG", meaning: "The slug is not kebab-case. Use blog_posts_suggest_slug." },
+  { code: "SLUG_EXISTS", meaning: "A post already occupies that slug. Choose another or update the existing post." },
+  { code: "AUTH_REQUIRED", meaning: "No session token was supplied. Run the authorization sequence." },
+  { code: "AUTH_EXPIRED", meaning: "The one-hour session has lapsed. Authorize again and retry." },
+  { code: "AUTH_DENIED", meaning: "GitHub rejected the request, or the account is not the owner." },
+  { code: "CONFLICT", meaning: "The post changed after it was read. Read it again and retry with the fresh sha." },
+  { code: "POST_NOT_FOUND", meaning: "No post carries that slug. List posts to confirm the correct one." },
+  { code: "COMMIT_FAILED", meaning: "GitHub accepted the write but the file did not read back. Verify before retrying." },
+  { code: "RATE_LIMITED", meaning: "GitHub throttled the request. Wait for the window to reset." },
+];
+
+const RESPONSE_SHAPE = `{
+  "success": true,
+  "data": { "published": true, "verified": true, "commit_sha": "…" },
+  "userMessage": "Published \\"Title\\" at https://somritdasgupta.in/blog/slug.",
+  "meta": {
+    "operation": "blog_posts_create",
+    "durationMs": 812,
+    "timestamp": "2026-09-10T17:04:11.204Z",
+    "nextSteps": ["blog_posts_read"]
+  }
+}`;
 
 function CopyButton({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -66,15 +107,15 @@ function EndpointCard({ kind }: { kind: ServerKind }) {
   return (
     <article className="border-t border-border py-5 first:border-t-0 lg:border-l lg:border-t-0 lg:px-6 lg:first:border-l-0 lg:first:pl-0">
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <div className="mb-2 flex items-center gap-2">
             {kind === "read" ? <ShieldCheck className="h-4 w-4 text-success" /> : <Github className="h-4 w-4 text-accent" />}
             <h3 className="text-base font-semibold text-foreground">{server.label}</h3>
           </div>
           <p className="max-w-lg text-sm leading-6 text-muted-foreground">{server.summary}</p>
         </div>
-        <span className="rounded-md bg-secondary px-2 py-1 font-mono text-[10px] uppercase text-muted-foreground">
-          {kind === "read" ? "No auth" : "Device flow"}
+        <span className="shrink-0 rounded-md bg-secondary px-2 py-1 font-mono text-[10px] uppercase text-muted-foreground">
+          {server.badge}
         </span>
       </div>
       <div className="mt-4 flex min-w-0 items-center gap-1 rounded-lg border border-border bg-background p-1.5">
@@ -187,84 +228,71 @@ const claudeConfig = JSON.stringify({
 function SetupPanel({ client }: { client: ClientKind }) {
   if (client === "Terminal") {
     const command = `npx -y mcp-remote ${READ_URL}`;
-    return <div className="flex items-center gap-2 rounded-lg bg-foreground p-3 text-background"><Terminal className="h-4 w-4 shrink-0" /><code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs">{command}</code><CopyButton value={command} label="terminal command" /></div>;
+    return (
+      <div className="space-y-4">
+        <p className="text-sm leading-6 text-muted-foreground">
+          Run the command below to attach the reader over stdio. Substitute the authoring endpoint when you intend to publish.
+        </p>
+        <div className="flex items-center gap-2 rounded-lg bg-foreground p-3 text-background">
+          <Terminal className="h-4 w-4 shrink-0" />
+          <code className="min-w-0 flex-1 overflow-x-auto font-mono text-xs">{command}</code>
+          <CopyButton value={command} label="terminal command" />
+        </div>
+      </div>
+    );
   }
 
   const steps = client === "Claude"
-    ? ["Open Settings → Connectors and add a custom connector.", "Paste either endpoint. Connecting itself requires no login.", "Ask for an authoring action. Approve GitHub Device Flow when the assistant presents it."]
-    : ["Enable Developer mode in Settings → Connectors → Advanced.", "From the composer, choose Developer mode → Add sources → Connect more.", "Paste either endpoint, then request an authoring action normally."];
+    ? [
+        "Open Settings, then Connectors, and add a custom connector.",
+        "Paste either endpoint. Connecting itself requires no sign-in.",
+        "Request an authoring action and approve the GitHub code when it is presented.",
+      ]
+    : [
+        "Enable Developer mode under Settings, Connectors, Advanced.",
+        "In the composer, select Developer mode, Add sources, Connect more.",
+        "Paste either endpoint, then request an authoring action in plain language.",
+      ];
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <ol className="space-y-4">
-        {steps.map((step, index) => <li key={step} className="flex gap-3 text-sm leading-6 text-muted-foreground"><span className="font-mono text-xs text-foreground">0{index + 1}</span><span>{step}</span></li>)}
+        {steps.map((step, index) => (
+          <li key={step} className="flex gap-3 text-sm leading-6 text-muted-foreground">
+            <span className="font-mono text-xs text-foreground">0{index + 1}</span>
+            <span>{step}</span>
+          </li>
+        ))}
       </ol>
-      {client === "Claude" && <pre className="max-h-64 overflow-auto rounded-lg bg-foreground p-4 font-mono text-xs leading-5 text-background"><code>{claudeConfig}</code></pre>}
+      {client === "Claude" && (
+        <pre className="max-h-64 overflow-auto rounded-lg bg-foreground p-4 font-mono text-xs leading-5 text-background"><code>{claudeConfig}</code></pre>
+      )}
     </div>
   );
 }
 
-const APPROVAL_WINDOW = 180;
-
-/** Live preview of what an assistant renders while owner approval is pending. */
-function ApprovalTimer() {
-  const [remaining, setRemaining] = useState(APPROVAL_WINDOW);
-  const [isRunning, setIsRunning] = useState(false);
-
-  useEffect(() => {
-    if (!isRunning) return;
-    const id = window.setInterval(() => {
-      setRemaining((value) => {
-        if (value <= 1) {
-          setIsRunning(false);
-          return 0;
-        }
-        return value - 1;
-      });
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [isRunning]);
-
-  const percent = Math.round((remaining / APPROVAL_WINDOW) * 100);
-  const clock = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`;
-  const state = isRunning ? "Waiting for GitHub approval" : remaining === 0 ? "Window closed" : "Idle";
-
-  return (
-    <div className="min-w-0 rounded-lg border border-border bg-card p-5 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="flex items-center gap-2 font-mono text-xs uppercase text-muted-foreground"><Timer className="h-3.5 w-3.5" />Approval window</span>
-        <span className={cn("flex items-center gap-1.5 text-xs", isRunning ? "text-accent" : remaining === 0 ? "text-destructive" : "text-muted-foreground")}>
-          <span className={cn("h-2 w-2 rounded-full bg-current", isRunning && "animate-pulse")} />
-          {state}
-        </span>
-      </div>
-
-      <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-        <div className="min-w-0 rounded-lg border border-border bg-background px-3 py-2">
-          <p className="font-mono text-[10px] uppercase text-muted-foreground">github.com/login/device</p>
-          <p className="truncate font-mono text-lg tracking-[0.2em] text-foreground">2AB3-C4D5</p>
-        </div>
-        <p className="font-mono text-3xl tabular-nums text-foreground sm:text-4xl">{clock}</p>
-      </div>
-
-      <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-        <div className="h-full rounded-full bg-accent transition-[width] duration-1000 ease-linear" style={{ width: `${percent}%` }} />
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <Button size="sm" variant="outline" className="gap-2" onClick={() => { setRemaining(APPROVAL_WINDOW); setIsRunning(true); }}>
-          <Play className="h-3.5 w-3.5" />Simulate
-        </Button>
-        <Button size="sm" variant="ghost" className="gap-2" onClick={() => { setIsRunning(false); setRemaining(APPROVAL_WINDOW); }}>
-          <RefreshCw className="h-3.5 w-3.5" />Reset
-        </Button>
-        <span className="font-mono text-[11px] text-muted-foreground">check_auth_status polled every {5}s</span>
-      </div>
-    </div>
-  );
-}
-
-
+const WORKFLOW: { title: string; body: string; call: string }[] = [
+  {
+    title: "Prepare the draft",
+    body: "Ask the assistant for a post. It derives a slug, then checks every field in a single call and reports each problem with the field that caused it.",
+    call: "blog_posts_suggest_slug → blog_posts_validate",
+  },
+  {
+    title: "Authorize once",
+    body: "Authorization starts only when a write is actually required. You receive a short code and a GitHub URL; the approval window lasts 180 seconds.",
+    call: "blog_auth_request",
+  },
+  {
+    title: "Approval is polled for you",
+    body: "The assistant polls until GitHub confirms, denies, or the window closes. A pending result is normal and requires nothing from you.",
+    call: "blog_auth_verify",
+  },
+  {
+    title: "Publish and verify",
+    body: "The session lasts one hour. A write is reported as complete only after the committed file is read back and a commit sha is returned.",
+    call: "blog_posts_create · blog_posts_update · blog_posts_delete",
+  },
+];
 
 export default function Connect() {
   const [results, setResults] = useState<Record<ServerKind, McpCheckResult | null>>({ read: null, author: null });
@@ -287,17 +315,29 @@ export default function Connect() {
   }, []);
 
   const tools = results[activeServer]?.tools ?? [];
-  const toolSummary = useMemo(() => tools.length ? `${tools.length} tools discovered` : "Run a check to discover tools", [tools.length]);
+  const toolSummary = useMemo(
+    () => (tools.length ? `${tools.length} tools discovered` : "Run a check to load the live catalogue"),
+    [tools.length],
+  );
 
   return (
     <div className="container-wide pb-24">
-      <Seo title="MCP connections" description="Connect an AI assistant to Somrit's WebCV for verified reading and GitHub-backed blog authoring." path="/mcp" />
+      <Seo
+        title="MCP connections"
+        description="Connect an AI assistant to Somrit's WebCV for verified reading and GitHub-backed blog authoring."
+        path="/mcp"
+      />
 
-      <header className="grid gap-8 border-b border-border pb-10 pt-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,.8fr)] lg:items-end">
+      <header className="grid gap-8 border-b border-border pb-10 pt-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,.8fr)] lg:items-end">
         <div className="max-w-3xl">
           <p className="mb-3 font-mono text-xs uppercase text-accent">Agent integrations</p>
-          <h1 className="text-balance text-4xl font-semibold leading-tight text-foreground sm:text-5xl">A direct, verifiable path from chat to code.</h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">Read the public site or manage blog content through GitHub. Authoring is only reported as complete after the committed file is read back and verified.</p>
+          <h1 className="text-balance text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
+            Connect an assistant to this site.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+            Two Model Context Protocol servers are published here. The first exposes public content for reading. The second
+            writes blog posts to GitHub, and only after the owner approves the request. Follow the sections below in order.
+          </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
           <Button onClick={checkAll} disabled={running !== null} className="gap-2">
@@ -305,55 +345,166 @@ export default function Connect() {
             Verify both servers
           </Button>
           <Button variant="outline" asChild className="gap-2">
-            <a href="https://modelcontextprotocol.io" target="_blank" rel="noreferrer">MCP specification <ExternalLink className="h-4 w-4" /></a>
+            <a href="https://modelcontextprotocol.io" target="_blank" rel="noreferrer">
+              MCP specification <ExternalLink className="h-4 w-4" />
+            </a>
           </Button>
         </div>
       </header>
 
       <section className="py-10" aria-labelledby="endpoints-heading">
-        <div className="mb-6 flex items-end justify-between gap-4"><div><p className="font-mono text-xs uppercase text-muted-foreground">01 / Connect</p><h2 id="endpoints-heading" className="mt-2 text-2xl font-semibold text-foreground">Choose an endpoint</h2></div></div>
-        <div className="border-y border-border lg:grid lg:grid-cols-2"><EndpointCard kind="read" /><EndpointCard kind="author" /></div>
-      </section>
-
-      <section className="grid gap-8 border-y border-border py-10 lg:grid-cols-[minmax(18rem,.8fr)_minmax(0,1.2fr)]" aria-labelledby="workflow-heading">
-        <div>
-          <p className="font-mono text-xs uppercase text-muted-foreground">02 / Author</p>
-          <h2 id="workflow-heading" className="mt-2 text-2xl font-semibold text-foreground">One call, auto-polled approval</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            <code className="font-mono text-xs text-foreground">authenticate_for_blog_posting</code> returns a code and an opaque request valid for 180 seconds. The assistant polls <code className="font-mono text-xs text-foreground">check_auth_status</code> itself until GitHub reports approval, then resumes the original action. No manual confirmation, and a post is only reported as live with a verified commit SHA.
+        <div className="mb-6">
+          <p className="font-mono text-xs uppercase text-muted-foreground">01 / Connect</p>
+          <h2 id="endpoints-heading" className="mt-2 text-2xl font-semibold text-foreground">Choose an endpoint</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Add the reader if the assistant only needs to answer questions about the site. Add the authoring endpoint as well
+            if it should publish. Both are plain HTTP transports and require no configuration beyond the URL.
           </p>
-          <ol className="mt-6 space-y-3">
-            {["Ask to create, update, schedule, or delete a post.", "Approve the single code on GitHub while the countdown runs.", "Publishing resumes automatically and returns a verified commit."].map((step, index) => (
-              <li key={step} className="flex gap-3 text-sm leading-6 text-foreground"><span className="font-mono text-xs text-accent">0{index + 1}</span><span>{step}</span></li>
-            ))}
-          </ol>
         </div>
-        <ApprovalTimer />
-      </section>
-
-
-      <section className="py-10" aria-labelledby="status-heading">
-        <div className="mb-6"><p className="font-mono text-xs uppercase text-muted-foreground">03 / Verify</p><h2 id="status-heading" className="mt-2 text-2xl font-semibold text-foreground">Live server checks</h2></div>
-        <div className="border-y border-border sm:grid sm:grid-cols-2"><StatusCard kind="read" result={results.read} isRunning={running === "read" || running === "all"} onCheck={check} /><StatusCard kind="author" result={results.author} isRunning={running === "author" || running === "all"} onCheck={check} /></div>
-      </section>
-
-      <section className="grid gap-8 border-y border-border py-10 lg:grid-cols-[16rem_minmax(0,1fr)]" aria-labelledby="tools-heading">
-        <div>
-          <p className="font-mono text-xs uppercase text-muted-foreground">04 / Inspect</p>
-          <h2 id="tools-heading" className="mt-2 text-2xl font-semibold text-foreground">Tool catalog</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{toolSummary}. Rich authoring includes a component discovery tool for supported MDX blocks.</p>
-          <div className="mt-5 grid grid-cols-2 gap-2">
-            {(["read", "author"] as const).map((kind) => <Button key={kind} variant={activeServer === kind ? "default" : "outline"} size="sm" onClick={() => setActiveServer(kind)} className="gap-2"><Wrench className="h-3.5 w-3.5" />{kind === "read" ? "Reader" : "Author"}</Button>)}
-          </div>
-        </div>
-        <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card">
-          {tools.length ? <ul>{tools.map((tool) => <ToolItem key={tool.name} tool={tool} endpoint={SERVERS[activeServer].url} />)}</ul> : <div className="flex min-h-40 flex-col items-center justify-center px-6 text-center"><Wrench className="mb-3 h-5 w-5 text-muted-foreground" /><p className="text-sm text-muted-foreground">Check the {SERVERS[activeServer].label.toLowerCase()} server to load its tools.</p></div>}
+        <div className="border-y border-border lg:grid lg:grid-cols-2">
+          <EndpointCard kind="read" />
+          <EndpointCard kind="author" />
         </div>
       </section>
 
       <section className="py-10" aria-labelledby="setup-heading">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-mono text-xs uppercase text-muted-foreground">05 / Setup</p><h2 id="setup-heading" className="mt-2 text-2xl font-semibold text-foreground">Client instructions</h2></div><div className="flex overflow-x-auto rounded-lg border border-border p-1">{(["ChatGPT", "Claude", "Terminal"] as const).map((item) => <Button key={item} variant={client === item ? "secondary" : "ghost"} size="sm" onClick={() => setClient(item)}>{item}</Button>)}</div></div>
-        <div className="rounded-lg border border-border bg-card p-5 sm:p-6"><SetupPanel client={client} /></div>
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-mono text-xs uppercase text-muted-foreground">02 / Configure</p>
+            <h2 id="setup-heading" className="mt-2 text-2xl font-semibold text-foreground">Add the server to your client</h2>
+          </div>
+          <div className="flex overflow-x-auto rounded-lg border border-border p-1">
+            {(["ChatGPT", "Claude", "Terminal"] as const).map((item) => (
+              <Button key={item} variant={client === item ? "secondary" : "ghost"} size="sm" onClick={() => setClient(item)}>
+                {item}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
+          <SetupPanel client={client} />
+        </div>
+      </section>
+
+      <section className="border-y border-border py-10" aria-labelledby="workflow-heading">
+        <div className="mb-8 max-w-2xl">
+          <p className="font-mono text-xs uppercase text-muted-foreground">03 / Publish</p>
+          <h2 id="workflow-heading" className="mt-2 text-2xl font-semibold text-foreground">The authoring sequence</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Publishing follows four stages. Your only manual step is stage two: enter the code shown to you at
+            github.com/login/device. Everything else is handled by the assistant.
+          </p>
+        </div>
+        <ol className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
+          {WORKFLOW.map((stage, index) => (
+            <li key={stage.title} className="bg-card p-5 sm:p-6">
+              <p className="font-mono text-xs text-accent">0{index + 1}</p>
+              <h3 className="mt-2 text-base font-semibold text-foreground">{stage.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{stage.body}</p>
+              <code className="mt-4 block break-words font-mono text-[11px] leading-5 text-muted-foreground">{stage.call}</code>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="py-10" aria-labelledby="reference-heading">
+        <div className="mb-6 max-w-2xl">
+          <p className="font-mono text-xs uppercase text-muted-foreground">04 / Reference</p>
+          <h2 id="reference-heading" className="mt-2 text-2xl font-semibold text-foreground">Tools on the authoring server</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Names follow a domain, resource, action order, so related tools group together. Tools marked as owner-only require
+            the session token returned by <code className="font-mono text-xs text-foreground">blog_auth_verify</code>.
+          </p>
+        </div>
+        <div className="overflow-hidden rounded-lg border border-border bg-card">
+          <ul className="divide-y divide-border">
+            {TOOL_REFERENCE.map((tool) => (
+              <li key={tool.name} className="grid gap-1 p-4 sm:grid-cols-[minmax(12rem,auto)_minmax(0,1fr)] sm:items-baseline sm:gap-6">
+                <div className="flex items-center gap-2">
+                  <code className="font-mono text-xs text-foreground">{tool.name}</code>
+                  {tool.auth && (
+                    <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[10px] uppercase text-muted-foreground">
+                      owner
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm leading-6 text-muted-foreground">{tool.purpose}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="grid gap-8 border-y border-border py-10 lg:grid-cols-2" aria-labelledby="responses-heading">
+        <div>
+          <p className="font-mono text-xs uppercase text-muted-foreground">05 / Responses</p>
+          <h2 id="responses-heading" className="mt-2 text-2xl font-semibold text-foreground">One envelope, every tool</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Every call returns the same structure in both the text and structured channels, so no client loses information.
+            Read <code className="font-mono text-xs text-foreground">success</code> first. On failure, follow
+            <code className="ml-1 font-mono text-xs text-foreground">error.guidance</code> and
+            <code className="ml-1 font-mono text-xs text-foreground">meta.nextSteps</code> literally.
+          </p>
+          <pre className="mt-5 overflow-auto rounded-lg bg-foreground p-4 font-mono text-xs leading-5 text-background"><code>{RESPONSE_SHAPE}</code></pre>
+        </div>
+        <div>
+          <h3 className="text-base font-semibold text-foreground">Error codes</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Each code carries a recovery step. Nothing fails silently, and no write is reported without verification.
+          </p>
+          <ul className="mt-5 divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
+            {ERROR_REFERENCE.map((item) => (
+              <li key={item.code} className="p-4">
+                <code className="font-mono text-xs text-accent">{item.code}</code>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.meaning}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="py-10" aria-labelledby="status-heading">
+        <div className="mb-6 max-w-2xl">
+          <p className="font-mono text-xs uppercase text-muted-foreground">06 / Verify</p>
+          <h2 id="status-heading" className="mt-2 text-2xl font-semibold text-foreground">Check the servers</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            Run a check before reporting a problem. It performs a live handshake and lists the tools each server advertises.
+          </p>
+        </div>
+        <div className="border-y border-border sm:grid sm:grid-cols-2">
+          <StatusCard kind="read" result={results.read} isRunning={running === "read" || running === "all"} onCheck={check} />
+          <StatusCard kind="author" result={results.author} isRunning={running === "author" || running === "all"} onCheck={check} />
+        </div>
+      </section>
+
+      <section className="grid gap-8 border-t border-border py-10 lg:grid-cols-[16rem_minmax(0,1fr)]" aria-labelledby="tools-heading">
+        <div>
+          <p className="font-mono text-xs uppercase text-muted-foreground">07 / Inspect</p>
+          <h2 id="tools-heading" className="mt-2 text-2xl font-semibold text-foreground">Live catalogue</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            {toolSummary}. Expand any tool to read its description and parameters, or run it directly against the server.
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            {(["read", "author"] as const).map((kind) => (
+              <Button key={kind} variant={activeServer === kind ? "default" : "outline"} size="sm" onClick={() => setActiveServer(kind)} className="gap-2">
+                <Wrench className="h-3.5 w-3.5" />
+                {kind === "read" ? "Reader" : "Author"}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card">
+          {tools.length ? (
+            <ul>{tools.map((tool) => <ToolItem key={tool.name} tool={tool} endpoint={SERVERS[activeServer].url} />)}</ul>
+          ) : (
+            <div className="flex min-h-40 flex-col items-center justify-center px-6 text-center">
+              <Wrench className="mb-3 h-5 w-5 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Check the {SERVERS[activeServer].label.toLowerCase()} server to load its tools.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );
