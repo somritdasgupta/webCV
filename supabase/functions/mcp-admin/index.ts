@@ -882,46 +882,82 @@ async function deleteFile(opts) {
 }
 
 // src/lib/mcp-admin/mdx.ts
-var quote = (s) => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+var DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})/;
+function toDateOnly(input) {
+  const value = String(input ?? "").trim();
+  const match = value.match(DATE_ONLY);
+  if (match) {
+    const [, y, m, d] = match;
+    const probe = new Date(Date.UTC(+y, +m - 1, +d));
+    const valid = probe.getUTCFullYear() === +y && probe.getUTCMonth() === +m - 1 && probe.getUTCDate() === +d;
+    return valid ? `${y}-${m}-${d}` : null;
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
+}
+var todayDateOnly = () => (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+var quote = (s) => JSON.stringify(s);
 function buildMdx(fm, body) {
   const lines = [
-    "---",
-    `title: ${quote(fm.title)}`,
-    `description: ${quote(fm.description)}`,
-    `date: ${quote(fm.date)}`
+    "export const frontmatter = {",
+    `  title: ${quote(fm.title)},`,
+    `  description: ${quote(fm.description)},`,
+    `  date: ${quote(toDateOnly(fm.date) ?? todayDateOnly())},`
   ];
-  if (fm.tags?.length) lines.push(`tags: [${fm.tags.map(quote).join(", ")}]`);
-  if (fm.cover) lines.push(`cover: ${quote(fm.cover)}`);
-  if (typeof fm.readingTime === "number") lines.push(`readingTime: ${fm.readingTime}`);
-  if (fm.draft) lines.push("draft: true");
-  lines.push("---", "");
+  if (fm.tags?.length) lines.push(`  tags: [${fm.tags.map(quote).join(", ")}],`);
+  if (fm.cover) lines.push(`  cover: ${quote(fm.cover)},`);
+  if (fm.draft) lines.push("  draft: true,");
+  if (typeof fm.readingTime === "number") lines.push(`  readingTime: ${fm.readingTime},`);
+  lines.push("};", "");
   return `${lines.join("\n")}
 ${body.replace(/^\n+/, "").trimEnd()}
 `;
 }
-function parseFrontmatter(src) {
-  const match = src.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
-  if (!match) return { data: {}, body: src };
-  const data = {};
-  for (const line of match[1].split("\n")) {
-    const kv = line.match(/^(\w+):\s*(.*)$/);
-    if (!kv) continue;
-    const [, key, rawValue] = kv;
-    const value = rawValue.trim();
-    if (value.startsWith("[") && value.endsWith("]")) {
-      data[key] = value.slice(1, -1).split(",").map((v) => v.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
-    } else if (value === "true" || value === "false") {
-      data[key] = value === "true";
-    } else {
-      data[key] = value.replace(/^["']|["']$/g, "");
+var EXPORT_RE = /^\s*export\s+const\s+frontmatter\s*=\s*\{([\s\S]*?)\n\}\s*;?[ \t]*\n?/;
+var YAML_RE = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
+var STRING_RE = /^("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/;
+function parseString(literal) {
+  if (literal.startsWith('"')) {
+    try {
+      return JSON.parse(literal);
+    } catch {
     }
   }
-  return { data, body: src.slice(match[0].length) };
+  return literal.slice(1, -1).replace(/\\(['"\\])/g, "$1");
 }
-function estimateReadingTime(body) {
-  const words = body.replace(/```[\s\S]*?```/g, " ").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 220));
+function parseScalar(raw) {
+  const value = raw.trim().replace(/,$/, "").trim();
+  const str = value.match(STRING_RE);
+  if (str) return parseString(str[1]);
+  if (value.startsWith("[")) {
+    const items = value.slice(1, value.lastIndexOf("]")).match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,\s][^,]*/g) ?? [];
+    return items.map((item) => STRING_RE.test(item.trim()) ? parseString(item.trim()) : item.trim()).filter(Boolean);
+  }
+  if (value === "true" || value === "false") return value === "true";
+  if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+  return value;
 }
+function parsePairs(block) {
+  const data = {};
+  const pattern = /^\s*["']?(\w+)["']?\s*:\s*([\s\S]*?)(?=^\s*["']?\w+["']?\s*:|(?![\s\S]))/gm;
+  for (const [, key, raw] of block.matchAll(pattern)) {
+    data[key] = parseScalar(raw.replace(/\s*\n\s*/g, " "));
+  }
+  return data;
+}
+function parseFrontmatter(src) {
+  const text = typeof src === "string" ? src : "";
+  const match = text.match(EXPORT_RE) ?? text.match(YAML_RE);
+  if (!match) return { data: {}, body: text };
+  const data = parsePairs(match[1]);
+  if (typeof data.date === "string") data.date = toDateOnly(data.date) ?? data.date;
+  return { data, body: text.slice(match[0].length).replace(/^\n+/, "") };
+}
+function stripMdx(body) {
+  return body.replace(/```[\s\S]*?```/g, " ").replace(/^\s*(import|export)\s.*$/gm, " ").replace(/<[^>]*>/g, " ").replace(/[#>*_`~\[\]()|-]/g, " ");
+}
+var countWords = (body) => stripMdx(body).split(/\s+/).filter(Boolean).length;
+var estimateReadingTime = (body) => Math.max(1, Math.round(countWords(body) / 220));
 
 // src/lib/mcp-admin/tools/blog-posts-list.ts
 var blog_posts_list_default = defineTool7({
