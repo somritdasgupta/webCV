@@ -638,6 +638,10 @@ var postContentShape = {
   draft: draftField
 };
 var postContentObject = z3.object(postContentShape);
+var optionalSessionField = z3.string().optional().describe("Owner session from blog_auth_verify. Optional for published content; required to see drafts or scheduled posts.");
+var isoDay = z3.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Date in YYYY-MM-DD format.");
+var dateRangeField = z3.object({ from: isoDay.optional(), to: isoDay.optional() }).optional().describe('Inclusive date range, both ends optional. Example: {"from": "2025-01-01", "to": "2025-12-31"}.');
+var sortField = z3.enum(["date-desc", "date-asc", "title", "reading-time"]).optional().describe("Sort order. Defaults to date-desc.");
 
 // src/lib/mcp-admin/mdx.ts
 var DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})/;
@@ -964,44 +968,137 @@ async function deleteFile(opts) {
   const data = await res.json();
   return { commitSha: data.commit.sha };
 }
+async function readRaw(path) {
+  const res = await fetch(`https://raw.githubusercontent.com/${REPO.owner}/${REPO.name}/${REPO.branch}/${path}`);
+  if (res.status === 404) return null;
+  if (!res.ok) await fail(res, "Read file");
+  return await res.text();
+}
+
+// src/lib/mcp-admin/corpus.ts
+var SITE = "https://somritdasgupta.in";
+function toRecord(slug, path, sha, source) {
+  const { data, body } = parseFrontmatter(source);
+  const date = typeof data.date === "string" ? data.date : "";
+  return {
+    slug,
+    path,
+    sha,
+    title: String(data.title ?? slug),
+    description: String(data.description ?? ""),
+    date,
+    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
+    cover: data.cover ? String(data.cover) : void 0,
+    draft: data.draft === true,
+    scheduled: data.draft !== true && date > todayDateOnly(),
+    readingTime: typeof data.readingTime === "number" ? data.readingTime : estimateReadingTime(body),
+    wordCount: countWords(body),
+    body,
+    source,
+    url: `${SITE}/blog/${slug}`
+  };
+}
+async function loadCorpus(token) {
+  const files = await listPostFiles(token);
+  const records = await Promise.all(
+    files.map(async (file) => {
+      const slug = file.name.replace(/\.mdx$/, "");
+      const source = token ? (await readFile(token, file.path))?.content : await readRaw(file.path);
+      return source === null || source === void 0 ? null : toRecord(slug, file.path, file.sha, source);
+    })
+  );
+  return records.filter((r) => r !== null);
+}
+async function readerToken(sessionToken, wantsDrafts) {
+  if (sessionToken?.trim()) return (await requireOwner(sessionToken)).token;
+  if (wantsDrafts) await requireOwner("");
+  return void 0;
+}
+var isPublic = (p) => !p.draft && !p.scheduled;
+var summarize = (p) => ({
+  slug: p.slug,
+  title: p.title,
+  description: p.description,
+  date: p.date,
+  tags: p.tags,
+  readingTime: p.readingTime,
+  draft: p.draft,
+  scheduled: p.scheduled,
+  sha: p.sha,
+  url: p.url
+});
+function scorePost(p, query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  const grade = (text) => {
+    const t = text.toLowerCase();
+    if (t === q) return 1;
+    if (t.startsWith(q) || t.split(/\s+/).some((w) => w.startsWith(q))) return 0.75;
+    return t.includes(q) ? 0.5 : 0;
+  };
+  const candidates = [
+    ["title", grade(p.title) * 100],
+    ["tag", Math.max(0, ...p.tags.map(grade)) * 90],
+    ["description", grade(p.description) * 70],
+    ["body", grade(stripMdx(p.body)) * 50]
+  ];
+  const [matchType, score] = candidates.sort((a, b) => b[1] - a[1])[0];
+  return score > 0 ? { matchType, score: Math.round(score) } : null;
+}
+function sortPosts(posts, sort = "date-desc") {
+  const copy = [...posts];
+  const compare = {
+    "date-desc": (a, b) => b.date.localeCompare(a.date),
+    "date-asc": (a, b) => a.date.localeCompare(b.date),
+    title: (a, b) => a.title.localeCompare(b.title),
+    "reading-time": (a, b) => b.readingTime - a.readingTime
+  };
+  return copy.sort(compare[sort]);
+}
+var inDateRange = (date, range) => (!range?.from || date >= range.from) && (!range?.to || date <= range.to);
+var hasTag = (p, tag) => p.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
 
 // src/lib/mcp-admin/tools/blog-posts-list.ts
 var blog_posts_list_default = defineTool7({
   name: "blog_posts_list",
   title: "List posts",
-  description: "List every post in the repository, including drafts and scheduled posts, with slug, title, date, tags, draft flag, and blob sha.",
+  description: "List posts with optional full-text query, tag filter (post must carry ALL tags), date range, sorting, and limit/offset pagination. Published posts need no session; drafts and scheduled posts require session_token.",
   inputSchema: {
-    session_token: sessionTokenField,
-    include_drafts: z6.boolean().optional().describe("Include draft posts in the result. Defaults to true."),
-    query: z6.string().optional().describe("Case-insensitive filter applied to slug, title, description, and tags.")
+    session_token: optionalSessionField,
+    include_drafts: z6.boolean().optional().describe("Include drafts and scheduled posts. Defaults to true with a session, false without."),
+    query: z6.string().optional().describe("Case-insensitive search across title, description, tags, and body."),
+    tags: z6.array(z6.string()).optional().describe("Return only posts carrying every listed tag."),
+    dateRange: dateRangeField,
+    sort: sortField,
+    limit: z6.number().int().min(1).max(200).optional().describe("Page size, 1-200. Defaults to 100."),
+    offset: z6.number().int().min(0).optional().describe("Number of results to skip. Defaults to 0.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: async ({ session_token, include_drafts, query }) => ownerOperation("blog_posts_list", session_token, async (owner) => {
-    const files = await listPostFiles(owner.token);
-    const posts = await Promise.all(
-      files.map(async (file) => {
-        const slug = file.name.replace(/\.mdx$/, "");
-        const source = await readFile(owner.token, file.path);
-        const { data } = parseFrontmatter(source?.content ?? "");
-        return {
-          slug,
-          title: String(data.title ?? slug),
-          description: String(data.description ?? ""),
-          date: String(data.date ?? ""),
-          tags: Array.isArray(data.tags) ? data.tags : [],
-          draft: data.draft === true,
-          sha: source?.sha ?? file.sha,
-          url: `https://somritdasgupta.in/blog/${slug}`
-        };
-      })
-    );
-    const needle = query?.trim().toLowerCase();
-    const filtered = posts.filter((post) => include_drafts === false ? !post.draft : true).filter(
-      (post) => needle ? [post.slug, post.title, post.description, post.tags.join(" ")].join(" ").toLowerCase().includes(needle) : true
-    ).sort((a, b) => a.date < b.date ? 1 : -1);
+  handler: async (input) => respond("blog_posts_list", async () => {
+    const token = await readerToken(input.session_token, input.include_drafts === true);
+    const includeDrafts = input.include_drafts ?? Boolean(token);
+    const all = await loadCorpus(token);
+    const filtered = all.filter((p) => includeDrafts || isPublic(p)).filter((p) => (input.tags ?? []).every((t) => hasTag(p, t))).filter((p) => inDateRange(p.date, input.dateRange)).filter((p) => !input.query || scorePost(p, input.query) !== null);
+    const sorted = sortPosts(filtered, input.sort);
+    const offset = input.offset ?? 0;
+    const page = sorted.slice(offset, offset + (input.limit ?? 100)).map(summarize);
     return {
-      data: { count: filtered.length, posts: filtered },
-      userMessage: `Found ${filtered.length} post${filtered.length === 1 ? "" : "s"}.`,
+      data: {
+        posts: page,
+        total: sorted.length,
+        returned: page.length,
+        hasMore: offset + page.length < sorted.length,
+        filters_applied: {
+          include_drafts: includeDrafts,
+          query: input.query ?? null,
+          tags: input.tags ?? [],
+          dateRange: input.dateRange ?? null,
+          sort: input.sort ?? "date-desc",
+          limit: input.limit ?? 100,
+          offset
+        }
+      },
+      userMessage: `Found ${sorted.length} post${sorted.length === 1 ? "" : "s"}.`,
       nextSteps: ["blog_posts_read"]
     };
   })

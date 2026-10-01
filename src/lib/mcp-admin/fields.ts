@@ -94,3 +94,25 @@ export const postContentShape = {
 
 export const postContentObject = z.object(postContentShape);
 export type PostContent = z.infer<typeof postContentObject>;
+
+export const optionalSessionField = z
+  .string()
+  .optional()
+  .describe("Owner session from blog_auth_verify. Optional for published content; required to see drafts or scheduled posts.");
+
+const isoDay = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .describe("Date in YYYY-MM-DD format.");
+
+export const dateOnlyField = isoDay;
+
+export const dateRangeField = z
+  .object({ from: isoDay.optional(), to: isoDay.optional() })
+  .optional()
+  .describe("Inclusive date range, both ends optional. Example: {\"from\": \"2025-01-01\", \"to\": \"2025-12-31\"}.");
+
+export const sortField = z
+  .enum(["date-desc", "date-asc", "title", "reading-time"])
+  .optional()
+  .describe("Sort order. Defaults to date-desc.");
