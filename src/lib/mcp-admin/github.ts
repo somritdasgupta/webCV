@@ -15,10 +15,10 @@ export const REPO = {
 
 const API = `https://api.github.com/repos/${REPO.owner}/${REPO.name}`;
 
-const headers = (token: string) => ({
+const headers = (token?: string) => ({
   Accept: "application/vnd.github+json",
   "Content-Type": "application/json",
-  Authorization: `Bearer ${token}`,
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
   "User-Agent": "somrit-webcv-mcp",
   "X-GitHub-Api-Version": "2022-11-28",
 });
@@ -35,7 +35,7 @@ const fromB64 = (s: string) => {
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 };
 
-async function ghFetch(token: string, url: string, init?: RequestInit): Promise<Response> {
+async function ghFetch(token: string | undefined, url: string, init?: RequestInit): Promise<Response> {
   const res = await fetch(url, { ...init, headers: headers(token) });
   return res;
 }
@@ -74,7 +74,7 @@ export interface RepoFile {
   sha: string;
 }
 
-export async function listPostFiles(token: string): Promise<RepoFile[]> {
+export async function listPostFiles(token?: string): Promise<RepoFile[]> {
   const res = await ghFetch(
     token,
     `${API}/contents/${REPO.contentDir}?ref=${REPO.branch}`,
@@ -88,7 +88,7 @@ export async function listPostFiles(token: string): Promise<RepoFile[]> {
 }
 
 export async function readFile(
-  token: string,
+  token: string | undefined,
   path: string,
 ): Promise<{ content: string; sha: string } | null> {
   const res = await ghFetch(
@@ -153,4 +153,63 @@ export async function deleteFile(opts: {
   if (!res.ok) await fail(res, "Delete");
   const data = (await res.json()) as { commit: { sha: string } };
   return { commitSha: data.commit.sha };
+}
+
+/** Public read through the raw CDN; used for anonymous corpus reads (no API quota). */
+export async function readRaw(path: string): Promise<string | null> {
+  const res = await fetch(`https://raw.githubusercontent.com/${REPO.owner}/${REPO.name}/${REPO.branch}/${path}`);
+  if (res.status === 404) return null;
+  if (!res.ok) await fail(res, "Read file");
+  return await res.text();
+}
+
+export interface FileChange {
+  path: string;
+  /** New file content; null deletes the file. */
+  content: string | null;
+}
+
+/**
+ * Commit several file changes as ONE commit through the Git Data API.
+ *
+ * Either the ref moves to a commit containing every change or nothing changes,
+ * which is what makes bulk operations atomic. The ref update is not forced, so
+ * a concurrent push makes the call fail instead of discarding that push.
+ */
+export async function commitFiles(token: string, changes: FileChange[], message: string): Promise<{ commitSha: string }> {
+  const refRes = await ghFetch(token, `${API}/git/ref/heads/${REPO.branch}`);
+  if (!refRes.ok) await fail(refRes, "Read branch");
+  const head = ((await refRes.json()) as { object: { sha: string } }).object.sha;
+
+  const commitRes = await ghFetch(token, `${API}/git/commits/${head}`);
+  if (!commitRes.ok) await fail(commitRes, "Read commit");
+  const baseTree = ((await commitRes.json()) as { tree: { sha: string } }).tree.sha;
+
+  const treeRes = await ghFetch(token, `${API}/git/trees`, {
+    method: "POST",
+    body: JSON.stringify({
+      base_tree: baseTree,
+      tree: changes.map((c) =>
+        c.content === null
+          ? { path: c.path, mode: "100644", type: "blob", sha: null }
+          : { path: c.path, mode: "100644", type: "blob", content: c.content },
+      ),
+    }),
+  });
+  if (!treeRes.ok) await fail(treeRes, "Create tree");
+  const tree = ((await treeRes.json()) as { sha: string }).sha;
+
+  const newCommitRes = await ghFetch(token, `${API}/git/commits`, {
+    method: "POST",
+    body: JSON.stringify({ message, tree, parents: [head] }),
+  });
+  if (!newCommitRes.ok) await fail(newCommitRes, "Create commit");
+  const commitSha = ((await newCommitRes.json()) as { sha: string }).sha;
+
+  const updateRes = await ghFetch(token, `${API}/git/refs/heads/${REPO.branch}`, {
+    method: "PATCH",
+    body: JSON.stringify({ sha: commitSha, force: false }),
+  });
+  if (!updateRes.ok) await fail(updateRes, "Update branch");
+  return { commitSha };
 }

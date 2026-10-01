@@ -883,7 +883,7 @@ var API = `https://api.github.com/repos/${REPO.owner}/${REPO.name}`;
 var headers = (token) => ({
   Accept: "application/vnd.github+json",
   "Content-Type": "application/json",
-  Authorization: `Bearer ${token}`,
+  ...token ? { Authorization: `Bearer ${token}` } : {},
   "User-Agent": "somrit-webcv-mcp",
   "X-GitHub-Api-Version": "2022-11-28"
 });
