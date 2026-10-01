@@ -30,6 +30,7 @@ export default defineTool({
           slug: safe,
           sha: file.sha,
           frontmatter: data,
+          date: typeof data.date === "string" ? data.date : null,
           body,
           source: file.content,
           url: `https://somritdasgupta.in/blog/${safe}`,

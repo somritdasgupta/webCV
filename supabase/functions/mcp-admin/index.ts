@@ -22,6 +22,10 @@ var ERROR_CODES = [
   "COMMIT_FAILED",
   "POST_NOT_FOUND",
   "CONFLICT",
+  "INVALID_DATE",
+  "TAG_NOT_FOUND",
+  "LIMIT_EXCEEDED",
+  "IMPORT_FAILED",
   "RATE_LIMITED",
   "INTERNAL_ERROR"
 ];
@@ -240,7 +244,8 @@ async function respond(operation, run) {
         code: failure.code,
         message: failure.message,
         field: failure.field,
-        guidance: failure.guidance
+        guidance: failure.guidance,
+        suggestion: failure.guidance
       },
       meta: {
         operation,
@@ -612,7 +617,7 @@ var bodyField = z3.string().min(1).describe(
   "Complete post body in Markdown/MDX without frontmatter. Custom components listed by blog_components_list are supported."
 );
 var dateField = z3.string().optional().describe(
-  'ISO 8601 publish date. Defaults to the current UTC time. A future value schedules the post. Examples: "2026-09-07", "2026-09-07T14:30:00Z".'
+  'Publish date stored as YYYY-MM-DD. Defaults to today (UTC). A timestamp such as "2026-09-07T14:30:00Z" is reduced to "2026-09-07". A future date schedules the post. Example: "2026-09-07".'
 );
 var tagsField = z3.array(z3.string().trim().min(1)).max(8).optional().describe('Topic tags for filtering, maximum 8. Example: ["mcp", "api", "integration"].');
 var coverField = z3.string().url().optional().describe(
@@ -633,6 +638,84 @@ var postContentShape = {
   draft: draftField
 };
 var postContentObject = z3.object(postContentShape);
+
+// src/lib/mcp-admin/mdx.ts
+var DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})/;
+function toDateOnly(input) {
+  const value = String(input ?? "").trim();
+  const match = value.match(DATE_ONLY);
+  if (match) {
+    const [, y, m, d] = match;
+    const probe = new Date(Date.UTC(+y, +m - 1, +d));
+    const valid = probe.getUTCFullYear() === +y && probe.getUTCMonth() === +m - 1 && probe.getUTCDate() === +d;
+    return valid ? `${y}-${m}-${d}` : null;
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
+}
+var todayDateOnly = () => (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+var quote = (s) => JSON.stringify(s);
+function buildMdx(fm, body) {
+  const lines = [
+    "export const frontmatter = {",
+    `  title: ${quote(fm.title)},`,
+    `  description: ${quote(fm.description)},`,
+    `  date: ${quote(toDateOnly(fm.date) ?? todayDateOnly())},`
+  ];
+  if (fm.tags?.length) lines.push(`  tags: [${fm.tags.map(quote).join(", ")}],`);
+  if (fm.cover) lines.push(`  cover: ${quote(fm.cover)},`);
+  if (fm.draft) lines.push("  draft: true,");
+  if (typeof fm.readingTime === "number") lines.push(`  readingTime: ${fm.readingTime},`);
+  lines.push("};", "");
+  return `${lines.join("\n")}
+${body.replace(/^\n+/, "").trimEnd()}
+`;
+}
+var EXPORT_RE = /^\s*export\s+const\s+frontmatter\s*=\s*\{([\s\S]*?)\n\}\s*;?[ \t]*\n?/;
+var YAML_RE = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
+var STRING_RE = /^("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/;
+function parseString(literal) {
+  if (literal.startsWith('"')) {
+    try {
+      return JSON.parse(literal);
+    } catch {
+    }
+  }
+  return literal.slice(1, -1).replace(/\\(['"\\])/g, "$1");
+}
+function parseScalar(raw) {
+  const value = raw.trim().replace(/,$/, "").trim();
+  const str = value.match(STRING_RE);
+  if (str) return parseString(str[1]);
+  if (value.startsWith("[")) {
+    const items = value.slice(1, value.lastIndexOf("]")).match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,\s][^,]*/g) ?? [];
+    return items.map((item) => STRING_RE.test(item.trim()) ? parseString(item.trim()) : item.trim()).filter(Boolean);
+  }
+  if (value === "true" || value === "false") return value === "true";
+  if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+  return value;
+}
+function parsePairs(block) {
+  const data = {};
+  const pattern = /^\s*["']?(\w+)["']?\s*:\s*([\s\S]*?)(?=^\s*["']?\w+["']?\s*:|(?![\s\S]))/gm;
+  for (const [, key, raw] of block.matchAll(pattern)) {
+    data[key] = parseScalar(raw.replace(/\s*\n\s*/g, " "));
+  }
+  return data;
+}
+function parseFrontmatter(src) {
+  const text = typeof src === "string" ? src : "";
+  const match = text.match(EXPORT_RE) ?? text.match(YAML_RE);
+  if (!match) return { data: {}, body: text };
+  const data = parsePairs(match[1]);
+  if (typeof data.date === "string") data.date = toDateOnly(data.date) ?? data.date;
+  return { data, body: text.slice(match[0].length).replace(/^\n+/, "") };
+}
+function stripMdx(body) {
+  return body.replace(/```[\s\S]*?```/g, " ").replace(/^\s*(import|export)\s.*$/gm, " ").replace(/<[^>]*>/g, " ").replace(/[#>*_`~\[\]()|-]/g, " ");
+}
+var countWords = (body) => stripMdx(body).split(/\s+/).filter(Boolean).length;
+var estimateReadingTime = (body) => Math.max(1, Math.round(countWords(body) / 220));
 
 // src/lib/mcp-admin/validation.ts
 function normalizeSlug(input) {
@@ -690,12 +773,12 @@ function collectIssues(input, options) {
       });
     }
   }
-  if (input.date !== void 0 && Number.isNaN(new Date(input.date).getTime())) {
+  if (input.date !== void 0 && toDateOnly(input.date) === null) {
     issues.push({
       field: "date",
-      code: "VALIDATION_ERROR",
-      message: `"${input.date}" is not a valid ISO 8601 date.`,
-      guidance: 'Use a value such as "2026-09-07" or "2026-09-07T14:30:00Z".'
+      code: "INVALID_DATE",
+      message: `"${input.date}" is not a valid calendar date.`,
+      guidance: 'Use the YYYY-MM-DD format, for example "2026-09-07".'
     });
   }
   if (input.tags && input.tags.length > 8) {
@@ -758,7 +841,7 @@ var blog_posts_validate_default = defineTool6({
     slug: z5.string().optional().describe("Proposed slug."),
     description: z5.string().optional().describe("Proposed meta description."),
     body: z5.string().optional().describe("Proposed MDX body without frontmatter."),
-    date: z5.string().optional().describe("Proposed ISO 8601 publish date."),
+    date: z5.string().optional().describe("Proposed publish date. YYYY-MM-DD preferred; ISO timestamps are reduced to their date part."),
     tags: z5.array(z5.string()).optional().describe("Proposed tags."),
     cover: z5.string().optional().describe("Proposed cover image URL.")
   },
@@ -773,6 +856,7 @@ var blog_posts_validate_default = defineTool6({
     }
     return {
       data: {
+        normalized_date: input.date ? toDateOnly(input.date) : todayDateOnly(),
         valid: issues.length === 0,
         issues,
         normalized_slug: normalized,
@@ -881,84 +965,6 @@ async function deleteFile(opts) {
   return { commitSha: data.commit.sha };
 }
 
-// src/lib/mcp-admin/mdx.ts
-var DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})/;
-function toDateOnly(input) {
-  const value = String(input ?? "").trim();
-  const match = value.match(DATE_ONLY);
-  if (match) {
-    const [, y, m, d] = match;
-    const probe = new Date(Date.UTC(+y, +m - 1, +d));
-    const valid = probe.getUTCFullYear() === +y && probe.getUTCMonth() === +m - 1 && probe.getUTCDate() === +d;
-    return valid ? `${y}-${m}-${d}` : null;
-  }
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
-}
-var todayDateOnly = () => (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-var quote = (s) => JSON.stringify(s);
-function buildMdx(fm, body) {
-  const lines = [
-    "export const frontmatter = {",
-    `  title: ${quote(fm.title)},`,
-    `  description: ${quote(fm.description)},`,
-    `  date: ${quote(toDateOnly(fm.date) ?? todayDateOnly())},`
-  ];
-  if (fm.tags?.length) lines.push(`  tags: [${fm.tags.map(quote).join(", ")}],`);
-  if (fm.cover) lines.push(`  cover: ${quote(fm.cover)},`);
-  if (fm.draft) lines.push("  draft: true,");
-  if (typeof fm.readingTime === "number") lines.push(`  readingTime: ${fm.readingTime},`);
-  lines.push("};", "");
-  return `${lines.join("\n")}
-${body.replace(/^\n+/, "").trimEnd()}
-`;
-}
-var EXPORT_RE = /^\s*export\s+const\s+frontmatter\s*=\s*\{([\s\S]*?)\n\}\s*;?[ \t]*\n?/;
-var YAML_RE = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
-var STRING_RE = /^("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/;
-function parseString(literal) {
-  if (literal.startsWith('"')) {
-    try {
-      return JSON.parse(literal);
-    } catch {
-    }
-  }
-  return literal.slice(1, -1).replace(/\\(['"\\])/g, "$1");
-}
-function parseScalar(raw) {
-  const value = raw.trim().replace(/,$/, "").trim();
-  const str = value.match(STRING_RE);
-  if (str) return parseString(str[1]);
-  if (value.startsWith("[")) {
-    const items = value.slice(1, value.lastIndexOf("]")).match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,\s][^,]*/g) ?? [];
-    return items.map((item) => STRING_RE.test(item.trim()) ? parseString(item.trim()) : item.trim()).filter(Boolean);
-  }
-  if (value === "true" || value === "false") return value === "true";
-  if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
-  return value;
-}
-function parsePairs(block) {
-  const data = {};
-  const pattern = /^\s*["']?(\w+)["']?\s*:\s*([\s\S]*?)(?=^\s*["']?\w+["']?\s*:|(?![\s\S]))/gm;
-  for (const [, key, raw] of block.matchAll(pattern)) {
-    data[key] = parseScalar(raw.replace(/\s*\n\s*/g, " "));
-  }
-  return data;
-}
-function parseFrontmatter(src) {
-  const text = typeof src === "string" ? src : "";
-  const match = text.match(EXPORT_RE) ?? text.match(YAML_RE);
-  if (!match) return { data: {}, body: text };
-  const data = parsePairs(match[1]);
-  if (typeof data.date === "string") data.date = toDateOnly(data.date) ?? data.date;
-  return { data, body: text.slice(match[0].length).replace(/^\n+/, "") };
-}
-function stripMdx(body) {
-  return body.replace(/```[\s\S]*?```/g, " ").replace(/^\s*(import|export)\s.*$/gm, " ").replace(/<[^>]*>/g, " ").replace(/[#>*_`~\[\]()|-]/g, " ");
-}
-var countWords = (body) => stripMdx(body).split(/\s+/).filter(Boolean).length;
-var estimateReadingTime = (body) => Math.max(1, Math.round(countWords(body) / 220));
-
 // src/lib/mcp-admin/tools/blog-posts-list.ts
 var blog_posts_list_default = defineTool7({
   name: "blog_posts_list",
@@ -1025,6 +1031,7 @@ var blog_posts_read_default = defineTool8({
         slug: safe,
         sha: file.sha,
         frontmatter: data,
+        date: typeof data.date === "string" ? data.date : null,
         body,
         source: file.content,
         url: `https://somritdasgupta.in/blog/${safe}`
@@ -1053,7 +1060,7 @@ var blog_posts_create_default = defineTool9({
         nextSteps: ["blog_posts_update"]
       });
     }
-    const date = input.date ? new Date(input.date).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
+    const date = input.date ? toDateOnly(input.date) : todayDateOnly();
     const source = buildMdx(
       {
         title: input.title,
@@ -1079,7 +1086,7 @@ var blog_posts_create_default = defineTool9({
         nextSteps: ["blog_posts_read"]
       });
     }
-    const scheduled = new Date(date).getTime() > Date.now();
+    const scheduled = date > todayDateOnly();
     return {
       data: {
         published: true,
@@ -1145,7 +1152,7 @@ var blog_posts_update_default = defineTool10({
       {
         title: input.title ?? String(data.title ?? slug),
         description: input.description ?? String(data.description ?? ""),
-        date: input.date ? new Date(input.date).toISOString() : String(data.date ?? (/* @__PURE__ */ new Date()).toISOString()),
+        date: input.date ? toDateOnly(input.date) : String(data.date ?? todayDateOnly()),
         tags: input.tags ?? (Array.isArray(data.tags) ? data.tags : void 0),
         cover: input.cover ?? (data.cover ? String(data.cover) : void 0),
         draft: input.draft ?? data.draft === true,

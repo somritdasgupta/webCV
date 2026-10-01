@@ -1,6 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { respond } from "../response";
+import { toDateOnly, todayDateOnly } from "../mdx";
 import { collectIssues, normalizeSlug, slugCandidates } from "../validation";
 
 /**
@@ -17,7 +18,7 @@ export default defineTool({
     slug: z.string().optional().describe("Proposed slug."),
     description: z.string().optional().describe("Proposed meta description."),
     body: z.string().optional().describe("Proposed MDX body without frontmatter."),
-    date: z.string().optional().describe("Proposed ISO 8601 publish date."),
+    date: z.string().optional().describe("Proposed publish date. YYYY-MM-DD preferred; ISO timestamps are reduced to their date part."),
     tags: z.array(z.string()).optional().describe("Proposed tags."),
     cover: z.string().optional().describe("Proposed cover image URL."),
   },
@@ -33,6 +34,7 @@ export default defineTool({
       }
       return {
         data: {
+          normalized_date: input.date ? toDateOnly(input.date) : todayDateOnly(),
           valid: issues.length === 0,
           issues,
           normalized_slug: normalized,

@@ -51,7 +51,7 @@ export const dateField = z
   .string()
   .optional()
   .describe(
-    "ISO 8601 publish date. Defaults to the current UTC time. A future value schedules the post. Examples: \"2026-09-07\", \"2026-09-07T14:30:00Z\".",
+    "Publish date stored as YYYY-MM-DD. Defaults to today (UTC). A timestamp such as \"2026-09-07T14:30:00Z\" is reduced to \"2026-09-07\". A future date schedules the post. Example: \"2026-09-07\".",
   );
 
 export const tagsField = z
