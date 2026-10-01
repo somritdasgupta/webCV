@@ -21,7 +21,7 @@ export default defineTool({
   inputSchema: { format: z.enum(["json", "csv"]).describe("Output format.") },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: async ({ format }) =>
-    respond("blog_posts_export", async () => {
+    respond<Record<string, unknown>>("blog_posts_export", async () => {
       const wait = lastExportAt + COOLDOWN_MS - Date.now();
       if (wait > 0) {
         throw new OperationError("RATE_LIMITED", "Exports are limited to one per minute.", {
