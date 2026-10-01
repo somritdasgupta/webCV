@@ -1,5 +1,6 @@
 import { OperationError } from "./errors";
 import { SLUG_PATTERN } from "./fields";
+import { toDateOnly } from "./mdx";
 
 export interface FieldIssue {
   field: string;
@@ -95,12 +96,12 @@ export function collectIssues(input: PostDraftInput, options: { requireAll: bool
     }
   }
 
-  if (input.date !== undefined && Number.isNaN(new Date(input.date).getTime())) {
+  if (input.date !== undefined && toDateOnly(input.date) === null) {
     issues.push({
       field: "date",
-      code: "VALIDATION_ERROR",
-      message: `"${input.date}" is not a valid ISO 8601 date.`,
-      guidance: "Use a value such as \"2026-09-07\" or \"2026-09-07T14:30:00Z\".",
+      code: "INVALID_DATE",
+      message: `"${input.date}" is not a valid calendar date.`,
+      guidance: "Use the YYYY-MM-DD format, for example \"2026-09-07\".",
     });
   }
 

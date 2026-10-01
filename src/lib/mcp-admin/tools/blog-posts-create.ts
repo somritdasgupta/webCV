@@ -2,7 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { OperationError } from "../errors";
 import { postContentShape, sessionTokenField } from "../fields";
 import { pathForSlug, readFile, writeFile } from "../github";
-import { buildMdx, estimateReadingTime } from "../mdx";
+import { buildMdx, estimateReadingTime, toDateOnly, todayDateOnly } from "../mdx";
 import { ownerOperation } from "../response";
 import { assertValid, normalizeSlug, slugCandidates } from "../validation";
 
@@ -27,7 +27,7 @@ export default defineTool({
         });
       }
 
-      const date = input.date ? new Date(input.date).toISOString() : new Date().toISOString();
+      const date = input.date ? (toDateOnly(input.date) as string) : todayDateOnly();
       const source = buildMdx(
         {
           title: input.title,
@@ -56,7 +56,7 @@ export default defineTool({
         });
       }
 
-      const scheduled = new Date(date).getTime() > Date.now();
+      const scheduled = date > todayDateOnly();
       return {
         data: {
           published: true,

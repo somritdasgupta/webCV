@@ -14,7 +14,7 @@ import {
   titleField,
 } from "../fields";
 import { pathForSlug, readFile, writeFile } from "../github";
-import { buildMdx, estimateReadingTime, parseFrontmatter } from "../mdx";
+import { buildMdx, estimateReadingTime, parseFrontmatter, toDateOnly, todayDateOnly } from "../mdx";
 import { ownerOperation } from "../response";
 import { assertValid, normalizeSlug } from "../validation";
 
@@ -66,7 +66,7 @@ export default defineTool({
         {
           title: input.title ?? String(data.title ?? slug),
           description: input.description ?? String(data.description ?? ""),
-          date: input.date ? new Date(input.date).toISOString() : String(data.date ?? new Date().toISOString()),
+          date: input.date ? (toDateOnly(input.date) as string) : String(data.date ?? todayDateOnly()),
           tags: input.tags ?? (Array.isArray(data.tags) ? (data.tags as string[]) : undefined),
           cover: input.cover ?? (data.cover ? String(data.cover) : undefined),
           draft: input.draft ?? data.draft === true,

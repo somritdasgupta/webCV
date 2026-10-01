@@ -22,6 +22,10 @@ var ERROR_CODES = [
   "COMMIT_FAILED",
   "POST_NOT_FOUND",
   "CONFLICT",
+  "INVALID_DATE",
+  "TAG_NOT_FOUND",
+  "LIMIT_EXCEEDED",
+  "IMPORT_FAILED",
   "RATE_LIMITED",
   "INTERNAL_ERROR"
 ];
@@ -240,7 +244,8 @@ async function respond(operation, run) {
         code: failure.code,
         message: failure.message,
         field: failure.field,
-        guidance: failure.guidance
+        guidance: failure.guidance,
+        suggestion: failure.guidance
       },
       meta: {
         operation,
@@ -612,7 +617,7 @@ var bodyField = z3.string().min(1).describe(
   "Complete post body in Markdown/MDX without frontmatter. Custom components listed by blog_components_list are supported."
 );
 var dateField = z3.string().optional().describe(
-  'ISO 8601 publish date. Defaults to the current UTC time. A future value schedules the post. Examples: "2026-09-07", "2026-09-07T14:30:00Z".'
+  'Publish date stored as YYYY-MM-DD. Defaults to today (UTC). A timestamp such as "2026-09-07T14:30:00Z" is reduced to "2026-09-07". A future date schedules the post. Example: "2026-09-07".'
 );
 var tagsField = z3.array(z3.string().trim().min(1)).max(8).optional().describe('Topic tags for filtering, maximum 8. Example: ["mcp", "api", "integration"].');
 var coverField = z3.string().url().optional().describe(
@@ -633,6 +638,88 @@ var postContentShape = {
   draft: draftField
 };
 var postContentObject = z3.object(postContentShape);
+var optionalSessionField = z3.string().optional().describe("Owner session from blog_auth_verify. Optional for published content; required to see drafts or scheduled posts.");
+var isoDay = z3.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Date in YYYY-MM-DD format.");
+var dateRangeField = z3.object({ from: isoDay.optional(), to: isoDay.optional() }).optional().describe('Inclusive date range, both ends optional. Example: {"from": "2025-01-01", "to": "2025-12-31"}.');
+var sortField = z3.enum(["date-desc", "date-asc", "title", "reading-time"]).optional().describe("Sort order. Defaults to date-desc.");
+
+// src/lib/mcp-admin/mdx.ts
+var DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})/;
+function toDateOnly(input) {
+  const value = String(input ?? "").trim();
+  const match = value.match(DATE_ONLY);
+  if (match) {
+    const [, y, m, d] = match;
+    const probe = new Date(Date.UTC(+y, +m - 1, +d));
+    const valid = probe.getUTCFullYear() === +y && probe.getUTCMonth() === +m - 1 && probe.getUTCDate() === +d;
+    return valid ? `${y}-${m}-${d}` : null;
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
+}
+var todayDateOnly = () => (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+var quote = (s) => JSON.stringify(s);
+function buildMdx(fm, body) {
+  const lines = [
+    "export const frontmatter = {",
+    `  title: ${quote(fm.title)},`,
+    `  description: ${quote(fm.description)},`,
+    `  date: ${quote(toDateOnly(fm.date) ?? todayDateOnly())},`
+  ];
+  if (fm.tags?.length) lines.push(`  tags: [${fm.tags.map(quote).join(", ")}],`);
+  if (fm.cover) lines.push(`  cover: ${quote(fm.cover)},`);
+  if (fm.draft) lines.push("  draft: true,");
+  if (typeof fm.readingTime === "number") lines.push(`  readingTime: ${fm.readingTime},`);
+  lines.push("};", "");
+  return `${lines.join("\n")}
+${body.replace(/^\n+/, "").trimEnd()}
+`;
+}
+var EXPORT_RE = /^\s*export\s+const\s+frontmatter\s*=\s*\{([\s\S]*?)\n\}\s*;?[ \t]*\n?/;
+var YAML_RE = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
+var STRING_RE = /^("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/;
+function parseString(literal) {
+  if (literal.startsWith('"')) {
+    try {
+      return JSON.parse(literal);
+    } catch {
+    }
+  }
+  return literal.slice(1, -1).replace(/\\(['"\\])/g, "$1");
+}
+function parseScalar(raw) {
+  const value = raw.trim().replace(/,$/, "").trim();
+  const str = value.match(STRING_RE);
+  if (str) return parseString(str[1]);
+  if (value.startsWith("[")) {
+    const items = value.slice(1, value.lastIndexOf("]")).match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,\s][^,]*/g) ?? [];
+    return items.map((item) => STRING_RE.test(item.trim()) ? parseString(item.trim()) : item.trim()).filter(Boolean);
+  }
+  if (value === "true" || value === "false") return value === "true";
+  if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+  return value;
+}
+function parsePairs(block) {
+  const data = {};
+  const pattern = /^\s*["']?(\w+)["']?\s*:\s*([\s\S]*?)(?=^\s*["']?\w+["']?\s*:|(?![\s\S]))/gm;
+  for (const [, key, raw] of block.matchAll(pattern)) {
+    data[key] = parseScalar(raw.replace(/\s*\n\s*/g, " "));
+  }
+  return data;
+}
+function parseFrontmatter(src) {
+  const text = typeof src === "string" ? src : "";
+  const match = text.match(EXPORT_RE) ?? text.match(YAML_RE);
+  if (!match) return { data: {}, body: text };
+  const data = parsePairs(match[1]);
+  if (typeof data.date === "string") data.date = toDateOnly(data.date) ?? data.date;
+  return { data, body: text.slice(match[0].length).replace(/^\n+/, "") };
+}
+function stripMdx(body) {
+  return body.replace(/```[\s\S]*?```/g, " ").replace(/^\s*(import|export)\s.*$/gm, " ").replace(/<[^>]*>/g, " ").replace(/[#>*_`~\[\]()|-]/g, " ");
+}
+var countWords = (body) => stripMdx(body).split(/\s+/).filter(Boolean).length;
+var estimateReadingTime = (body) => Math.max(1, Math.round(countWords(body) / 220));
 
 // src/lib/mcp-admin/validation.ts
 function normalizeSlug(input) {
@@ -690,12 +777,12 @@ function collectIssues(input, options) {
       });
     }
   }
-  if (input.date !== void 0 && Number.isNaN(new Date(input.date).getTime())) {
+  if (input.date !== void 0 && toDateOnly(input.date) === null) {
     issues.push({
       field: "date",
-      code: "VALIDATION_ERROR",
-      message: `"${input.date}" is not a valid ISO 8601 date.`,
-      guidance: 'Use a value such as "2026-09-07" or "2026-09-07T14:30:00Z".'
+      code: "INVALID_DATE",
+      message: `"${input.date}" is not a valid calendar date.`,
+      guidance: 'Use the YYYY-MM-DD format, for example "2026-09-07".'
     });
   }
   if (input.tags && input.tags.length > 8) {
@@ -758,7 +845,7 @@ var blog_posts_validate_default = defineTool6({
     slug: z5.string().optional().describe("Proposed slug."),
     description: z5.string().optional().describe("Proposed meta description."),
     body: z5.string().optional().describe("Proposed MDX body without frontmatter."),
-    date: z5.string().optional().describe("Proposed ISO 8601 publish date."),
+    date: z5.string().optional().describe("Proposed publish date. YYYY-MM-DD preferred; ISO timestamps are reduced to their date part."),
     tags: z5.array(z5.string()).optional().describe("Proposed tags."),
     cover: z5.string().optional().describe("Proposed cover image URL.")
   },
@@ -773,6 +860,7 @@ var blog_posts_validate_default = defineTool6({
     }
     return {
       data: {
+        normalized_date: input.date ? toDateOnly(input.date) : todayDateOnly(),
         valid: issues.length === 0,
         issues,
         normalized_slug: normalized,
@@ -799,7 +887,7 @@ var API = `https://api.github.com/repos/${REPO.owner}/${REPO.name}`;
 var headers = (token) => ({
   Accept: "application/vnd.github+json",
   "Content-Type": "application/json",
-  Authorization: `Bearer ${token}`,
+  ...token ? { Authorization: `Bearer ${token}` } : {},
   "User-Agent": "somrit-webcv-mcp",
   "X-GitHub-Api-Version": "2022-11-28"
 });
@@ -880,86 +968,137 @@ async function deleteFile(opts) {
   const data = await res.json();
   return { commitSha: data.commit.sha };
 }
+async function readRaw(path) {
+  const res = await fetch(`https://raw.githubusercontent.com/${REPO.owner}/${REPO.name}/${REPO.branch}/${path}`);
+  if (res.status === 404) return null;
+  if (!res.ok) await fail(res, "Read file");
+  return await res.text();
+}
 
-// src/lib/mcp-admin/mdx.ts
-var quote = (s) => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
-function buildMdx(fm, body) {
-  const lines = [
-    "---",
-    `title: ${quote(fm.title)}`,
-    `description: ${quote(fm.description)}`,
-    `date: ${quote(fm.date)}`
+// src/lib/mcp-admin/corpus.ts
+var SITE = "https://somritdasgupta.in";
+function toRecord(slug, path, sha, source) {
+  const { data, body } = parseFrontmatter(source);
+  const date = typeof data.date === "string" ? data.date : "";
+  return {
+    slug,
+    path,
+    sha,
+    title: String(data.title ?? slug),
+    description: String(data.description ?? ""),
+    date,
+    tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
+    cover: data.cover ? String(data.cover) : void 0,
+    draft: data.draft === true,
+    scheduled: data.draft !== true && date > todayDateOnly(),
+    readingTime: typeof data.readingTime === "number" ? data.readingTime : estimateReadingTime(body),
+    wordCount: countWords(body),
+    body,
+    source,
+    url: `${SITE}/blog/${slug}`
+  };
+}
+async function loadCorpus(token) {
+  const files = await listPostFiles(token);
+  const records = await Promise.all(
+    files.map(async (file) => {
+      const slug = file.name.replace(/\.mdx$/, "");
+      const source = token ? (await readFile(token, file.path))?.content : await readRaw(file.path);
+      return source === null || source === void 0 ? null : toRecord(slug, file.path, file.sha, source);
+    })
+  );
+  return records.filter((r) => r !== null);
+}
+async function readerToken(sessionToken, wantsDrafts) {
+  if (sessionToken?.trim()) return (await requireOwner(sessionToken)).token;
+  if (wantsDrafts) await requireOwner("");
+  return void 0;
+}
+var isPublic = (p) => !p.draft && !p.scheduled;
+var summarize = (p) => ({
+  slug: p.slug,
+  title: p.title,
+  description: p.description,
+  date: p.date,
+  tags: p.tags,
+  readingTime: p.readingTime,
+  draft: p.draft,
+  scheduled: p.scheduled,
+  sha: p.sha,
+  url: p.url
+});
+function scorePost(p, query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  const grade = (text) => {
+    const t = text.toLowerCase();
+    if (t === q) return 1;
+    if (t.startsWith(q) || t.split(/\s+/).some((w) => w.startsWith(q))) return 0.75;
+    return t.includes(q) ? 0.5 : 0;
+  };
+  const candidates = [
+    ["title", grade(p.title) * 100],
+    ["tag", Math.max(0, ...p.tags.map(grade)) * 90],
+    ["description", grade(p.description) * 70],
+    ["body", grade(stripMdx(p.body)) * 50]
   ];
-  if (fm.tags?.length) lines.push(`tags: [${fm.tags.map(quote).join(", ")}]`);
-  if (fm.cover) lines.push(`cover: ${quote(fm.cover)}`);
-  if (typeof fm.readingTime === "number") lines.push(`readingTime: ${fm.readingTime}`);
-  if (fm.draft) lines.push("draft: true");
-  lines.push("---", "");
-  return `${lines.join("\n")}
-${body.replace(/^\n+/, "").trimEnd()}
-`;
+  const [matchType, score] = candidates.sort((a, b) => b[1] - a[1])[0];
+  return score > 0 ? { matchType, score: Math.round(score) } : null;
 }
-function parseFrontmatter(src) {
-  const match = src.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
-  if (!match) return { data: {}, body: src };
-  const data = {};
-  for (const line of match[1].split("\n")) {
-    const kv = line.match(/^(\w+):\s*(.*)$/);
-    if (!kv) continue;
-    const [, key, rawValue] = kv;
-    const value = rawValue.trim();
-    if (value.startsWith("[") && value.endsWith("]")) {
-      data[key] = value.slice(1, -1).split(",").map((v) => v.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
-    } else if (value === "true" || value === "false") {
-      data[key] = value === "true";
-    } else {
-      data[key] = value.replace(/^["']|["']$/g, "");
-    }
-  }
-  return { data, body: src.slice(match[0].length) };
+function sortPosts(posts, sort = "date-desc") {
+  const copy = [...posts];
+  const compare = {
+    "date-desc": (a, b) => b.date.localeCompare(a.date),
+    "date-asc": (a, b) => a.date.localeCompare(b.date),
+    title: (a, b) => a.title.localeCompare(b.title),
+    "reading-time": (a, b) => b.readingTime - a.readingTime
+  };
+  return copy.sort(compare[sort]);
 }
-function estimateReadingTime(body) {
-  const words = body.replace(/```[\s\S]*?```/g, " ").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 220));
-}
+var inDateRange = (date, range) => (!range?.from || date >= range.from) && (!range?.to || date <= range.to);
+var hasTag = (p, tag) => p.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
 
 // src/lib/mcp-admin/tools/blog-posts-list.ts
 var blog_posts_list_default = defineTool7({
   name: "blog_posts_list",
   title: "List posts",
-  description: "List every post in the repository, including drafts and scheduled posts, with slug, title, date, tags, draft flag, and blob sha.",
+  description: "List posts with optional full-text query, tag filter (post must carry ALL tags), date range, sorting, and limit/offset pagination. Published posts need no session; drafts and scheduled posts require session_token.",
   inputSchema: {
-    session_token: sessionTokenField,
-    include_drafts: z6.boolean().optional().describe("Include draft posts in the result. Defaults to true."),
-    query: z6.string().optional().describe("Case-insensitive filter applied to slug, title, description, and tags.")
+    session_token: optionalSessionField,
+    include_drafts: z6.boolean().optional().describe("Include drafts and scheduled posts. Defaults to true with a session, false without."),
+    query: z6.string().optional().describe("Case-insensitive search across title, description, tags, and body."),
+    tags: z6.array(z6.string()).optional().describe("Return only posts carrying every listed tag."),
+    dateRange: dateRangeField,
+    sort: sortField,
+    limit: z6.number().int().min(1).max(200).optional().describe("Page size, 1-200. Defaults to 100."),
+    offset: z6.number().int().min(0).optional().describe("Number of results to skip. Defaults to 0.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
-  handler: async ({ session_token, include_drafts, query }) => ownerOperation("blog_posts_list", session_token, async (owner) => {
-    const files = await listPostFiles(owner.token);
-    const posts = await Promise.all(
-      files.map(async (file) => {
-        const slug = file.name.replace(/\.mdx$/, "");
-        const source = await readFile(owner.token, file.path);
-        const { data } = parseFrontmatter(source?.content ?? "");
-        return {
-          slug,
-          title: String(data.title ?? slug),
-          description: String(data.description ?? ""),
-          date: String(data.date ?? ""),
-          tags: Array.isArray(data.tags) ? data.tags : [],
-          draft: data.draft === true,
-          sha: source?.sha ?? file.sha,
-          url: `https://somritdasgupta.in/blog/${slug}`
-        };
-      })
-    );
-    const needle = query?.trim().toLowerCase();
-    const filtered = posts.filter((post) => include_drafts === false ? !post.draft : true).filter(
-      (post) => needle ? [post.slug, post.title, post.description, post.tags.join(" ")].join(" ").toLowerCase().includes(needle) : true
-    ).sort((a, b) => a.date < b.date ? 1 : -1);
+  handler: async (input) => respond("blog_posts_list", async () => {
+    const token = await readerToken(input.session_token, input.include_drafts === true);
+    const includeDrafts = input.include_drafts ?? Boolean(token);
+    const all = await loadCorpus(token);
+    const filtered = all.filter((p) => includeDrafts || isPublic(p)).filter((p) => (input.tags ?? []).every((t) => hasTag(p, t))).filter((p) => inDateRange(p.date, input.dateRange)).filter((p) => !input.query || scorePost(p, input.query) !== null);
+    const sorted = sortPosts(filtered, input.sort);
+    const offset = input.offset ?? 0;
+    const page = sorted.slice(offset, offset + (input.limit ?? 100)).map(summarize);
     return {
-      data: { count: filtered.length, posts: filtered },
-      userMessage: `Found ${filtered.length} post${filtered.length === 1 ? "" : "s"}.`,
+      data: {
+        posts: page,
+        total: sorted.length,
+        returned: page.length,
+        hasMore: offset + page.length < sorted.length,
+        filters_applied: {
+          include_drafts: includeDrafts,
+          query: input.query ?? null,
+          tags: input.tags ?? [],
+          dateRange: input.dateRange ?? null,
+          sort: input.sort ?? "date-desc",
+          limit: input.limit ?? 100,
+          offset
+        }
+      },
+      userMessage: `Found ${sorted.length} post${sorted.length === 1 ? "" : "s"}.`,
       nextSteps: ["blog_posts_read"]
     };
   })
@@ -989,6 +1128,7 @@ var blog_posts_read_default = defineTool8({
         slug: safe,
         sha: file.sha,
         frontmatter: data,
+        date: typeof data.date === "string" ? data.date : null,
         body,
         source: file.content,
         url: `https://somritdasgupta.in/blog/${safe}`
@@ -1017,7 +1157,7 @@ var blog_posts_create_default = defineTool9({
         nextSteps: ["blog_posts_update"]
       });
     }
-    const date = input.date ? new Date(input.date).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
+    const date = input.date ? toDateOnly(input.date) : todayDateOnly();
     const source = buildMdx(
       {
         title: input.title,
@@ -1043,7 +1183,7 @@ var blog_posts_create_default = defineTool9({
         nextSteps: ["blog_posts_read"]
       });
     }
-    const scheduled = new Date(date).getTime() > Date.now();
+    const scheduled = date > todayDateOnly();
     return {
       data: {
         published: true,
@@ -1109,7 +1249,7 @@ var blog_posts_update_default = defineTool10({
       {
         title: input.title ?? String(data.title ?? slug),
         description: input.description ?? String(data.description ?? ""),
-        date: input.date ? new Date(input.date).toISOString() : String(data.date ?? (/* @__PURE__ */ new Date()).toISOString()),
+        date: input.date ? toDateOnly(input.date) : String(data.date ?? todayDateOnly()),
         tags: input.tags ?? (Array.isArray(data.tags) ? data.tags : void 0),
         cover: input.cover ?? (data.cover ? String(data.cover) : void 0),
         draft: input.draft ?? data.draft === true,

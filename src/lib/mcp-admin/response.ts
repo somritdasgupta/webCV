@@ -20,6 +20,8 @@ export interface ResponseError {
   message: string;
   field?: string;
   guidance?: string;
+  /** Alias of guidance for clients that look for an auto-fix hint. */
+  suggestion?: string;
 }
 
 export interface ToolResponse<T = unknown> {
@@ -78,6 +80,7 @@ export async function respond<T>(
         message: failure.message,
         field: failure.field,
         guidance: failure.guidance,
+        suggestion: failure.guidance,
       },
       meta: {
         operation,
