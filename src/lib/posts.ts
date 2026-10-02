@@ -41,6 +41,12 @@ const slugFromPath = (path: string) =>
   path.split("/").pop()!.replace(/\.mdx$/, "").toLowerCase();
 
 const allPosts: Post[] = Object.entries(modules)
+  // A file without a `frontmatter` export must not take the whole site down.
+  .filter(([path, mod]) => {
+    if (mod.frontmatter) return true;
+    console.error(`[posts] ${path} has no "export const frontmatter" block; skipped.`);
+    return false;
+  })
   .map(([path, mod]) => {
     const slug = slugFromPath(path);
     return {
