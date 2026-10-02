@@ -37,19 +37,65 @@ var get_author_info_default = defineTool({
 // src/lib/mcp/tools/list-blog-posts.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.1";
 import { z } from "npm:zod@^3.25.76";
+
+// src/lib/mcp-admin/mdx.ts
+var DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})/;
+function toDateOnly(input) {
+  const value = String(input ?? "").trim();
+  const match = value.match(DATE_ONLY);
+  if (match) {
+    const [, y, m, d] = match;
+    const probe = new Date(Date.UTC(+y, +m - 1, +d));
+    const valid = probe.getUTCFullYear() === +y && probe.getUTCMonth() === +m - 1 && probe.getUTCDate() === +d;
+    return valid ? `${y}-${m}-${d}` : null;
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
+}
+var EXPORT_RE = /^\s*export\s+const\s+frontmatter\s*=\s*\{([\s\S]*?)\n\}\s*;?[ \t]*\n?/;
+var YAML_RE = /^---\s*\n([\s\S]*?)\n---\s*\n?/;
+var STRING_RE = /^("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/;
+function parseString(literal) {
+  if (literal.startsWith('"')) {
+    try {
+      return JSON.parse(literal);
+    } catch {
+    }
+  }
+  return literal.slice(1, -1).replace(/\\(['"\\])/g, "$1");
+}
+function parseScalar(raw) {
+  const value = raw.trim().replace(/,$/, "").trim();
+  const str = value.match(STRING_RE);
+  if (str) return parseString(str[1]);
+  if (value.startsWith("[")) {
+    const items = value.slice(1, value.lastIndexOf("]")).match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,\s][^,]*/g) ?? [];
+    return items.map((item) => STRING_RE.test(item.trim()) ? parseString(item.trim()) : item.trim()).filter(Boolean);
+  }
+  if (value === "true" || value === "false") return value === "true";
+  if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+  return value;
+}
+function parsePairs(block) {
+  const data = {};
+  const pattern = /^\s*["']?(\w+)["']?\s*:\s*([\s\S]*?)(?=^\s*["']?\w+["']?\s*:|(?![\s\S]))/gm;
+  for (const [, key, raw] of block.matchAll(pattern)) {
+    data[key] = parseScalar(raw.replace(/\s*\n\s*/g, " "));
+  }
+  return data;
+}
+function parseFrontmatter(src) {
+  const text = typeof src === "string" ? src : "";
+  const match = text.match(EXPORT_RE) ?? text.match(YAML_RE);
+  if (!match) return { data: {}, body: text };
+  const data = parsePairs(match[1]);
+  if (typeof data.date === "string") data.date = toDateOnly(data.date) ?? data.date;
+  return { data, body: text.slice(match[0].length).replace(/^\n+/, "") };
+}
+
+// src/lib/mcp/tools/list-blog-posts.ts
 var REPO = "somritdasgupta/webCV";
 var DIR = "content/blog";
-function parseFrontmatter(src) {
-  const m = src.match(/^---\s*\n([\s\S]*?)\n---/);
-  if (!m) return {};
-  const out = {};
-  for (const line of m[1].split("\n")) {
-    const kv = line.match(/^(\w+):\s*(.*)$/);
-    if (!kv) continue;
-    out[kv[1]] = kv[2].replace(/^["']|["']$/g, "").trim();
-  }
-  return out;
-}
 var list_blog_posts_default = defineTool2({
   name: "list_blog_posts",
   title: "List blog posts",
@@ -75,16 +121,16 @@ var list_blog_posts_default = defineTool2({
       mdx.map(async (f) => {
         if (!f.download_url) return null;
         const raw = await fetch(f.download_url).then((r) => r.ok ? r.text() : "");
-        const fm = parseFrontmatter(raw);
-        if (fm.draft === "true") return null;
-        const date = fm.date || "";
-        if (date && new Date(date).getTime() > Date.now()) return null;
+        const fm = parseFrontmatter(raw).data;
+        if (fm.draft === true) return null;
+        const date = typeof fm.date === "string" ? fm.date : "";
+        if (date && date > (/* @__PURE__ */ new Date()).toISOString().slice(0, 10)) return null;
         return {
           slug: f.name.replace(/\.mdx$/, "").toLowerCase(),
-          title: fm.title || f.name,
+          title: String(fm.title ?? f.name),
           date,
-          description: fm.description || "",
-          tags: fm.tags || "",
+          description: String(fm.description ?? ""),
+          tags: Array.isArray(fm.tags) ? fm.tags : [],
           url: `https://somritdasgupta.in/blog/${f.name.replace(/\.mdx$/, "").toLowerCase()}`
         };
       })

@@ -1,22 +1,11 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
+import { parseFrontmatter } from "../../mcp-admin/mdx";
 
 const REPO = "somritdasgupta/webCV";
 const DIR = "content/blog";
 
 type GhFile = { name: string; download_url: string | null; type: string };
-
-function parseFrontmatter(src: string): Record<string, string> {
-  const m = src.match(/^---\s*\n([\s\S]*?)\n---/);
-  if (!m) return {};
-  const out: Record<string, string> = {};
-  for (const line of m[1].split("\n")) {
-    const kv = line.match(/^(\w+):\s*(.*)$/);
-    if (!kv) continue;
-    out[kv[1]] = kv[2].replace(/^["']|["']$/g, "").trim();
-  }
-  return out;
-}
 
 export default defineTool({
   name: "list_blog_posts",
@@ -51,16 +40,16 @@ export default defineTool({
       mdx.map(async (f) => {
         if (!f.download_url) return null;
         const raw = await fetch(f.download_url).then((r) => (r.ok ? r.text() : ""));
-        const fm = parseFrontmatter(raw);
-        if (fm.draft === "true") return null;
-        const date = fm.date || "";
-        if (date && new Date(date).getTime() > Date.now()) return null;
+        const fm = parseFrontmatter(raw).data as Record<string, unknown>;
+        if (fm.draft === true) return null;
+        const date = typeof fm.date === "string" ? fm.date : "";
+        if (date && date > new Date().toISOString().slice(0, 10)) return null;
         return {
           slug: f.name.replace(/\.mdx$/, "").toLowerCase(),
-          title: fm.title || f.name,
+          title: String(fm.title ?? f.name),
           date,
-          description: fm.description || "",
-          tags: fm.tags || "",
+          description: String(fm.description ?? ""),
+          tags: Array.isArray(fm.tags) ? fm.tags : [],
           url: `https://somritdasgupta.in/blog/${f.name.replace(/\.mdx$/, "").toLowerCase()}`,
         };
       }),

@@ -72,7 +72,7 @@ export function buildMdx(fm: Frontmatter, body: string): string {
   const lines = ["export const frontmatter = {"];
   lines.push(`  title: "${escape(fm.title)}",`);
   lines.push(`  description: "${escape(fm.description)}",`);
-  lines.push(`  date: "${fm.date}",`);
+  lines.push(`  date: "${toDateOnly(fm.date)}",`);
   if (fm.tags && fm.tags.length)
     lines.push(`  tags: [${fm.tags.map((t) => `"${escape(t)}"`).join(", ")}],`);
   if (fm.cover) lines.push(`  cover: "${escape(fm.cover)}",`);
@@ -94,4 +94,12 @@ export function slugify(input: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 80);
+}
+
+/** Files always store `YYYY-MM-DD`, whatever precision the editor holds. */
+export function toDateOnly(input: string): string {
+  const head = String(input ?? "").match(/^\d{4}-\d{2}-\d{2}/);
+  if (head) return head[0];
+  const d = new Date(input);
+  return Number.isNaN(d.getTime()) ? new Date().toISOString().slice(0, 10) : d.toISOString().slice(0, 10);
 }
