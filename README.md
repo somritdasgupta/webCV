@@ -73,6 +73,10 @@ Drop it in the folder, push to GitHub, and it appears at `/blog/my-first-post`.
 
 **B. From the browser:** go to `/admin/editor` after signing in. Write, preview, and click **Publish** — it commits the file for you.
 
+**C. From an AI assistant (MCP):** connect the admin server described at `/mcp`. The assistant calls `blog_posts_preview` to show the exact file before publishing, then commits it after you approve. The admin server provides 25 tools for authoring, search, statistics, scheduling, bulk edits, and import.
+
+All three methods write the same format: an `export const frontmatter = { ... }` block with the date as `YYYY-MM-DD`, then a blank line, then the body. Timestamps are reduced to their date part automatically. A file without the `frontmatter` export is skipped and logged instead of breaking the site.
+
 Use `mdx-showcase.mdx` as a reference for the custom components (callouts, charts, tabs, code blocks, etc.) available without imports.
 
 ---
