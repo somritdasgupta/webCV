@@ -54,11 +54,25 @@ const TOOL_REFERENCE: { name: string; auth: boolean; purpose: string }[] = [
   { name: "blog_components_list", auth: false, purpose: "Lists supported MDX components with props and examples." },
   { name: "blog_posts_suggest_slug", auth: false, purpose: "Derives slug candidates from a proposed title." },
   { name: "blog_posts_validate", auth: false, purpose: "Checks a draft against every publishing rule at once." },
-  { name: "blog_posts_list", auth: true, purpose: "Lists all posts, including drafts and scheduled entries." },
+  { name: "blog_posts_preview", auth: false, purpose: "Shows the exact file that would be committed, with validation and an MDX compile check." },
+  { name: "blog_posts_validate_bulk", auth: false, purpose: "Checks up to 100 drafts and reports every error and warning." },
+  { name: "blog_posts_list", auth: false, purpose: "Lists posts with search, tag, date-range, sorting, and pagination. Drafts require a session." },
+  { name: "blog_posts_search", auth: false, purpose: "Ranked full-text search across title, description, tags, and body." },
+  { name: "blog_posts_by_tag", auth: false, purpose: "Lists posts carrying a tag, with related tags." },
+  { name: "blog_posts_related", auth: false, purpose: "Lists posts that share tags with a given post." },
+  { name: "blog_posts_stats", auth: false, purpose: "Reports counts, word totals, reading time, monthly output, and tag frequency." },
+  { name: "blog_posts_word_count", auth: false, purpose: "Reports words, characters, code blocks, components, and headings for one post." },
+  { name: "blog_posts_export", auth: false, purpose: "Exports published post metadata as JSON or CSV, once per minute." },
+  { name: "blog_posts_get_draft_count", auth: true, purpose: "Lists drafts and scheduled posts." },
   { name: "blog_posts_read", auth: true, purpose: "Returns the source, frontmatter, and blob sha of one post." },
   { name: "blog_posts_create", auth: true, purpose: "Publishes a new post as a verified commit." },
   { name: "blog_posts_update", auth: true, purpose: "Edits an existing post using the sha recorded at read time." },
   { name: "blog_posts_delete", auth: true, purpose: "Removes a post after explicit confirmation." },
+  { name: "blog_posts_schedule", auth: true, purpose: "Sets a future publish date and clears the draft flag." },
+  { name: "blog_posts_duplicate", auth: true, purpose: "Copies a post to a new slug as a draft dated today." },
+  { name: "blog_posts_bulk_update", auth: true, purpose: "Applies one metadata change to up to 100 posts in a single commit." },
+  { name: "blog_posts_tag_rename", auth: true, purpose: "Renames a tag on every post in a single commit." },
+  { name: "blog_posts_import", auth: true, purpose: "Imports Markdown, Ghost, or Notion exports in a single commit." },
 ];
 
 const ERROR_REFERENCE: { code: string; meaning: string }[] = [
@@ -274,8 +288,8 @@ function SetupPanel({ client }: { client: ClientKind }) {
 const WORKFLOW: { title: string; body: string; call: string }[] = [
   {
     title: "Prepare the draft",
-    body: "Ask the assistant for a post. It derives a slug, then checks every field in a single call and reports each problem with the field that caused it.",
-    call: "blog_posts_suggest_slug → blog_posts_validate",
+    body: "Ask the assistant for a post. It derives a slug and returns a preview of the exact file, including metadata, validation results, and a compile check. Review the preview and approve it before anything is published.",
+    call: "blog_posts_suggest_slug → blog_posts_preview",
   },
   {
     title: "Authorize once",
