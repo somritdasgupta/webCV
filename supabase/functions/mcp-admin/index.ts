@@ -318,16 +318,30 @@ var mcp_schema_get_default = defineTool({
         { name: "blog_components_list", auth: false, purpose: "List supported MDX components." },
         { name: "blog_posts_suggest_slug", auth: false, purpose: "Derive slug candidates from a title." },
         { name: "blog_posts_validate", auth: false, purpose: "Check a draft against every rule." },
-        { name: "blog_posts_list", auth: true, purpose: "List posts including drafts." },
+        { name: "blog_posts_list", auth: false, purpose: "List posts including drafts." },
         { name: "blog_posts_read", auth: true, purpose: "Read source, frontmatter, and sha." },
         { name: "blog_posts_create", auth: true, purpose: "Publish a new post." },
         { name: "blog_posts_update", auth: true, purpose: "Edit an existing post." },
-        { name: "blog_posts_delete", auth: true, purpose: "Remove a post." }
+        { name: "blog_posts_delete", auth: true, purpose: "Remove a post." },
+        { name: "blog_posts_preview", auth: false, purpose: "Show the exact file that would be committed, with validation and MDX compile check." },
+        { name: "blog_posts_search", auth: false, purpose: "Ranked full-text search." },
+        { name: "blog_posts_by_tag", auth: false, purpose: "Posts carrying a tag plus related tags." },
+        { name: "blog_posts_stats", auth: false, purpose: "Aggregate blog statistics." },
+        { name: "blog_posts_word_count", auth: false, purpose: "Structural metrics for one post." },
+        { name: "blog_posts_related", auth: false, purpose: "Posts sharing tags." },
+        { name: "blog_posts_export", auth: false, purpose: "JSON or CSV metadata export." },
+        { name: "blog_posts_get_draft_count", auth: true, purpose: "Drafts and scheduled posts." },
+        { name: "blog_posts_bulk_update", auth: true, purpose: "Same change on many posts, one commit." },
+        { name: "blog_posts_tag_rename", auth: true, purpose: "Rename a tag everywhere, one commit." },
+        { name: "blog_posts_validate_bulk", auth: false, purpose: "Validate many drafts." },
+        { name: "blog_posts_duplicate", auth: true, purpose: "Copy a post as a draft." },
+        { name: "blog_posts_schedule", auth: true, purpose: "Set a future publish date." },
+        { name: "blog_posts_import", auth: true, purpose: "Import Markdown, Ghost, or Notion exports." }
       ],
       workflows: {
         publish: [
           "blog_components_list (optional, before rich MDX)",
-          "blog_posts_validate",
+          "blog_posts_preview \u2014 show the source to the user and wait for approval",
           "blog_auth_request \u2014 show device_code and verification_url only",
           "blog_auth_verify \u2014 repeat with the same auth_token while status is pending",
           "blog_posts_create with session_token",
@@ -340,6 +354,7 @@ var mcp_schema_get_default = defineTool({
           "blog_posts_update with expected_sha"
         ]
       },
+      file_format: 'export const frontmatter = { title, description, date: "YYYY-MM-DD", tags?, cover?, draft?, readingTime };  followed by a blank line and the MDX body. Timestamps are reduced to their date part.',
       rules: [
         "Never show auth_token, session_token, or any GitHub token to the user.",
         "Pending authorization is normal \u2014 keep polling, never restart while time remains.",
@@ -640,6 +655,7 @@ var postContentShape = {
 var postContentObject = z3.object(postContentShape);
 var optionalSessionField = z3.string().optional().describe("Owner session from blog_auth_verify. Optional for published content; required to see drafts or scheduled posts.");
 var isoDay = z3.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Date in YYYY-MM-DD format.");
+var dateOnlyField = isoDay;
 var dateRangeField = z3.object({ from: isoDay.optional(), to: isoDay.optional() }).optional().describe('Inclusive date range, both ends optional. Example: {"from": "2025-01-01", "to": "2025-12-31"}.');
 var sortField = z3.enum(["date-desc", "date-asc", "title", "reading-time"]).optional().describe("Sort order. Defaults to date-desc.");
 
@@ -689,8 +705,8 @@ function parseString(literal) {
 }
 function parseScalar(raw) {
   const value = raw.trim().replace(/,$/, "").trim();
-  const str = value.match(STRING_RE);
-  if (str) return parseString(str[1]);
+  const str2 = value.match(STRING_RE);
+  if (str2) return parseString(str2[1]);
   if (value.startsWith("[")) {
     const items = value.slice(1, value.lastIndexOf("]")).match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,\s][^,]*/g) ?? [];
     return items.map((item) => STRING_RE.test(item.trim()) ? parseString(item.trim()) : item.trim()).filter(Boolean);
@@ -974,6 +990,37 @@ async function readRaw(path) {
   if (!res.ok) await fail(res, "Read file");
   return await res.text();
 }
+async function commitFiles(token, changes, message) {
+  const refRes = await ghFetch(token, `${API}/git/ref/heads/${REPO.branch}`);
+  if (!refRes.ok) await fail(refRes, "Read branch");
+  const head = (await refRes.json()).object.sha;
+  const commitRes = await ghFetch(token, `${API}/git/commits/${head}`);
+  if (!commitRes.ok) await fail(commitRes, "Read commit");
+  const baseTree = (await commitRes.json()).tree.sha;
+  const treeRes = await ghFetch(token, `${API}/git/trees`, {
+    method: "POST",
+    body: JSON.stringify({
+      base_tree: baseTree,
+      tree: changes.map(
+        (c) => c.content === null ? { path: c.path, mode: "100644", type: "blob", sha: null } : { path: c.path, mode: "100644", type: "blob", content: c.content }
+      )
+    })
+  });
+  if (!treeRes.ok) await fail(treeRes, "Create tree");
+  const tree = (await treeRes.json()).sha;
+  const newCommitRes = await ghFetch(token, `${API}/git/commits`, {
+    method: "POST",
+    body: JSON.stringify({ message, tree, parents: [head] })
+  });
+  if (!newCommitRes.ok) await fail(newCommitRes, "Create commit");
+  const commitSha = (await newCommitRes.json()).sha;
+  const updateRes = await ghFetch(token, `${API}/git/refs/heads/${REPO.branch}`, {
+    method: "PATCH",
+    body: JSON.stringify({ sha: commitSha, force: false })
+  });
+  if (!updateRes.ok) await fail(updateRes, "Update branch");
+  return { commitSha };
+}
 
 // src/lib/mcp-admin/corpus.ts
 var SITE = "https://somritdasgupta.in";
@@ -1008,6 +1055,19 @@ async function loadCorpus(token) {
     })
   );
   return records.filter((r) => r !== null);
+}
+async function loadPost(token, slug) {
+  const path = pathForSlug(slug);
+  const file = token ? await readFile(token, path) : null;
+  const source = token ? file?.content : await readRaw(path);
+  if (!source) {
+    throw new OperationError("POST_NOT_FOUND", `No post exists with slug "${slug}".`, {
+      field: "slug",
+      guidance: "Call blog_posts_list or blog_posts_search to find the correct slug.",
+      nextSteps: ["blog_posts_list"]
+    });
+  }
+  return toRecord(slug, path, file?.sha ?? "", source);
 }
 async function readerToken(sessionToken, wantsDrafts) {
   if (sessionToken?.trim()) return (await requireOwner(sessionToken)).token;
@@ -1057,6 +1117,12 @@ function sortPosts(posts, sort = "date-desc") {
 }
 var inDateRange = (date, range) => (!range?.from || date >= range.from) && (!range?.to || date <= range.to);
 var hasTag = (p, tag) => p.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
+function tagFrequency(posts) {
+  const freq = {};
+  for (const p of posts) for (const t of p.tags) freq[t] = (freq[t] ?? 0) + 1;
+  return freq;
+}
+var daysBetween = (a, b) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 864e5);
 
 // src/lib/mcp-admin/tools/blog-posts-list.ts
 var blog_posts_list_default = defineTool7({
@@ -1331,12 +1397,649 @@ var blog_posts_delete_default = defineTool11({
   })
 });
 
+// src/lib/mcp-admin/tools/blog-posts-preview.ts
+import { defineTool as defineTool12 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { compile } from "npm:@mdx-js/mdx@^3.0.0";
+import remarkGfm from "npm:remark-gfm@^4";
+async function compileCheck(source) {
+  try {
+    await compile(source, { remarkPlugins: [remarkGfm] });
+    return { ok: true, error: null };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+var blog_posts_preview_default = defineTool12({
+  name: "blog_posts_preview",
+  title: "Preview a post",
+  description: "Show exactly what blog_posts_create would commit, without writing anything: the full .mdx file, normalized metadata, validation issues, and an MDX compile check. Requires no authorization. Show the preview to the user and get approval before publishing.",
+  inputSchema: postContentShape,
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async (input) => respond("blog_posts_preview", async () => {
+    const issues = collectIssues(input, { requireAll: true });
+    let slug = null;
+    try {
+      slug = normalizeSlug(input.slug);
+    } catch {
+      slug = null;
+    }
+    const date = input.date && toDateOnly(input.date) || todayDateOnly();
+    const frontmatter = {
+      title: input.title,
+      description: input.description,
+      date,
+      tags: input.tags,
+      cover: input.cover,
+      draft: input.draft,
+      readingTime: estimateReadingTime(input.body)
+    };
+    const source = buildMdx(frontmatter, input.body);
+    const compiled = await compileCheck(source);
+    const ready = issues.length === 0 && compiled.ok && slug !== null;
+    return {
+      data: {
+        ready,
+        slug,
+        path: slug ? `content/blog/${slug}.mdx` : null,
+        url: slug ? `https://somritdasgupta.in/blog/${slug}` : null,
+        status: input.draft ? "draft" : date > todayDateOnly() ? "scheduled" : "published",
+        frontmatter,
+        word_count: countWords(input.body),
+        issues,
+        compile: compiled,
+        source
+      },
+      userMessage: ready ? "Preview ready. Review the file below; it publishes exactly as shown." : "The preview found problems that must be fixed before publishing.",
+      nextSteps: ready ? ["confirm with the user", "blog_auth_request", "blog_posts_create"] : ["fix issues", "blog_posts_preview"]
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-search.ts
+import { defineTool as defineTool13 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z8 } from "npm:zod@^3.25.76";
+var blog_posts_search_default = defineTool13({
+  name: "blog_posts_search",
+  title: "Search posts",
+  description: "Full-text search across title, description, tags, and body (MDX markup stripped). Results are ranked 0-100: exact over prefix over substring, title over tag over description over body. Drafts require session_token.",
+  inputSchema: {
+    query: z8.string().min(1).describe("Search term. Case-insensitive."),
+    filters: z8.object({
+      tags: z8.array(z8.string()).optional().describe("Keep posts carrying ANY of these tags."),
+      draft: z8.boolean().optional().describe("Include drafts and scheduled posts. Requires session_token."),
+      dateRange: dateRangeField
+    }).optional(),
+    limit: z8.number().int().min(1).max(200).optional().describe("Maximum results, up to 200. Defaults to 50."),
+    session_token: optionalSessionField
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async ({ query, filters, limit, session_token }) => respond("blog_posts_search", async () => {
+    const token = await readerToken(session_token, filters?.draft === true);
+    const posts = await loadCorpus(token);
+    const results = posts.filter((p) => filters?.draft === true || isPublic(p)).filter((p) => !filters?.tags?.length || filters.tags.some((t) => hasTag(p, t))).filter((p) => inDateRange(p.date, filters?.dateRange)).map((p) => ({ p, hit: scorePost(p, query) })).filter((r) => r.hit !== null).sort((a, b) => b.hit.score - a.hit.score || b.p.date.localeCompare(a.p.date));
+    const page = results.slice(0, limit ?? 50).map(({ p, hit }) => ({
+      slug: p.slug,
+      title: p.title,
+      description: p.description,
+      date: p.date,
+      tags: p.tags,
+      matchType: hit.matchType,
+      score: hit.score,
+      url: p.url
+    }));
+    return {
+      data: { results: page, total: results.length, query, filters_applied: filters ?? {} },
+      userMessage: `${results.length} post${results.length === 1 ? "" : "s"} matched "${query}".`,
+      nextSteps: ["blog_posts_read"]
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-by-tag.ts
+import { defineTool as defineTool14 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z9 } from "npm:zod@^3.25.76";
+var blog_posts_by_tag_default = defineTool14({
+  name: "blog_posts_by_tag",
+  title: "Posts by tag",
+  description: "Return every post carrying a tag (case-insensitive) plus the five most common co-occurring tags.",
+  inputSchema: {
+    tag: z9.string().min(1).describe('Tag to look up. Example: "ai".'),
+    options: z9.object({
+      include_drafts: z9.boolean().optional().describe("Include drafts. Requires session_token. Defaults to false."),
+      sort: z9.enum(["date-desc", "date-asc", "title"]).optional().describe("Defaults to date-desc."),
+      limit: z9.number().int().min(1).max(200).optional().describe("Defaults to 100.")
+    }).optional(),
+    session_token: optionalSessionField
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async ({ tag, options, session_token }) => respond("blog_posts_by_tag", async () => {
+    const token = await readerToken(session_token, options?.include_drafts === true);
+    const matches = (await loadCorpus(token)).filter((p) => options?.include_drafts === true || isPublic(p)).filter((p) => hasTag(p, tag));
+    const freq = tagFrequency(matches);
+    const related = Object.entries(freq).filter(([t]) => t.toLowerCase() !== tag.toLowerCase()).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([t]) => t);
+    const posts = sortPosts(matches, options?.sort).slice(0, options?.limit ?? 100).map((p) => ({ slug: p.slug, title: p.title, description: p.description, date: p.date, readingTime: p.readingTime, tags: p.tags, draft: p.draft }));
+    return {
+      data: { tag, posts, count: matches.length, related_tags: related },
+      userMessage: `${matches.length} post${matches.length === 1 ? "" : "s"} tagged "${tag}".`,
+      nextSteps: related.length ? ["blog_posts_by_tag with a related tag"] : []
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-stats.ts
+import { defineTool as defineTool15 } from "npm:@lovable.dev/mcp-js@0.20.1";
+function publishFrequency(dates) {
+  if (dates.length < 3) return "irregular";
+  const gaps = dates.slice(1).map((d, i) => daysBetween(dates[i], d)).sort((a, b) => a - b);
+  const median = gaps[Math.floor(gaps.length / 2)];
+  if (median <= 2) return "daily";
+  if (median <= 9) return "weekly";
+  if (median <= 18) return "bi-weekly";
+  if (median <= 40) return "monthly";
+  return "irregular";
+}
+function buildStats(all) {
+  const published = all.filter(isPublic);
+  const dates = published.map((p) => p.date).filter(Boolean).sort();
+  const reading = published.map((p) => p.readingTime);
+  const words = published.reduce((sum, p) => sum + p.wordCount, 0);
+  const perMonth = {};
+  for (const d of dates) perMonth[d.slice(0, 7)] = (perMonth[d.slice(0, 7)] ?? 0) + 1;
+  const freq = tagFrequency(published);
+  const top = Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([tag, count]) => ({ tag, count }));
+  const oldest = dates[0] ?? null;
+  const newest = dates[dates.length - 1] ?? null;
+  const avg = (n) => published.length ? Math.round(n / published.length * 10) / 10 : 0;
+  return {
+    total_posts: all.length,
+    draft_count: all.filter((p) => p.draft).length,
+    scheduled_count: all.filter((p) => p.scheduled).length,
+    published_count: published.length,
+    total_words: words,
+    avg_words_per_post: avg(words),
+    avg_reading_time: avg(reading.reduce((a, b) => a + b, 0)),
+    min_reading_time: reading.length ? Math.min(...reading) : 0,
+    max_reading_time: reading.length ? Math.max(...reading) : 0,
+    oldest_post_date: oldest,
+    newest_post_date: newest,
+    date_range_days: oldest && newest ? daysBetween(oldest, newest) : 0,
+    posts_per_month: perMonth,
+    tag_frequency: freq,
+    top_tags: top.slice(0, 10),
+    most_used_tags: top.slice(0, 5).map((t) => t.tag),
+    publish_frequency: publishFrequency(dates),
+    last_published: newest,
+    streak_current_days: newest ? daysBetween(newest, todayDateOnly()) : null
+  };
+}
+var blog_posts_stats_default = defineTool15({
+  name: "blog_posts_stats",
+  title: "Blog statistics",
+  description: "Aggregate statistics: counts, word totals, reading-time spread, posts per month, tag frequency, publishing cadence, and days since the last published post (streak_current_days). Content figures cover published posts; draft and scheduled counts need session_token to be complete.",
+  inputSchema: { session_token: optionalSessionField },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async ({ session_token }) => respond("blog_posts_stats", async () => {
+    const token = await readerToken(session_token, false);
+    const stats = buildStats(await loadCorpus(token));
+    return {
+      data: { ...stats, includes_unpublished: Boolean(token) },
+      userMessage: `${stats.published_count} published posts, ${stats.total_words} words in total.`
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-word-count.ts
+import { defineTool as defineTool16 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var blog_posts_word_count_default = defineTool16({
+  name: "blog_posts_word_count",
+  title: "Word count",
+  description: "Structural metrics for one post: words and characters of prose (MDX stripped), reading time at 220 wpm, code blocks, component tags, and headings.",
+  inputSchema: { slug: slugField, session_token: optionalSessionField },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async ({ slug, session_token }) => respond("blog_posts_word_count", async () => {
+    const post = await loadPost(await readerToken(session_token, false), normalizeSlug(slug));
+    const prose = stripMdx(post.body).replace(/\s+/g, " ").trim();
+    const words = prose ? prose.split(" ").length : 0;
+    return {
+      data: {
+        slug: post.slug,
+        word_count: words,
+        char_count: prose.length,
+        estimated_reading_time: Math.max(1, Math.round(words / 220)),
+        code_block_count: (post.body.match(/```[\s\S]*?```/g) ?? []).length,
+        component_count: (post.body.match(/<[A-Z][A-Za-z0-9]*/g) ?? []).length,
+        headings_count: (post.body.match(/^#{1,6}\s/gm) ?? []).length
+      },
+      userMessage: `"${post.title}" has ${words} words.`
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-related.ts
+import { defineTool as defineTool17 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z10 } from "npm:zod@^3.25.76";
+var blog_posts_related_default = defineTool17({
+  name: "blog_posts_related",
+  title: "Related posts",
+  description: "Published posts sharing tags with the given post, ranked by number of shared tags, then recency.",
+  inputSchema: {
+    slug: slugField,
+    limit: z10.number().int().min(1).max(10).optional().describe("1-10. Defaults to 5."),
+    session_token: optionalSessionField
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async ({ slug, limit, session_token }) => respond("blog_posts_related", async () => {
+    const safe = normalizeSlug(slug);
+    const posts = await loadCorpus(await readerToken(session_token, false));
+    const source = posts.find((p) => p.slug === safe);
+    if (!source) {
+      throw new OperationError("POST_NOT_FOUND", `No post exists with slug "${safe}".`, {
+        field: "slug",
+        guidance: "Call blog_posts_search to find the correct slug."
+      });
+    }
+    const own = new Set(source.tags.map((t) => t.toLowerCase()));
+    const related = posts.filter((p) => p.slug !== safe && isPublic(p)).map((p) => ({ p, common: p.tags.filter((t) => own.has(t.toLowerCase())) })).filter((r) => r.common.length > 0).sort((a, b) => b.common.length - a.common.length || b.p.date.localeCompare(a.p.date));
+    return {
+      data: {
+        slug: safe,
+        related: related.slice(0, limit ?? 5).map(({ p, common }) => ({
+          slug: p.slug,
+          title: p.title,
+          description: p.description,
+          tags: p.tags,
+          commonTags: common,
+          commonTagCount: common.length
+        })),
+        total: related.length
+      }
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-export.ts
+import { defineTool as defineTool18 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z11 } from "npm:zod@^3.25.76";
+var COOLDOWN_MS = 6e4;
+var lastExportAt = 0;
+var csvField = (value) => {
+  const s = String(value);
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+var blog_posts_export_default = defineTool18({
+  name: "blog_posts_export",
+  title: "Export metadata",
+  description: "Export metadata (no bodies) of all published posts as JSON or CSV. Limited to one export per minute.",
+  inputSchema: { format: z11.enum(["json", "csv"]).describe("Output format.") },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async ({ format }) => respond("blog_posts_export", async () => {
+    const wait = lastExportAt + COOLDOWN_MS - Date.now();
+    if (wait > 0) {
+      throw new OperationError("RATE_LIMITED", "Exports are limited to one per minute.", {
+        guidance: `Retry in ${Math.ceil(wait / 1e3)} seconds.`
+      });
+    }
+    lastExportAt = Date.now();
+    const posts = (await loadCorpus()).filter(isPublic).sort((a, b) => b.date.localeCompare(a.date)).map((p) => ({ slug: p.slug, title: p.title, description: p.description, date: p.date, tags: p.tags, readingTime: p.readingTime, draft: p.draft, url: p.url }));
+    const base = { format, total: posts.length, exported_at: todayDateOnly() };
+    if (format === "json") return { data: { ...base, posts } };
+    const header = "slug,title,description,date,tags,readingTime,draft,url";
+    const rows = posts.map(
+      (p) => [p.slug, p.title, p.description, p.date, p.tags.join(","), p.readingTime, p.draft, p.url].map(csvField).join(",")
+    );
+    return { data: { ...base, csv: [header, ...rows].join("\n") } };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-get-draft-count.ts
+import { defineTool as defineTool19 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var blog_posts_get_draft_count_default = defineTool19({
+  name: "blog_posts_get_draft_count",
+  title: "Unpublished posts",
+  description: "Count drafts and scheduled posts (not drafted, dated in the future) and list them. created_at is the post date; the repository does not track a separate creation time. Requires session_token.",
+  inputSchema: { session_token: sessionTokenField },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async ({ session_token }) => ownerOperation("blog_posts_get_draft_count", session_token, async (owner) => {
+    const posts = await loadCorpus(owner.token);
+    const today = todayDateOnly();
+    const unpublished = posts.filter((p) => p.draft || p.scheduled);
+    const drafts = posts.filter((p) => p.draft);
+    const oldest = drafts.map((p) => p.date).filter(Boolean).sort()[0];
+    return {
+      data: {
+        draft_count: drafts.length,
+        scheduled_count: posts.filter((p) => p.scheduled).length,
+        total_unpublished: unpublished.length,
+        drafts: unpublished.map((p) => ({ slug: p.slug, title: p.title, status: p.draft ? "draft" : "scheduled", created_at: p.date })),
+        oldest_draft_age_days: oldest ? Math.max(0, daysBetween(oldest, today)) : 0
+      },
+      userMessage: `${drafts.length} draft${drafts.length === 1 ? "" : "s"} and ${unpublished.length - drafts.length} scheduled.`
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-bulk-update.ts
+import { defineTool as defineTool20 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z12 } from "npm:zod@^3.25.76";
+
+// src/lib/mcp-admin/bulk.ts
+var MAX_BATCH = 100;
+function rebuild(post, overrides = {}, body = post.body) {
+  return buildMdx(
+    {
+      title: post.title,
+      description: post.description,
+      date: post.date,
+      tags: post.tags.length ? post.tags : void 0,
+      cover: post.cover,
+      draft: post.draft,
+      ...overrides,
+      readingTime: estimateReadingTime(body)
+    },
+    body
+  );
+}
+function assertBatchSize(count, field) {
+  if (count > MAX_BATCH) {
+    throw new OperationError("LIMIT_EXCEEDED", `At most ${MAX_BATCH} items per call (received ${count}).`, {
+      field,
+      guidance: `Split the request into batches of ${MAX_BATCH} or fewer.`
+    });
+  }
+}
+
+// src/lib/mcp-admin/tools/blog-posts-bulk-update.ts
+var blog_posts_bulk_update_default = defineTool20({
+  name: "blog_posts_bulk_update",
+  title: "Bulk update posts",
+  description: "Apply the same metadata change (tags replace, description, draft, cover) to 1-100 posts in ONE commit. All slugs are checked first; if any is missing nothing is written.",
+  inputSchema: {
+    session_token: sessionTokenField,
+    slugs: z12.array(z12.string().min(1)).min(1).max(100).describe("Slugs to update, 1-100."),
+    updates: z12.object({ tags: tagsField, description: descriptionField.optional(), draft: draftField, cover: coverField }).describe("Fields to set on every listed post. At least one is required.")
+  },
+  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: true },
+  handler: async ({ session_token, slugs, updates }) => ownerOperation("blog_posts_bulk_update", session_token, async (owner) => {
+    assertBatchSize(slugs.length, "slugs");
+    const fields = Object.entries(updates).filter(([, v]) => v !== void 0);
+    if (!fields.length) {
+      throw new OperationError("VALIDATION_ERROR", "No update fields were supplied.", {
+        field: "updates",
+        guidance: "Provide at least one of tags, description, draft, or cover."
+      });
+    }
+    const wanted = [...new Set(slugs.map(normalizeSlug))];
+    const bySlug = new Map((await loadCorpus(owner.token)).map((p) => [p.slug, p]));
+    const failed = wanted.filter((s) => !bySlug.has(s)).map((slug) => ({ slug, error: "Post not found.", code: "POST_NOT_FOUND" }));
+    if (failed.length) {
+      throw new OperationError("POST_NOT_FOUND", `${failed.length} slug(s) do not exist: ${failed.map((f) => f.slug).join(", ")}. Nothing was changed.`, {
+        field: "slugs",
+        guidance: "Remove or correct the missing slugs and retry. Use blog_posts_list to see valid slugs."
+      });
+    }
+    const changes = wanted.map((slug) => ({ path: bySlug.get(slug).path, content: rebuild(bySlug.get(slug), Object.fromEntries(fields)) }));
+    const { commitSha } = await commitFiles(owner.token, changes, `content: bulk_update ${wanted.length} posts`);
+    return {
+      data: { updated: wanted.length, failed: [], commit_sha: commitSha, summary: `Updated ${fields.map(([k]) => k).join(", ")} on ${wanted.length} posts.` },
+      userMessage: `Updated ${wanted.length} posts in one commit.`
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-tag-rename.ts
+import { defineTool as defineTool21 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z13 } from "npm:zod@^3.25.76";
+var blog_posts_tag_rename_default = defineTool21({
+  name: "blog_posts_tag_rename",
+  title: "Rename a tag",
+  description: "Rename a tag on every post that carries it (case-insensitive), in ONE commit. Other tags are kept; duplicates are merged.",
+  inputSchema: {
+    session_token: sessionTokenField,
+    old_tag: z13.string().trim().min(1).describe("Tag to replace."),
+    new_tag: z13.string().trim().min(1).describe("Replacement tag.")
+  },
+  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: true },
+  handler: async ({ session_token, old_tag, new_tag }) => ownerOperation("blog_posts_tag_rename", session_token, async (owner) => {
+    const affected = (await loadCorpus(owner.token)).filter((p) => hasTag(p, old_tag));
+    if (!affected.length) {
+      throw new OperationError("TAG_NOT_FOUND", `No post carries the tag "${old_tag}".`, {
+        field: "old_tag",
+        guidance: "Call blog_posts_stats to see existing tags."
+      });
+    }
+    const changes = affected.map((p) => {
+      const tags = [...new Set(p.tags.map((t) => t.toLowerCase() === old_tag.toLowerCase() ? new_tag : t))];
+      return { path: p.path, content: rebuild(p, { tags }) };
+    });
+    const { commitSha } = await commitFiles(owner.token, changes, `content: rename tag ${old_tag} -> ${new_tag}`);
+    return {
+      data: { old_tag, new_tag, updated_count: affected.length, affected_posts: affected.map((p) => p.slug), commit_sha: commitSha },
+      userMessage: `Renamed "${old_tag}" to "${new_tag}" on ${affected.length} posts.`
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-validate-bulk.ts
+import { defineTool as defineTool22 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z14 } from "npm:zod@^3.25.76";
+var draftShape = z14.object({
+  title: z14.string().optional(),
+  slug: z14.string().optional(),
+  description: z14.string().optional(),
+  body: z14.string().optional(),
+  tags: z14.array(z14.string()).optional(),
+  cover: z14.string().optional(),
+  date: z14.string().optional(),
+  draft: z14.boolean().optional()
+});
+function warningsFor(post) {
+  const out = [];
+  if (!post.tags?.length) out.push("No tags; the post will not appear in tag filters.");
+  if (post.description && post.description.length < 50) out.push("Description is short; 120-160 characters preview best.");
+  if (post.body && post.body.trim().split(/\s+/).length < 150) out.push("Body is under 150 words.");
+  return out;
+}
+var blog_posts_validate_bulk_default = defineTool22({
+  name: "blog_posts_validate_bulk",
+  title: "Validate drafts in bulk",
+  description: "Validate up to 100 drafts against the publishing rules. Every draft is checked; all errors and warnings are returned. No authorization required.",
+  inputSchema: { posts: z14.array(draftShape).min(1).max(100).describe("Drafts to validate.") },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ posts }) => respond("blog_posts_validate_bulk", () => {
+    assertBatchSize(posts.length, "posts");
+    const seen = /* @__PURE__ */ new Map();
+    const invalid = [];
+    const warnings = [];
+    posts.forEach((post, index) => {
+      const slug = post.slug ?? "";
+      const errors = collectIssues(post, { requireAll: true }).map(({ field, message, code }) => ({ field, message, code }));
+      if (slug && seen.has(slug)) errors.push({ field: "slug", code: "SLUG_EXISTS", message: `Duplicates the slug of item ${seen.get(slug)}.` });
+      seen.set(slug, index);
+      if (errors.length) invalid.push({ index, slug, errors });
+      for (const warning of warningsFor(post)) warnings.push({ index, slug, warning });
+    });
+    return {
+      data: { total: posts.length, valid: posts.length - invalid.length, invalid, warnings },
+      userMessage: `${posts.length - invalid.length} of ${posts.length} drafts are valid.`
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-duplicate.ts
+import { defineTool as defineTool23 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var blog_posts_duplicate_default = defineTool23({
+  name: "blog_posts_duplicate",
+  title: "Duplicate a post",
+  description: "Copy a post to a new slug as a draft dated today, keeping title, description, tags, cover, and body.",
+  inputSchema: { session_token: sessionTokenField, slug: slugField, new_slug: slugField },
+  annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
+  handler: async ({ session_token, slug, new_slug }) => ownerOperation("blog_posts_duplicate", session_token, async (owner) => {
+    const source = await loadPost(owner.token, normalizeSlug(slug));
+    const target = normalizeSlug(new_slug);
+    if (await readFile(owner.token, pathForSlug(target))) {
+      throw new OperationError("SLUG_EXISTS", `A post already exists at "${target}".`, {
+        field: "new_slug",
+        guidance: "Choose another new_slug or call blog_posts_suggest_slug."
+      });
+    }
+    const today = todayDateOnly();
+    const commit = await writeFile({
+      token: owner.token,
+      path: pathForSlug(target),
+      content: rebuild(source, { draft: true, date: today }),
+      message: `content: duplicate ${source.slug} as ${target}`
+    });
+    return {
+      data: { original_slug: source.slug, new_slug: target, draft: true, created_at: today, commit_sha: commit.commitSha, message: "Post duplicated as draft. Edit and publish when ready." },
+      userMessage: `Duplicated "${source.title}" as a draft at ${target}.`,
+      nextSteps: ["blog_posts_update"]
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-schedule.ts
+import { defineTool as defineTool24 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var blog_posts_schedule_default = defineTool24({
+  name: "blog_posts_schedule",
+  title: "Schedule a post",
+  description: "Set a future publish date (YYYY-MM-DD) and clear the draft flag. The site shows the post automatically from that date.",
+  inputSchema: { session_token: sessionTokenField, slug: slugField, publish_at: dateOnlyField },
+  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: true },
+  handler: async ({ session_token, slug, publish_at }) => ownerOperation("blog_posts_schedule", session_token, async (owner) => {
+    const date = toDateOnly(publish_at);
+    const today = todayDateOnly();
+    if (!date || date <= today) {
+      throw new OperationError("INVALID_DATE", `publish_at must be a valid date after ${today}.`, {
+        field: "publish_at",
+        guidance: "Supply a future date in YYYY-MM-DD format, or use blog_posts_update to publish now."
+      });
+    }
+    const post = await loadPost(owner.token, normalizeSlug(slug));
+    const commit = await writeFile({
+      token: owner.token,
+      path: post.path,
+      content: rebuild(post, { date, draft: false }),
+      message: `content: schedule ${post.slug} for ${date}`,
+      sha: post.sha
+    });
+    return {
+      data: { slug: post.slug, scheduled: true, publishes_at: date, days_until_publish: daysBetween(today, date), current_draft_status: false, commit_sha: commit.commitSha, message: `Post scheduled for publication on ${date}` },
+      userMessage: `"${post.title}" will publish on ${date}.`
+    };
+  })
+});
+
+// src/lib/mcp-admin/tools/blog-posts-import.ts
+import { defineTool as defineTool25 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z15 } from "npm:zod@^3.25.76";
+var str = (v) => typeof v === "string" ? v : v == null ? "" : String(v);
+function fromMarkdown(content) {
+  return content.split(/^\+\+\+\s*$/m).filter((d) => d.trim()).map((doc) => {
+    const { data, body } = parseFrontmatter(doc.trim());
+    const heading = body.match(/^#\s+(.+)$/m)?.[1];
+    return {
+      title: str(data.title) || heading || "",
+      slug: data.slug ? str(data.slug) : void 0,
+      description: str(data.description),
+      body,
+      date: data.date ? str(data.date) : void 0,
+      tags: Array.isArray(data.tags) ? data.tags.map(str) : void 0,
+      draft: data.draft === true
+    };
+  });
+}
+function fromGhost(content) {
+  const db = JSON.parse(content);
+  const data = db.db?.[0]?.data ?? db.data ?? db;
+  const tagNames = new Map((data.tags ?? []).map((t) => [t.id, t.name]));
+  return (data.posts ?? []).map((p) => ({
+    title: str(p.title),
+    slug: p.slug,
+    description: str(p.custom_excerpt || p.meta_description || p.plaintext?.slice(0, 157)),
+    body: str(p.markdown || p.plaintext || p.html),
+    date: p.published_at ?? p.created_at,
+    tags: (data.posts_tags ?? []).filter((pt) => pt.post_id === p.id).map((pt) => str(tagNames.get(pt.tag_id))).filter(Boolean),
+    draft: p.status !== "published"
+  }));
+}
+function fromNotion(content) {
+  const rows = JSON.parse(content);
+  const list = Array.isArray(rows) ? rows : rows.results ?? [rows];
+  return list.map((r) => {
+    const tags = r.tags ?? r.Tags;
+    return {
+      title: str(r.title ?? r.Title ?? r.Name ?? r.name),
+      slug: r.slug ?? r.Slug,
+      description: str(r.description ?? r.Description ?? r.summary),
+      body: str(r.body ?? r.content ?? r.Content ?? r.markdown),
+      date: r.date ?? r.Date ?? r.created_time,
+      tags: Array.isArray(tags) ? tags.map(str) : typeof tags === "string" ? tags.split(",").map((t) => t.trim()).filter(Boolean) : void 0,
+      draft: r.draft === true || r.Status === "Draft"
+    };
+  });
+}
+var PARSERS = { markdown: fromMarkdown, ghost: fromGhost, notion: fromNotion };
+var blog_posts_import_default = defineTool25({
+  name: "blog_posts_import",
+  title: "Import posts",
+  description: "Import posts from Markdown (frontmatter + body; separate multiple documents with a line containing only +++), a Ghost JSON export, or a Notion JSON export. Valid posts are committed together in ONE commit; invalid or duplicate ones are reported and skipped.",
+  inputSchema: {
+    session_token: sessionTokenField,
+    format: z15.enum(["markdown", "ghost", "notion"]).describe("Source format."),
+    content: z15.string().min(1).describe("File content: Markdown text or JSON.")
+  },
+  annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: true },
+  handler: async ({ session_token, format, content }) => ownerOperation("blog_posts_import", session_token, async (owner) => {
+    let candidates;
+    try {
+      candidates = PARSERS[format](content);
+    } catch (error) {
+      throw new OperationError("IMPORT_FAILED", `Could not parse the ${format} content: ${error instanceof Error ? error.message : error}`, {
+        field: "content",
+        guidance: "Check that the content is a complete export in the selected format."
+      });
+    }
+    assertBatchSize(candidates.length, "content");
+    const taken = new Set((await listPostFiles(owner.token)).map((f) => f.name.replace(/\.mdx$/, "")));
+    const results = [];
+    const changes = [];
+    for (const c of candidates) {
+      let slug = "";
+      try {
+        slug = normalizeSlug(c.slug || c.title);
+      } catch {
+        results.push({ status: "failed", title: c.title, slug, reason: "No usable slug or title." });
+        continue;
+      }
+      const date = c.date ? toDateOnly(c.date) ?? void 0 : todayDateOnly();
+      const issue = collectIssues({ ...c, slug, date }, { requireAll: true })[0];
+      if (issue) {
+        results.push({ status: "failed", title: c.title, slug, reason: `${issue.field}: ${issue.message}` });
+        continue;
+      }
+      if (taken.has(slug)) {
+        results.push({ status: "failed", title: c.title, slug, reason: "Slug already exists." });
+        continue;
+      }
+      taken.add(slug);
+      changes.push({ path: pathForSlug(slug), content: buildMdx({ title: c.title, description: c.description, date, tags: c.tags?.slice(0, 8), draft: c.draft, readingTime: estimateReadingTime(c.body) }, c.body) });
+      results.push({ status: "success", title: c.title, slug });
+    }
+    const commit = changes.length ? await commitFiles(owner.token, changes, `content: import ${changes.length} posts from ${format}`) : null;
+    const failed = results.length - changes.length;
+    return {
+      data: { imported: changes.length, failed, results, commit_sha: commit?.commitSha ?? null, summary: `Imported ${changes.length} of ${results.length} posts.` },
+      userMessage: `Imported ${changes.length} post${changes.length === 1 ? "" : "s"}${failed ? `; ${failed} skipped` : ""}.`
+    };
+  })
+});
+
 // src/lib/mcp-admin/index.ts
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "1.0.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. Every tool returns one envelope: success, data, error {code, message, field, guidance}, meta {operation, nextSteps}. Follow error.guidance and meta.nextSteps literally. Call mcp_schema_get when unsure which tool to use. Before publishing, call blog_posts_validate and fix every reported issue. For any write: call blog_auth_request once, show the user only user_code and verification_uri, then poll blog_auth_verify with the same auth_token until approved, denied, or expired. Pending is expected; keep polling, never ask the user to confirm, and never start a second authorization while seconds_remaining is positive. On approved, immediately retry the original tool with session_token, which is valid for one hour. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted true, verified true, and a commit_sha. Call blog_components_list before writing rich MDX. Call blog_posts_read before updating or deleting and pass expected_sha.",
+  version: "1.1.0",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. Every tool returns one envelope: success, data, error {code, message, field, guidance}, meta {operation, nextSteps}. Follow error.guidance and meta.nextSteps literally. Call mcp_schema_get when unsure which tool to use. Posts are stored with `export const frontmatter = {...}` metadata and YYYY-MM-DD dates; the server writes this format automatically. Before publishing, call blog_posts_preview, show the user the returned source, and publish only after they approve. Read tools (list, search, by_tag, stats, word_count, related, export) work without a session for published posts. For any write: call blog_auth_request once, show the user only user_code and verification_uri, then poll blog_auth_verify with the same auth_token until approved, denied, or expired. Pending is expected; keep polling, never ask the user to confirm, and never start a second authorization while seconds_remaining is positive. On approved, immediately retry the original tool with session_token, which is valid for one hour. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted true, verified true, and a commit_sha. Call blog_components_list before writing rich MDX. Call blog_posts_read before updating or deleting and pass expected_sha.",
   tools: [
     mcp_schema_get_default,
     blog_auth_request_default,
@@ -1348,7 +2051,21 @@ var mcp_admin_default = defineMcp({
     blog_posts_read_default,
     blog_posts_create_default,
     blog_posts_update_default,
-    blog_posts_delete_default
+    blog_posts_delete_default,
+    blog_posts_preview_default,
+    blog_posts_search_default,
+    blog_posts_by_tag_default,
+    blog_posts_stats_default,
+    blog_posts_word_count_default,
+    blog_posts_related_default,
+    blog_posts_export_default,
+    blog_posts_get_draft_count_default,
+    blog_posts_bulk_update_default,
+    blog_posts_tag_rename_default,
+    blog_posts_validate_bulk_default,
+    blog_posts_duplicate_default,
+    blog_posts_schedule_default,
+    blog_posts_import_default
   ]
 });
 
