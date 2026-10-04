@@ -63,6 +63,8 @@ export default defineTool({
           { name: "blog_posts_duplicate", auth: true, purpose: "Copy a post as a draft." },
           { name: "blog_posts_schedule", auth: true, purpose: "Set a future publish date." },
           { name: "blog_posts_import", auth: true, purpose: "Import Markdown, Ghost, or Notion exports." },
+          { name: "site_resume_get", auth: false, purpose: "Read the CV download link used by the cv button." },
+          { name: "site_resume_update", auth: true, purpose: "Change the CV download link used by the cv button." },
         ],
         workflows: {
           publish: [

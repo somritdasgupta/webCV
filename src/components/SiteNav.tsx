@@ -2,13 +2,15 @@ import { NavLink } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { NAV } from "@/site.config";
 import { cn } from "@/lib/utils";
+import { BUNDLED_SETTINGS, useSiteSettings } from "@/lib/site-settings";
 
 /**
  * Floating pill nav, centered, with mac traffic-light dots on the active item.
- * Left cluster: page links · Right cluster: CV, theme.
+ * Left cluster: page links · Right cluster: MCP guide, CV download, theme.
  */
 export const SiteNav = () => {
-
+  const { data } = useSiteSettings();
+  const resumeUrl = data?.resumeUrl ?? BUNDLED_SETTINGS.resumeUrl;
   return (
     <header
       className="pointer-events-none fixed inset-x-0 z-50 flex justify-center px-2 sm:px-3"
@@ -67,7 +69,7 @@ export const SiteNav = () => {
         {/* Right: actions */}
         <div className="flex items-center gap-0.5 sm:gap-1">
           <NavLink
-            to="/cv"
+            to="/mcp"
             className={({ isActive }) =>
               cn(
                 "inline-flex items-center rounded-full px-2.5 py-1.5 text-[13px] font-medium transition-all duration-300 hover:bg-secondary hover:text-foreground sm:px-3 sm:text-sm",
@@ -75,8 +77,18 @@ export const SiteNav = () => {
               )
             }
           >
-            cv
+            mcp
           </NavLink>
+          <a
+            href={resumeUrl}
+            target="_blank"
+            rel="noreferrer"
+            download
+            aria-label="Download CV"
+            className="inline-flex items-center rounded-full px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground sm:px-3 sm:text-sm"
+          >
+            cv
+          </a>
           <div className="ml-0.5">
             <ThemeToggle />
           </div>

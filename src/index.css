@@ -30,6 +30,7 @@
     --muted-foreground: 0 0% 40%;
 
     --accent: 18 90% 55%;
+    --sky: 199 89% 56%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 50%;
@@ -94,6 +95,7 @@
     --muted-foreground: 40 5% 60%;
 
     --accent: 18 90% 60%;
+    --sky: 199 89% 62%;
     --accent-foreground: 0 0% 6%;
 
     --destructive: 0 62% 50%;

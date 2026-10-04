@@ -55,6 +55,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { ComponentsPicker } from "@/components/admin/ComponentsPicker";
+import { ResumeLinkCard } from "@/components/admin/ResumeLinkCard";
 
 const todayIso = () => new Date().toISOString();
 
@@ -901,6 +902,7 @@ const AdminEditor = () => {
 
       {/* Footer: status + sign out */}
       <div className="flex flex-col gap-2 border-t border-border/60 pt-3">
+        {!sidebarCollapsed && <ResumeLinkCard token={token} canPublish={canPublish} />}
         {!sidebarCollapsed && (
           <div className="flex items-center justify-between gap-2 px-1 font-mono text-[10px] text-muted-foreground">
             <span>{wordCount}w · {readMin}m</span>
@@ -1067,6 +1069,7 @@ const AdminEditor = () => {
 
         {/* Drafts + Posts — the ONLY scrollable region inside the sheet */}
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain px-5 pb-6">
+          <ResumeLinkCard token={token} canPublish={canPublish} />
           <section>
             <header className="mb-2 flex items-center gap-2">
               <h3 className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
