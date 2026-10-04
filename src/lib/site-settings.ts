@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import bundled from "../../content/site.json";
 import { ADMIN } from "@/site.config";
 
 /**
@@ -12,7 +11,8 @@ export interface SiteSettings {
 }
 
 export const SITE_SETTINGS_PATH = "content/site.json";
-export const BUNDLED_SETTINGS: SiteSettings = bundled;
+/** Fallback used when the live file cannot be read. Mirrors content/site.json. */
+export const BUNDLED_SETTINGS: SiteSettings = { resumeUrl: "https://rxresu.me/somritdasgupta/somrits-resume" };
 
 const RAW_URL = `https://raw.githubusercontent.com/${ADMIN.repo.owner}/${ADMIN.repo.name}/${ADMIN.repo.branch}/${SITE_SETTINGS_PATH}`;
 
