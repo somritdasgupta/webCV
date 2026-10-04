@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 type Step = 0 | 25 | 50 | 75 | 100;
 
+const STEP_WIDTH: Record<Step, string> = { 0: "w-0", 25: "w-1/4", 50: "w-1/2", 75: "w-3/4", 100: "w-full" };
 const SHOW_DELAY_MS = 150;
 const STEP_TIMINGS: [number, Step][] = [[0, 25], [450, 50], [1300, 75]];
 
@@ -45,8 +46,7 @@ export const GlobalLoadingBar = () => {
     >
       <div className="h-1.5 w-40 overflow-hidden rounded-full border border-sky/30 bg-sky/10 shadow-elev-md backdrop-blur-md sm:w-48">
         <div
-          className="h-full rounded-full bg-sky/80 transition-[width] duration-500 ease-out-expo"
-          style={{ width: `${step}%` }}
+          className={cn("h-full rounded-full bg-sky/80 transition-[width] duration-500 ease-out-expo", STEP_WIDTH[step])}
         />
       </div>
     </div>
