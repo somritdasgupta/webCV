@@ -73,6 +73,8 @@ const TOOL_REFERENCE: { name: string; auth: boolean; purpose: string }[] = [
   { name: "blog_posts_bulk_update", auth: true, purpose: "Applies one metadata change to up to 100 posts in a single commit." },
   { name: "blog_posts_tag_rename", auth: true, purpose: "Renames a tag on every post in a single commit." },
   { name: "blog_posts_import", auth: true, purpose: "Imports Markdown, Ghost, or Notion exports in a single commit." },
+  { name: "site_resume_get", auth: false, purpose: "Returns the CV download link used by the cv button." },
+  { name: "site_resume_update", auth: true, purpose: "Changes the CV download link used by the cv button." },
 ];
 
 const ERROR_REFERENCE: { code: string; meaning: string }[] = [

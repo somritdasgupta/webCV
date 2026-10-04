@@ -336,7 +336,9 @@ var mcp_schema_get_default = defineTool({
         { name: "blog_posts_validate_bulk", auth: false, purpose: "Validate many drafts." },
         { name: "blog_posts_duplicate", auth: true, purpose: "Copy a post as a draft." },
         { name: "blog_posts_schedule", auth: true, purpose: "Set a future publish date." },
-        { name: "blog_posts_import", auth: true, purpose: "Import Markdown, Ghost, or Notion exports." }
+        { name: "blog_posts_import", auth: true, purpose: "Import Markdown, Ghost, or Notion exports." },
+        { name: "site_resume_get", auth: false, purpose: "Read the CV download link used by the cv button." },
+        { name: "site_resume_update", auth: true, purpose: "Change the CV download link used by the cv button." }
       ],
       workflows: {
         publish: [
@@ -2034,12 +2036,81 @@ var blog_posts_import_default = defineTool25({
   })
 });
 
+// src/lib/mcp-admin/tools/site-resume-get.ts
+import { defineTool as defineTool26 } from "npm:@lovable.dev/mcp-js@0.20.1";
+var SETTINGS_PATH = "content/site.json";
+var DEFAULT_RESUME_URL = "https://rxresu.me/somritdasgupta/somrits-resume";
+async function currentResumeUrl() {
+  const raw = await readRaw(SETTINGS_PATH);
+  if (!raw) return DEFAULT_RESUME_URL;
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed.resumeUrl === "string" ? parsed.resumeUrl : DEFAULT_RESUME_URL;
+  } catch {
+    return DEFAULT_RESUME_URL;
+  }
+}
+var site_resume_get_default = defineTool26({
+  name: "site_resume_get",
+  title: "Get CV link",
+  description: "Return the CV download link opened by the site's cv button. Requires no authorization.",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: async () => respond("site_resume_get", async () => {
+    const resume_url = await currentResumeUrl();
+    return { data: { resume_url, path: SETTINGS_PATH }, userMessage: `The cv button opens ${resume_url}.` };
+  })
+});
+
+// src/lib/mcp-admin/tools/site-resume-update.ts
+import { defineTool as defineTool27 } from "npm:@lovable.dev/mcp-js@0.20.1";
+import { z as z16 } from "npm:zod@^3.25.76";
+var isHttps = (value) => {
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+var site_resume_update_default = defineTool27({
+  name: "site_resume_update",
+  title: "Update CV link",
+  description: "Change the CV download link opened by the site's cv button. Requires a session_token from blog_auth_verify.",
+  inputSchema: {
+    session_token: sessionTokenField,
+    resume_url: z16.string().trim().min(1).describe("Full https:// link to the CV file or page.")
+  },
+  annotations: { readOnlyHint: false, idempotentHint: true, openWorldHint: true },
+  handler: async ({ session_token, resume_url }) => ownerOperation("site_resume_update", session_token, async (owner) => {
+    if (!isHttps(resume_url)) {
+      throw new OperationError("VALIDATION_ERROR", "resume_url must be a valid https:// link.", {
+        field: "resume_url",
+        guidance: "Supply a full link that starts with https://."
+      });
+    }
+    const existing = await readFile(owner.token, SETTINGS_PATH);
+    const content = `${JSON.stringify({ resumeUrl: resume_url }, null, 2)}
+`;
+    const commit = await writeFile({
+      token: owner.token,
+      path: SETTINGS_PATH,
+      content,
+      message: "content: update CV link",
+      sha: existing?.sha
+    });
+    return {
+      data: { updated: true, resume_url, commit_sha: commit.commitSha },
+      userMessage: `The cv button now opens ${resume_url}.`
+    };
+  })
+});
+
 // src/lib/mcp-admin/index.ts
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "1.1.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. Every tool returns one envelope: success, data, error {code, message, field, guidance}, meta {operation, nextSteps}. Follow error.guidance and meta.nextSteps literally. Call mcp_schema_get when unsure which tool to use. Posts are stored with `export const frontmatter = {...}` metadata and YYYY-MM-DD dates; the server writes this format automatically. Before publishing, call blog_posts_preview, show the user the returned source, and publish only after they approve. Read tools (list, search, by_tag, stats, word_count, related, export) work without a session for published posts. For any write: call blog_auth_request once, show the user only user_code and verification_uri, then poll blog_auth_verify with the same auth_token until approved, denied, or expired. Pending is expected; keep polling, never ask the user to confirm, and never start a second authorization while seconds_remaining is positive. On approved, immediately retry the original tool with session_token, which is valid for one hour. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted true, verified true, and a commit_sha. Call blog_components_list before writing rich MDX. Call blog_posts_read before updating or deleting and pass expected_sha.",
+  version: "1.2.0",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. Every tool returns one envelope: success, data, error {code, message, field, guidance}, meta {operation, nextSteps}. Follow error.guidance and meta.nextSteps literally. Call mcp_schema_get when unsure which tool to use. Posts are stored with `export const frontmatter = {...}` metadata and YYYY-MM-DD dates; the server writes this format automatically. Before publishing, call blog_posts_preview, show the user the returned source, and publish only after they approve. Read tools (list, search, by_tag, stats, word_count, related, export) work without a session for published posts. For any write: call blog_auth_request once, show the user only user_code and verification_uri, then poll blog_auth_verify with the same auth_token until approved, denied, or expired. While pending, show the user data.status_line (a live timer and check count) after every poll so they can see progress. Pending is expected; keep polling, never ask the user to confirm, and never start a second authorization while seconds_remaining is positive. On approved, immediately retry the original tool with session_token, which is valid for one hour. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted true, verified true, and a commit_sha. The site CV link is read with site_resume_get and changed with site_resume_update. Call blog_components_list before writing rich MDX. Call blog_posts_read before updating or deleting and pass expected_sha.",
   tools: [
     mcp_schema_get_default,
     blog_auth_request_default,
@@ -2065,7 +2136,9 @@ var mcp_admin_default = defineMcp({
     blog_posts_validate_bulk_default,
     blog_posts_duplicate_default,
     blog_posts_schedule_default,
-    blog_posts_import_default
+    blog_posts_import_default,
+    site_resume_get_default,
+    site_resume_update_default
   ]
 });
 
