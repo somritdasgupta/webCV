@@ -1,6 +1,9 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { installFetchTracking } from "@/lib/loading/loading-store";
+
+installFetchTracking();
 
 createRoot(document.getElementById("root")!).render(<App />);
 
