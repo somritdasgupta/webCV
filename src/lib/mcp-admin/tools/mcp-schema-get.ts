@@ -63,8 +63,8 @@ export default defineTool({
           { name: "blog_posts_duplicate", auth: true, purpose: "Copy a post as a draft." },
           { name: "blog_posts_schedule", auth: true, purpose: "Set a future publish date." },
           { name: "blog_posts_import", auth: true, purpose: "Import Markdown, Ghost, or Notion exports." },
-          { name: "site_resume_get", auth: false, purpose: "Read the CV download link used by the cv button." },
-          { name: "site_resume_update", auth: true, purpose: "Change the CV download link used by the cv button." },
+          { name: "site_resume_get", auth: false, purpose: "Read the CV download link used by /cv." },
+          { name: "site_resume_update", auth: true, purpose: "Change the CV download link used by /cv." },
         ],
         workflows: {
           publish: [
@@ -85,7 +85,7 @@ export default defineTool({
         file_format: "export const frontmatter = { title, description, date: \"YYYY-MM-DD\", tags?, cover?, draft?, readingTime };  followed by a blank line and the MDX body. Timestamps are reduced to their date part.",
         rules: [
           "Never show auth_token, session_token, or any GitHub token to the user.",
-          "Pending authorization is normal — keep polling, never restart while time remains.",
+          "Pending authorization is normal — keep polling, never restart while time remains; display status_line from every pending response.",
           "Authorization succeeding is not the same as content changing.",
           "Read before updating or deleting, and pass expected_sha.",
         ],

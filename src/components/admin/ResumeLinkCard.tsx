@@ -4,7 +4,7 @@ import { FileDown, Loader2 } from "lucide-react";
 import { commitFile } from "@/lib/admin/githubCommit";
 import { BUNDLED_SETTINGS, SITE_SETTINGS_PATH, isValidResumeUrl, serializeSettings, useSiteSettings } from "@/lib/site-settings";
 
-/** Edits the CV download link used by the header "cv" button. */
+/** Edits the CV download link used by the legacy /cv address. */
 export const ResumeLinkCard = ({ token, canPublish }: { token: string | null; canPublish: boolean }) => {
   const queryClient = useQueryClient();
   const { data } = useSiteSettings();
@@ -26,7 +26,7 @@ export const ResumeLinkCard = ({ token, canPublish }: { token: string | null; ca
       const resumeUrl = value.trim();
       await commitFile({ token, path: SITE_SETTINGS_PATH, content: serializeSettings({ resumeUrl }), message: "content: update CV link" });
       queryClient.setQueryData(["site-settings"], { resumeUrl });
-      setStatus({ ok: true, text: "Saved. The cv button now opens this link." });
+      setStatus({ ok: true, text: "Saved. Saved. The /cv address now opens this link." });
     } catch (error) {
       setStatus({ ok: false, text: error instanceof Error ? error.message : "Could not save the link." });
     } finally {

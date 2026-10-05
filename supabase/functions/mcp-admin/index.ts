@@ -337,8 +337,8 @@ var mcp_schema_get_default = defineTool({
         { name: "blog_posts_duplicate", auth: true, purpose: "Copy a post as a draft." },
         { name: "blog_posts_schedule", auth: true, purpose: "Set a future publish date." },
         { name: "blog_posts_import", auth: true, purpose: "Import Markdown, Ghost, or Notion exports." },
-        { name: "site_resume_get", auth: false, purpose: "Read the CV download link used by the cv button." },
-        { name: "site_resume_update", auth: true, purpose: "Change the CV download link used by the cv button." }
+        { name: "site_resume_get", auth: false, purpose: "Read the CV download link used by /cv." },
+        { name: "site_resume_update", auth: true, purpose: "Change the CV download link used by /cv." }
       ],
       workflows: {
         publish: [
@@ -359,7 +359,7 @@ var mcp_schema_get_default = defineTool({
       file_format: 'export const frontmatter = { title, description, date: "YYYY-MM-DD", tags?, cover?, draft?, readingTime };  followed by a blank line and the MDX body. Timestamps are reduced to their date part.',
       rules: [
         "Never show auth_token, session_token, or any GitHub token to the user.",
-        "Pending authorization is normal \u2014 keep polling, never restart while time remains.",
+        "Pending authorization is normal \u2014 keep polling, never restart while time remains; display status_line from every pending response.",
         "Authorization succeeding is not the same as content changing.",
         "Read before updating or deleting, and pass expected_sha."
       ],
@@ -425,6 +425,7 @@ var blog_auth_verify_default = defineTool3({
           status: "pending",
           seconds_remaining: status.timeRemaining,
           auth_token,
+          status_line: `Waiting for GitHub approval \xB7 ${status.timeRemaining}s remaining`,
           guidance: "The approval is not confirmed yet. Call blog_auth_verify again with the same auth_token. Do not ask the user to confirm and do not start a new authorization."
         },
         nextSteps: ["blog_auth_verify"]
@@ -2053,12 +2054,12 @@ async function currentResumeUrl() {
 var site_resume_get_default = defineTool26({
   name: "site_resume_get",
   title: "Get CV link",
-  description: "Return the CV download link opened by the site's cv button. Requires no authorization.",
+  description: "Return the CV download link opened by the site's /cv address. Requires no authorization.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: async () => respond("site_resume_get", async () => {
     const resume_url = await currentResumeUrl();
-    return { data: { resume_url, path: SETTINGS_PATH }, userMessage: `The cv button opens ${resume_url}.` };
+    return { data: { resume_url, path: SETTINGS_PATH }, userMessage: `The /cv address opens ${resume_url}.` };
   })
 });
 
@@ -2075,7 +2076,7 @@ var isHttps = (value) => {
 var site_resume_update_default = defineTool27({
   name: "site_resume_update",
   title: "Update CV link",
-  description: "Change the CV download link opened by the site's cv button. Requires a session_token from blog_auth_verify.",
+  description: "Change the CV download link opened by the site's /cv address. Requires a session_token from blog_auth_verify.",
   inputSchema: {
     session_token: sessionTokenField,
     resume_url: z16.string().trim().min(1).describe("Full https:// link to the CV file or page.")
@@ -2100,7 +2101,7 @@ var site_resume_update_default = defineTool27({
     });
     return {
       data: { updated: true, resume_url, commit_sha: commit.commitSha },
-      userMessage: `The cv button now opens ${resume_url}.`
+      userMessage: `The /cv address now opens ${resume_url}.`
     };
   })
 });
@@ -2109,8 +2110,8 @@ var site_resume_update_default = defineTool27({
 var mcp_admin_default = defineMcp({
   name: "somrit-webcv-admin",
   title: "Somrit Dasgupta \u2014 Site Admin",
-  version: "1.2.0",
-  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. Every tool returns one envelope: success, data, error {code, message, field, guidance}, meta {operation, nextSteps}. Follow error.guidance and meta.nextSteps literally. Call mcp_schema_get when unsure which tool to use. Posts are stored with `export const frontmatter = {...}` metadata and YYYY-MM-DD dates; the server writes this format automatically. Before publishing, call blog_posts_preview, show the user the returned source, and publish only after they approve. Read tools (list, search, by_tag, stats, word_count, related, export) work without a session for published posts. For any write: call blog_auth_request once, show the user only user_code and verification_uri, then poll blog_auth_verify with the same auth_token until approved, denied, or expired. While pending, show the user data.status_line (a live timer and check count) after every poll so they can see progress. Pending is expected; keep polling, never ask the user to confirm, and never start a second authorization while seconds_remaining is positive. On approved, immediately retry the original tool with session_token, which is valid for one hour. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted true, verified true, and a commit_sha. The site CV link is read with site_resume_get and changed with site_resume_update. Call blog_components_list before writing rich MDX. Call blog_posts_read before updating or deleting and pass expected_sha.",
+  version: "1.2.1",
+  instructions: "Owner-only authoring tools for somritdasgupta.in. Connecting requires no login. Every tool returns one envelope: success, data, error {code, message, field, guidance}, meta {operation, nextSteps}. Follow error.guidance and meta.nextSteps literally. Call mcp_schema_get when unsure which tool to use. Posts are stored with `export const frontmatter = {...}` metadata and YYYY-MM-DD dates; the server writes this format automatically. Before publishing, call blog_posts_preview, show the user the returned source, and publish only after they approve. Read tools (list, search, by_tag, stats, word_count, related, export) work without a session for published posts. For any write: call blog_auth_request once, show the user only user_code and verification_uri, then poll blog_auth_verify with the same auth_token until approved, denied, or expired. While pending, show the user data.status_line after every poll so they can see the time remaining. Pending is expected; keep polling, never ask the user to confirm, and never start a second authorization while seconds_remaining is positive. On approved, immediately retry the original tool with session_token, which is valid for one hour. Authorization alone never means content changed: report success only when the mutation returns published/updated/deleted true, verified true, and a commit_sha. The site /cv link is read with site_resume_get and changed with site_resume_update. Call blog_components_list before writing rich MDX. Call blog_posts_read before updating or deleting and pass expected_sha.",
   tools: [
     mcp_schema_get_default,
     blog_auth_request_default,

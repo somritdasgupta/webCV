@@ -17,7 +17,7 @@ const isHttps = (value: string) => {
 export default defineTool({
   name: "site_resume_update",
   title: "Update CV link",
-  description: "Change the CV download link opened by the site's cv button. Requires a session_token from blog_auth_verify.",
+  description: "Change the CV download link opened by the site's /cv address. Requires a session_token from blog_auth_verify.",
   inputSchema: {
     session_token: sessionTokenField,
     resume_url: z.string().trim().min(1).describe("Full https:// link to the CV file or page."),
@@ -42,7 +42,7 @@ export default defineTool({
       });
       return {
         data: { updated: true, resume_url, commit_sha: commit.commitSha },
-        userMessage: `The cv button now opens ${resume_url}.`,
+        userMessage: `The /cv address now opens ${resume_url}.`,
       };
     }),
 });

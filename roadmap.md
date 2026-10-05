@@ -1,0 +1,4 @@
+- [ ] Make the global loading bar reflect actual pending work and completion, with a translucent neutral fill.
+- [ ] Remove the CV navbar link and keep a single MCP symbol.
+- [ ] Simplify the MCP guide and eliminate mobile horizontal scrolling.
+- [ ] Complete the interrupted MCP authorization status and CV-link work; verify the site and live tool catalogue.
