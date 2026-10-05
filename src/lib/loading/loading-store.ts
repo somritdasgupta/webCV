@@ -7,18 +7,26 @@ import { useSyncExternalStore } from "react";
  * requests are counted automatically by `installFetchTracking()`.
  */
 let pending = 0;
+let started = 0;
+let completed = 0;
 const listeners = new Set<() => void>();
 
 const emit = () => listeners.forEach((listener) => listener());
 
 export function beginLoading(): () => void {
+  if (pending === 0) {
+    started = 0;
+    completed = 0;
+  }
   pending += 1;
+  started += 1;
   emit();
   let isDone = false;
   return () => {
     if (isDone) return;
     isDone = true;
     pending = Math.max(0, pending - 1);
+    completed += 1;
     emit();
   };
 }
@@ -37,7 +45,11 @@ const subscribe = (listener: () => void) => {
   return () => listeners.delete(listener);
 };
 
-export const usePendingCount = () => useSyncExternalStore(subscribe, () => pending, () => 0);
+export const useLoadingSnapshot = () => useSyncExternalStore(
+  subscribe,
+  () => `${pending}:${started}:${completed}`,
+  () => "0:0:0",
+);
 
 const IGNORED_URL_PARTS = ["/_vercel/", "vitals.vercel", "/@vite/", "/__vite", "hot-update"];
 
