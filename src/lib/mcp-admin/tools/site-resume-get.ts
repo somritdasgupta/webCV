@@ -19,12 +19,12 @@ export async function currentResumeUrl(): Promise<string> {
 export default defineTool({
   name: "site_resume_get",
   title: "Get CV link",
-  description: "Return the CV download link opened by the site's cv button. Requires no authorization.",
+  description: "Return the CV download link opened by the site's /cv address. Requires no authorization.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: async () =>
     respond("site_resume_get", async () => {
       const resume_url = await currentResumeUrl();
-      return { data: { resume_url, path: SETTINGS_PATH }, userMessage: `The cv button opens ${resume_url}.` };
+      return { data: { resume_url, path: SETTINGS_PATH }, userMessage: `The /cv address opens ${resume_url}.` };
     }),
 });

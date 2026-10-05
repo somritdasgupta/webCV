@@ -6,7 +6,7 @@ import { respond } from "../response";
 
 type AuthVerifyData =
   | { status: "approved"; session_token: string; expires_in_seconds: number; guidance: string }
-  | { status: "pending"; seconds_remaining: number; auth_token: string; guidance: string };
+  | { status: "pending"; seconds_remaining: number; auth_token: string; status_line: string; guidance: string };
 
 /**
  * Step 2 of authorization.
@@ -49,6 +49,7 @@ export default defineTool({
             status: "pending" as const,
             seconds_remaining: status.timeRemaining,
             auth_token,
+            status_line: `Waiting for GitHub approval · ${status.timeRemaining}s remaining`,
             guidance: "The approval is not confirmed yet. Call blog_auth_verify again with the same auth_token. Do not ask the user to confirm and do not start a new authorization.",
           },
           nextSteps: ["blog_auth_verify"],
