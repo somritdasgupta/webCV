@@ -9,6 +9,7 @@ import { useSyncExternalStore } from "react";
 let pending = 0;
 let started = 0;
 let completed = 0;
+let generation = 0;
 const listeners = new Set<() => void>();
 
 const emit = () => listeners.forEach((listener) => listener());
@@ -17,6 +18,7 @@ export function beginLoading(): () => void {
   if (pending === 0) {
     started = 0;
     completed = 0;
+    generation += 1;
   }
   pending += 1;
   started += 1;
@@ -47,8 +49,8 @@ const subscribe = (listener: () => void) => {
 
 export const useLoadingSnapshot = () => useSyncExternalStore(
   subscribe,
-  () => `${pending}:${started}:${completed}`,
-  () => "0:0:0",
+  () => `${generation}:${pending}:${started}:${completed}`,
+  () => "0:0:0:0",
 );
 
 const IGNORED_URL_PARTS = ["/_vercel/", "vitals.vercel", "/@vite/", "/__vite", "hot-update"];

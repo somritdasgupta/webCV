@@ -9,23 +9,30 @@ const STEP_WIDTH: Record<Step, string> = { 0: "w-0", 25: "w-1/4", 50: "w-1/2", 7
 const SHOW_DELAY_MS = 150;
 /** Steps advance only as tracked work completes; 100 means all work has settled. */
 export const GlobalLoadingBar = () => {
-  const [pending, started, completed] = useLoadingSnapshot().split(":").map(Number);
+  const [generation, pending, started, completed] = useLoadingSnapshot().split(":").map(Number);
   const isActive = pending + useIsFetching() + useIsMutating() > 0;
   const [step, setStep] = useState<Step>(0);
   const [isVisible, setIsVisible] = useState(false);
   const hideTimer = useRef<number | undefined>();
+  const showTimer = useRef<number | undefined>();
+  const activeGeneration = useRef(0);
 
   useEffect(() => {
     clearTimeout(hideTimer.current);
+    clearTimeout(showTimer.current);
     if (isActive) {
+      activeGeneration.current = generation;
       setStep(started > 0 ? (Math.min(75, Math.max(25, Math.floor((completed / started) * 4) * 25)) as Step) : 25);
-      hideTimer.current = window.setTimeout(() => setIsVisible(true), SHOW_DELAY_MS);
+      showTimer.current = window.setTimeout(() => setIsVisible(true), SHOW_DELAY_MS);
     } else {
-      setStep((current) => (current === 0 ? 0 : 100));
-      hideTimer.current = window.setTimeout(() => { setIsVisible(false); setStep(0); }, 280);
+      if (started > 0 && generation === activeGeneration.current) {
+        setStep(100);
+        if (completed > 0) setIsVisible(true);
+        hideTimer.current = window.setTimeout(() => { setIsVisible(false); setStep(0); }, 280);
+      }
     }
-    return () => clearTimeout(hideTimer.current);
-  }, [isActive, started, completed]);
+    return () => { clearTimeout(hideTimer.current); clearTimeout(showTimer.current); };
+  }, [isActive, generation, started, completed]);
 
   return (
     <div
