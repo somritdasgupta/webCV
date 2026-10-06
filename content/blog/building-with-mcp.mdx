@@ -538,15 +538,15 @@ logging.info(f"startup_time_ms={elapsed * 1000}")
 
 Before shipping an MCP system to production:
 
-- [ ] Schema descriptions are under 60 chars each
-- [ ] Error responses include `severity` and `retry_after_seconds`
-- [ ] Tool names match `[a-z_][a-z0-9_]*`
-- [ ] Startup time < 1 second with lazy-loading
-- [ ] All external API calls have timeouts
-- [ ] Tool invocations are logged with arguments and response
-- [ ] Required fields are minimal (remove optional bloat)
-- [ ] HTTP transport has authentication and rate limiting
-- [ ] Responses under 1KB (split large results across tool calls)
-- [ ] Error messages guide LLM toward recovery
+- Schema descriptions are under 60 chars each
+- Error responses include `severity` and `retry_after_seconds`
+- Tool names match `[a-z_][a-z0-9_]*`
+- Startup time < 1 second with lazy-loading
+- All external API calls have timeouts
+- Tool invocations are logged with arguments and response
+- Required fields are minimal (remove optional bloat)
+- HTTP transport has authentication and rate limiting
+- Responses under 1KB (split large results across tool calls)
+- Error messages guide LLM toward recovery
 
 This is the difference between a hobby MCP server and one that your team ships.
