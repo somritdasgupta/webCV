@@ -1,0 +1,124 @@
+export const frontmatter = {
+  title: "Building with MCP: Connecting LLMs to Your Tools",
+  description: "How Model Context Protocol enables LLMs to integrate with external APIs and services in production systems.",
+  date: "2026-10-06",
+  tags: ["mcp", "api", "llm", "integration", "python", "typescript"],
+  readingTime: 2,
+};
+
+The Model Context Protocol (MCP) is a lightweight standard that lets language models safely interact with external tools and data sources. It's becoming essential infrastructure for production AI applications.
+
+## Why MCP Matters
+
+Without MCP, integrating LLMs into real systems means writing custom adapters for each API, managing authentication, handling errors, and maintaining separate code paths. MCP standardizes this.
+
+An MCP server acts as a bridge. Your LLM makes typed requests through MCP, the server handles the implementation details (auth, rate limiting, data transformation), and returns structured responses. It's clean separation of concerns.
+
+## Building an MCP Server
+
+The easiest approach is using FastMCP for Python or the Node SDK for TypeScript.
+
+Here's a minimal Python example:
+
+```python
+from fastmcp import FastMCP
+
+app = FastMCP("my-service")
+
+@app.tool()
+def fetch_user(user_id: str) -> dict:
+    """Get user details by ID"""
+    # Your implementation: call your database, cache, whatever
+    return {"id": user_id, "name": "Alice", "status": "active"}
+
+@app.tool()
+def list_recent_events(limit: int = 10) -> list:
+    """Fetch the N most recent events"""
+    return [{"id": i, "timestamp": "2026-10-06"} for i in range(limit)]
+```
+
+That's it. FastMCP handles JSON-RPC under the hood, type validation, error responses. You just define functions with clear parameter and return types.
+
+For Node.js with the MCP SDK:
+
+```typescript
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+const server = new Server({
+  name: "my-service",
+  version: "1.0.0",
+});
+
+server.setRequestHandler(
+  ListToolsRequestSchema,
+  async () => ({
+    tools: [
+      {
+        name: "fetch_user",
+        description: "Get user details by ID",
+        inputSchema: {
+          type: "object",
+          properties: {
+            user_id: { type: "string" },
+          },
+          required: ["user_id"],
+        },
+      },
+    ],
+  })
+);
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (request.params.name === "fetch_user") {
+    const userId = request.params.arguments.user_id;
+    return {
+      content: [{ type: "text", text: JSON.stringify({ id: userId }) }],
+    };
+  }
+});
+
+const transport = new StdioServerTransport();
+server.connect(transport);
+```
+
+## Deployment
+
+MCP servers run as separate processes, typically managed by:
+
+- **Docker containers** for cloud deployment
+- **Systemd units** for Linux servers
+- **Vercel Functions** or similar for serverless (with stdio transport adapters)
+
+The client (your LLM or application) communicates via:
+
+- **stdio** (standard input/output) for local/containerized deployments
+- **HTTP** for remote servers
+
+A typical setup: Claude calls your application, your app runs the MCP server locally or remotely, Claude gets typed tool results, and continues the conversation with fresh context.
+
+## Key Design Principles
+
+**Be explicit about capabilities.** Every tool should have a clear name, description, and typed input/output schema. The LLM reasons better when it understands what it can do.
+
+**Fail gracefully.** If a tool can't reach an external service, return a clear error message, not a crash. The LLM will understand and can retry or suggest alternatives.
+
+**Keep tools focused.** A tool that does one thing well is better than a kitchen sink. `fetch_user` is better than `fetch_anything`.
+
+**Version your API.** When you add new tools or change schemas, bump the MCP server version. Clients can adapt accordingly.
+
+## Real-World Examples
+
+- Connecting to Slack for message search or posting
+- Querying a SQL database for analytics
+- Triggering deployments or CI/CD workflows
+- Fetching real-time market data or weather
+- Reading/writing files in cloud storage
+
+The abstraction works because MCP handles the mechanics of tool discovery, invocation, and error handling. You focus on what your integration should do.
+
+## Next Steps
+
+Check out the official MCP documentation and SDKs. Start small: a single tool that does something useful in your system, test it locally with Claude, then scale up.
+
+MCP turns LLMs from impressive chatbots into practical agents that can read, write, and act on your infrastructure.
