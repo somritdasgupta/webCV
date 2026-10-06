@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ChevronDown, Plug, RefreshCw, ShieldCheck, ArrowRight, Terminal, Sparkles } from "lucide-react";
+import { Check, ChevronDown, Plug, RefreshCw, ShieldCheck, Terminal, Sparkles } from "lucide-react";
 import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +22,7 @@ export default function Connect() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 py-12 sm:py-16 space-y-12">
+    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
       <Seo title="MCP connections" description="Connect Claude, ChatGPT, Cursor or VS Code to Somrit Dasgupta’s site and owner-approved publishing tools." path="/mcp" />
       
       <header className="space-y-4 text-center sm:text-left">
@@ -105,35 +105,49 @@ export default function Connect() {
 
       <details className="group rounded-3xl border border-border/80 bg-card/60 backdrop-blur-sm p-6 sm:p-8 transition-all">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold tracking-tight text-foreground select-none">
-          <span className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-secondary text-foreground">
+          <span className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-secondary text-foreground">
               <Terminal className="h-4 w-4" />
             </div>
             Diagnostic Health Checks
           </span>
           <div className="flex items-center gap-2 text-xs text-muted-foreground font-normal">
-            <span>Verify servers</span>
+            <span className="group-open:hidden">Verify servers</span>
             <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" />
           </div>
         </summary>
-        <div className="mt-6 pt-6 border-t border-border/60 space-y-5">
-          <Button variant="outline" disabled={isChecking} onClick={check} className="gap-2.5 h-11 rounded-2xl font-medium w-full sm:w-auto shadow-sm">
-            <RefreshCw className={`h-4 w-4 ${isChecking ? "animate-spin text-primary" : ""}`} />
-            {isChecking ? "Running diagnostic checks…" : "Check both servers now"}
-          </Button>
-          <div aria-live="polite" className="space-y-3">
+        <div className="mt-6 pt-6 border-t border-border/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h4 className="text-sm font-medium text-foreground">Connection Status</h4>
+              <p className="text-xs text-muted-foreground mt-1">Verify tools and server availability.</p>
+            </div>
+            <Button variant="outline" disabled={isChecking} onClick={check} className="gap-2 h-10 rounded-xl font-medium shadow-sm shrink-0">
+              <RefreshCw className={`h-4 w-4 ${isChecking ? "animate-spin text-primary" : ""}`} />
+              {isChecking ? "Running diagnostics…" : "Check both servers"}
+            </Button>
+          </div>
+          
+          <div aria-live="polite" className="grid gap-4 sm:grid-cols-2">
+            {results.length === 0 && !isChecking && (
+              <div className="col-span-full rounded-2xl border border-dashed border-border/60 bg-muted/10 p-8 text-center text-sm text-muted-foreground">
+                Ready to check server connections. Expand to run diagnostics.
+              </div>
+            )}
             {results.map((result, index) => (
-              <div key={Object.values(CONNECTIONS)[index].name} className="rounded-2xl border border-border/60 bg-background/60 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm shadow-sm">
-                <span className="font-medium text-foreground">{Object.values(CONNECTIONS)[index].label}</span>
-                <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium ${result.ok ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"}`}>
+              <div key={Object.values(CONNECTIONS)[index].name} className="rounded-2xl border border-border/60 bg-background/60 p-4 flex flex-col justify-between gap-3 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium text-sm text-foreground">{Object.values(CONNECTIONS)[index].label}</span>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium ${result.ok ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${result.ok ? "bg-emerald-500" : "bg-destructive"}`}></span>
-                    {result.ok ? `${result.tools.length} tools available` : "Connection failed"}
+                    {result.ok ? "Online" : "Failed"}
                   </span>
                 </div>
-                {!result.ok && (
-                  <p className="w-full text-xs text-muted-foreground font-mono bg-destructive/5 p-2 rounded-xl border border-destructive/10 mt-1">
-                    {result.steps.find((item) => !item.ok)?.detail}
+                {result.ok ? (
+                  <p className="text-xs text-muted-foreground font-mono">{result.tools.length} tools available</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground font-mono bg-destructive/5 p-2 rounded-xl border border-destructive/10 mt-1 line-clamp-2">
+                    {result.steps.find((item) => !item.ok)?.detail || "Unknown error"}
                   </p>
                 )}
               </div>
