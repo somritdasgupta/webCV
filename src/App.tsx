@@ -8,7 +8,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SiteLayout } from "@/components/SiteLayout";
 import Home from "./pages/Home";
 import Connect from "./pages/Connect";
-import { GlobalLoadingBar, LoadingFallback } from "@/components/GlobalLoadingBar";
 import { CvRedirect } from "@/components/CvRedirect";
 
 // Route-level code splitting — keeps the initial JS bundle small so the
@@ -32,7 +31,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <SiteLayout>
-          <Suspense fallback={<LoadingFallback />}>
+          <Suspense fallback={null}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/blog" element={<BlogIndex />} />
@@ -51,7 +50,6 @@ const App = () => (
           </Suspense>
         </SiteLayout>
       </BrowserRouter>
-      <GlobalLoadingBar />
       <SpeedInsights />
     </TooltipProvider>
   </QueryClientProvider>

@@ -1,4 +1,4 @@
-- [ ] Make the global loading bar reflect actual pending work and completion, with a translucent neutral fill.
-- [ ] Remove the CV navbar link and keep a single MCP symbol.
-- [ ] Simplify the MCP guide and eliminate mobile horizontal scrolling.
-- [ ] Complete the interrupted MCP authorization status and CV-link work; verify the site and live tool catalogue.
+- [ ] Remove the global loader and fetch interception entirely.
+- [ ] Put direct resume links beside LinkedIn and verify the editor Save commits the shared setting.
+- [ ] Replace the text-heavy guide with reader/admin setup and supported install actions.
+- [ ] Verify MCP tools, authorization safety, and mobile/tablet/desktop rendering; deploy any changed authoring tools.
