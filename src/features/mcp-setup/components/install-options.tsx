@@ -28,10 +28,12 @@ export function InstallOptions({ mode }: { mode: ConnectionMode }) {
     const anchor = document.createElement("a");
 
     anchor.href = url;
-    anchor.download = `${connection.name}.json`;
+    anchor.download = connection.name + ".json";
     anchor.click();
 
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    window.setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
   };
 
   return (
@@ -58,8 +60,8 @@ export function InstallOptions({ mode }: { mode: ConnectionMode }) {
         <div className="min-w-0 max-w-md">
           <h2 className="text-xl font-semibold text-foreground">
             {isDirectInstall
-              ? `Install in ${client}`
-              : `Connect with ${client}`}
+              ? "Install in " + client
+              : "Connect with " + client}
           </h2>
 
           {client === "Claude" && (
