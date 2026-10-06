@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ChevronDown, Plug, RefreshCw, ShieldCheck, Terminal, Sparkles } from "lucide-react";
+import { Check, ChevronDown, Plug, RefreshCw, ShieldCheck } from "lucide-react";
 import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,123 +22,94 @@ export default function Connect() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12">
+    <div className="w-full pb-16 space-y-12">
       <Seo title="MCP connections" description="Connect Claude, ChatGPT, Cursor or VS Code to Somrit Dasgupta’s site and owner-approved publishing tools." path="/mcp" />
       
-      <header className="space-y-4 text-center sm:text-left">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono uppercase tracking-wider">
-          <Plug className="h-3.5 w-3.5" />
-          <span>Model Context Protocol</span>
+      <header className="border-b border-border/40 pb-8 pt-5">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Plug className="h-4 w-4" />
+          <span className="font-mono text-xs uppercase tracking-wider">MCP connections</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
+        <h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl text-foreground">
           Somrit’s site, in your assistant.
         </h1>
-        <p className="text-muted-foreground text-base sm:text-lg max-w-2xl leading-relaxed">
-          Instantly connect your AI workspace to read posts and projects, or securely authorize publishing tools.
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground max-w-2xl">
+          Read posts and projects. Or connect the owner’s publishing tools.
         </p>
       </header>
 
-      <div className="rounded-3xl border border-border/80 bg-card/60 backdrop-blur-sm p-6 sm:p-10 shadow-xl space-y-8 transition-all">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-border/60">
-          <div className="space-y-1.5">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              Select Access Profile
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">Choose what your assistant is allowed to interact with.</p>
-          </div>
-
-          <Tabs value={mode} onValueChange={(value) => setMode(value === "admin" ? "admin" : "reader")}>
-            <TabsList className="grid h-12 w-full sm:w-80 grid-cols-2 rounded-2xl p-1.5 bg-muted/80 shadow-inner">
-              <TabsTrigger value="reader" className="rounded-xl font-medium text-xs sm:text-sm transition-all data-[state=active]:shadow-sm">For Readers</TabsTrigger>
-              <TabsTrigger value="admin" className="rounded-xl font-medium text-xs sm:text-sm transition-all data-[state=active]:shadow-sm">For Owner</TabsTrigger>
-            </TabsList>
-          </Tabs>
+      <section className="space-y-8" aria-label="Connect an assistant">
+        <Tabs value={mode} onValueChange={(value) => setMode(value === "admin" ? "admin" : "reader")}>
+          <TabsList className="grid h-12 w-full sm:w-80 grid-cols-2 rounded-xl p-1 bg-muted/50">
+            <TabsTrigger value="reader" className="rounded-lg font-medium transition-all">For readers</TabsTrigger>
+            <TabsTrigger value="admin" className="rounded-lg font-medium transition-all">For the owner</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        <div className="flex items-center gap-3 text-sm text-muted-foreground bg-secondary/30 w-fit px-4 py-2.5 rounded-lg border border-border/40">
+          {mode === "admin" ? <ShieldCheck className="h-4 w-4 shrink-0 text-primary" /> : <Check className="h-4 w-4 shrink-0 text-primary" />}
+          <p>{mode === "admin" ? "Posts, drafts and resume links. Changes require owner approval." : "Public posts, repositories and activity. No sign-in required."}</p>
         </div>
-
-        <div className={`flex items-start sm:items-center gap-3 p-4 rounded-2xl border transition-all ${mode === "admin" ? "bg-primary/5 border-primary/20 text-foreground" : "bg-muted/40 border-border/60 text-muted-foreground"}`}>
-          {mode === "admin" ? <ShieldCheck className="h-5 w-5 shrink-0 text-primary mt-0.5 sm:mt-0" /> : <Check className="h-5 w-5 shrink-0 text-primary mt-0.5 sm:mt-0" />}
-          <div className="space-y-0.5 text-xs sm:text-sm">
-            <span className="font-semibold block text-foreground">
-              {mode === "admin" ? "Owner Publishing Mode Active" : "Public Read-Only Mode Active"}
-            </span>
-            <span>
-              {mode === "admin" ? "Posts, drafts, and resume links. All changes require explicit owner approval." : "Public posts, code repositories, and activity streams. No sign-in required."}
-            </span>
-          </div>
-        </div>
-
-        <div className="pt-2">
-          <InstallOptions key={mode} mode={mode} />
-        </div>
-      </div>
+        
+        {/* The 'Copy server address' button and icons are inside this component */}
+        <InstallOptions key={mode} mode={mode} />
+      </section>
 
       {mode === "admin" && (
-        <section className="rounded-3xl border border-primary/30 bg-card/80 backdrop-blur-sm p-6 sm:p-10 shadow-xl space-y-6" aria-labelledby="approval-heading">
-          <div className="space-y-1">
-            <span className="text-xs font-mono uppercase tracking-widest text-primary font-semibold">Security Protocol</span>
-            <h2 id="approval-heading" className="text-xl font-bold tracking-tight text-foreground">Before any change goes live</h2>
-          </div>
-          <ol className="grid gap-4 sm:grid-cols-3 text-sm">
-            <li className="rounded-2xl border border-border/60 bg-background/60 p-5 space-y-3 shadow-sm">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center">01</div>
-              <h3 className="font-semibold text-foreground">Review Draft</h3>
-              <p className="text-muted-foreground text-xs leading-relaxed">Ask your assistant for a draft and check the generated preview carefully.</p>
+        <section className="border-b border-border/40 pb-10 space-y-6" aria-labelledby="approval-heading">
+          <h2 id="approval-heading" className="text-base font-semibold text-foreground">Before a change is published</h2>
+          <ol className="grid gap-6 text-sm text-muted-foreground sm:grid-cols-3">
+            <li className="space-y-2">
+              <span className="block font-mono text-xs font-semibold text-foreground">01 / Review</span>
+              <p className="leading-relaxed">Ask for a draft and review its preview.</p>
             </li>
-            <li className="rounded-2xl border border-border/60 bg-background/60 p-5 space-y-3 shadow-sm">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center">02</div>
-              <h3 className="font-semibold text-foreground">Approve on GitHub</h3>
-              <p className="text-muted-foreground text-xs leading-relaxed">Enter the assistant’s generated code at <a href="https://github.com/login/device" target="_blank" rel="noreferrer" className="text-foreground underline underline-offset-4 hover:text-primary font-medium transition-colors">GitHub Device Login</a>.</p>
+            <li className="space-y-2">
+              <span className="block font-mono text-xs font-semibold text-foreground">02 / Approve</span>
+              <p className="leading-relaxed">Enter the assistant’s code at <a href="https://github.com/login/device" target="_blank" rel="noreferrer" className="text-foreground underline underline-offset-4 hover:text-primary transition-colors">GitHub</a>.</p>
             </li>
-            <li className="rounded-2xl border border-border/60 bg-background/60 p-5 space-y-3 shadow-sm">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center">03</div>
-              <h3 className="font-semibold text-foreground">Confirm Save</h3>
-              <p className="text-muted-foreground text-xs leading-relaxed">The assistant verifies authorization and confirms the saved change.</p>
+            <li className="space-y-2">
+              <span className="block font-mono text-xs font-semibold text-foreground">03 / Confirm</span>
+              <p className="leading-relaxed">The assistant checks approval and confirms the saved change.</p>
             </li>
           </ol>
-          <div className="rounded-xl bg-muted/40 p-4 border border-border/40 flex items-center gap-3 text-xs font-mono text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
-            <span>Security Note: Authorizations expire in one hour. Never share your private session or tokens.</span>
-          </div>
+          <p className="text-xs text-muted-foreground/80 font-mono">Approval lasts one hour. Never share an authorization or session token.</p>
         </section>
       )}
 
-      <details className="group rounded-3xl border border-border/80 bg-card/60 backdrop-blur-sm p-6 sm:p-8 transition-all">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold tracking-tight text-foreground select-none">
-          <span className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-secondary text-foreground">
-              <Terminal className="h-4 w-4" />
+      <details className="group rounded-2xl border border-border/40 bg-card transition-all">
+        <summary className="flex cursor-pointer list-none items-center justify-between p-5 text-sm font-semibold text-foreground select-none">
+          <span className="flex items-center gap-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/80 text-foreground font-mono text-sm font-bold">
+              {">_"}
             </div>
             Diagnostic Health Checks
           </span>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground font-normal">
-            <span className="group-open:hidden">Verify servers</span>
-            <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" />
-          </div>
+          <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
         </summary>
-        <div className="mt-6 pt-6 border-t border-border/60">
+        
+        <div className="border-t border-border/40 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h4 className="text-sm font-medium text-foreground">Connection Status</h4>
-              <p className="text-xs text-muted-foreground mt-1">Verify tools and server availability.</p>
+              <h4 className="text-base font-semibold text-foreground">Connection Status</h4>
+              <p className="text-sm text-muted-foreground mt-1">Verify tools and server availability.</p>
             </div>
-            <Button variant="outline" disabled={isChecking} onClick={check} className="gap-2 h-10 rounded-xl font-medium shadow-sm shrink-0">
-              <RefreshCw className={`h-4 w-4 ${isChecking ? "animate-spin text-primary" : ""}`} />
-              {isChecking ? "Running diagnostics…" : "Check both servers"}
+            <Button variant="outline" disabled={isChecking} onClick={check} className="gap-2 h-10 rounded-lg font-medium shadow-sm">
+              <RefreshCw className={`h-4 w-4 ${isChecking ? "animate-spin" : ""}`} />
+              {isChecking ? "Checking..." : "Check both servers"}
             </Button>
           </div>
           
           <div aria-live="polite" className="grid gap-4 sm:grid-cols-2">
             {results.length === 0 && !isChecking && (
-              <div className="col-span-full rounded-2xl border border-dashed border-border/60 bg-muted/10 p-8 text-center text-sm text-muted-foreground">
-                Ready to check server connections. Expand to run diagnostics.
+              <div className="col-span-full rounded-xl border border-dashed border-border/40 p-8 text-center text-sm text-muted-foreground">
+                Run diagnostics to see connection status.
               </div>
             )}
             {results.map((result, index) => (
-              <div key={Object.values(CONNECTIONS)[index].name} className="rounded-2xl border border-border/60 bg-background/60 p-4 flex flex-col justify-between gap-3 shadow-sm">
+              <div key={Object.values(CONNECTIONS)[index].name} className="rounded-xl border border-border/40 bg-background/50 p-5 flex flex-col justify-between gap-4 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="font-medium text-sm text-foreground">{Object.values(CONNECTIONS)[index].label}</span>
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium ${result.ok ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-destructive/10 text-destructive border border-destructive/20"}`}>
+                  <span className="font-semibold text-sm text-foreground">{Object.values(CONNECTIONS)[index].label}</span>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium ${result.ok ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${result.ok ? "bg-emerald-500" : "bg-destructive"}`}></span>
                     {result.ok ? "Online" : "Failed"}
                   </span>
@@ -146,7 +117,7 @@ export default function Connect() {
                 {result.ok ? (
                   <p className="text-xs text-muted-foreground font-mono">{result.tools.length} tools available</p>
                 ) : (
-                  <p className="text-xs text-muted-foreground font-mono bg-destructive/5 p-2 rounded-xl border border-destructive/10 mt-1 line-clamp-2">
+                  <p className="text-xs text-muted-foreground font-mono bg-destructive/5 p-2.5 rounded-lg border border-destructive/10">
                     {result.steps.find((item) => !item.ok)?.detail || "Unknown error"}
                   </p>
                 )}
