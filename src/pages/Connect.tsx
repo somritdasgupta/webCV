@@ -53,7 +53,7 @@ export default function Connect() {
               <TabsTrigger value="reader" className="rounded-xl font-medium text-xs sm:text-sm transition-all data-[state=active]:shadow-sm">For Readers</TabsTrigger>
               <TabsTrigger value="admin" className="rounded-xl font-medium text-xs sm:text-sm transition-all data-[state=active]:shadow-sm">For Owner</TabsTrigger>
             </TabsList>
-          </TabsList>
+          </Tabs>
         </div>
 
         <div className={`flex items-start sm:items-center gap-3 p-4 rounded-2xl border transition-all ${mode === "admin" ? "bg-primary/5 border-primary/20 text-foreground" : "bg-muted/40 border-border/60 text-muted-foreground"}`}>
