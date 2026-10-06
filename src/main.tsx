@@ -1,11 +1,8 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { installFetchTracking } from "@/lib/loading/loading-store";
-
-installFetchTracking();
-
-createRoot(document.getElementById("root")!).render(<App />);
+const root = document.getElementById("root");
+if (root) createRoot(root).render(<App />);
 
 // Offline cache — only register on the live deployment, never inside the
 // Lovable preview iframe (service workers cause stale builds there).

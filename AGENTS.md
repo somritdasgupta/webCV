@@ -1,3 +1,3 @@
-- Keep global pending-work tracking in a shared external store so route suspense and network requests drive one consistent indicator.
+- Use unobtrusive route fallbacks and local pending states without a global fetch interceptor; removing the global loader must not alter network behavior.
 - Keep the CV URL in shared site settings so the admin editor, legacy redirect, and MCP tools use one source of truth.
 - Keep MCP authoring tools in the existing admin registry and regenerate its published bundle from that registry so client discovery and runtime stay aligned.

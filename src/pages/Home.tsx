@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { Seo } from "@/components/Seo";
 import { AUTHOR, SITE, GITHUB } from "@/site.config";
-import { ArrowUpRight, Github, Linkedin, Star, GitFork, ExternalLink, Plug } from "lucide-react";
+import { ArrowUpRight, Github, Linkedin, Star, GitFork, ExternalLink, FileDown } from "lucide-react";
+import { BUNDLED_SETTINGS, useSiteSettings } from "@/lib/site-settings";
 import { XLogo } from "@/components/icons/XLogo";
 import { getPostMeta } from "@/lib/posts";
 import { useQuery } from "@tanstack/react-query";
 
 const Home = () => {
+  const { data: settings } = useSiteSettings();
   const recent = getPostMeta().slice(0, 4);
 
   // Featured repo — fetched directly by name (unauthenticated).
@@ -135,9 +137,9 @@ const Home = () => {
                 <a href={AUTHOR.links.linkedin} target="_blank" rel="noreferrer noopener" aria-label="LinkedIn" className="rounded-sm p-1 transition-colors hover:text-foreground">
                   <Linkedin className="h-4 w-4" />
                 </a>
-                <Link to="/mcp" aria-label="Connect an AI assistant (MCP)" title="Connect an AI assistant (MCP)" className="rounded-sm p-1 transition-colors hover:text-foreground">
-                  <Plug className="h-4 w-4" />
-                </Link>
+                <a href={settings?.resumeUrl ?? BUNDLED_SETTINGS.resumeUrl} target="_blank" rel="noreferrer noopener" aria-label="Resume" title="Resume" className="rounded-sm p-1 transition-colors hover:text-foreground">
+                  <FileDown className="h-4 w-4" />
+                </a>
               </div>
             </div>
           </div>

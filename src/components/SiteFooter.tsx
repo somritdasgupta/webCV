@@ -1,14 +1,15 @@
-import { Link } from "react-router-dom";
 import { AUTHOR, SITE } from "@/site.config";
-import { Github, Linkedin, Mail, Plug } from "lucide-react";
+import { FileDown, Github, Linkedin, Mail } from "lucide-react";
+import { BUNDLED_SETTINGS, useSiteSettings } from "@/lib/site-settings";
 import { XLogo } from "@/components/icons/XLogo";
 
 export const SiteFooter = () => {
+  const { data } = useSiteSettings();
   return (
     <footer className="mt-32 border-t border-border/50">
       <div className="container-wide flex flex-col gap-4 py-10 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} {SITE.name}. Built with care.
+          © {new Date().getFullYear()} {SITE.name}. Built by Somrit Dasgupta.
         </p>
         <div className="flex items-center gap-4 text-muted-foreground">
           <a href={AUTHOR.links.github} target="_blank" rel="noreferrer noopener" aria-label="GitHub" className="transition-colors hover:text-foreground">
@@ -20,12 +21,12 @@ export const SiteFooter = () => {
           <a href={AUTHOR.links.linkedin} target="_blank" rel="noreferrer noopener" aria-label="LinkedIn" className="transition-colors hover:text-foreground">
             <Linkedin className="h-4 w-4" />
           </a>
+          <a href={data?.resumeUrl ?? BUNDLED_SETTINGS.resumeUrl} target="_blank" rel="noreferrer noopener" aria-label="Resume" title="Resume" className="transition-colors hover:text-foreground">
+            <FileDown className="h-4 w-4" />
+          </a>
           <a href={`mailto:${AUTHOR.email}`} aria-label="Email" className="transition-colors hover:text-foreground">
             <Mail className="h-4 w-4" />
           </a>
-          <Link to="/mcp" aria-label="Connect an AI assistant (MCP)" title="Connect an AI assistant (MCP)" className="transition-colors hover:text-foreground">
-            <Plug className="h-4 w-4" />
-          </Link>
         </div>
       </div>
     </footer>
