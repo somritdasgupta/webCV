@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ADMIN } from "@/site.config";
+import bundledSettings from "../../content/site.json";
 
 /**
  * Site settings live in `content/site.json` in the content repo so the manual
@@ -12,7 +13,7 @@ export interface SiteSettings {
 
 export const SITE_SETTINGS_PATH = "content/site.json";
 /** Fallback used when the live file cannot be read. Mirrors content/site.json. */
-export const BUNDLED_SETTINGS: SiteSettings = { resumeUrl: "https://rxresu.me/somritdasgupta/somrits-resume" };
+export const BUNDLED_SETTINGS: SiteSettings = bundledSettings;
 
 const RAW_URL = `https://raw.githubusercontent.com/${ADMIN.repo.owner}/${ADMIN.repo.name}/${ADMIN.repo.branch}/${SITE_SETTINGS_PATH}`;
 
@@ -25,10 +26,15 @@ export function isValidResumeUrl(value: string): boolean {
 }
 
 async function fetchSiteSettings(): Promise<SiteSettings> {
-  const response = await fetch(`${RAW_URL}?t=${Date.now()}`);
-  if (!response.ok) return BUNDLED_SETTINGS;
-  const data = (await response.json()) as Partial<SiteSettings>;
-  return data.resumeUrl && isValidResumeUrl(data.resumeUrl) ? { resumeUrl: data.resumeUrl } : BUNDLED_SETTINGS;
+  try {
+    const response = await fetch(`${RAW_URL}?t=${Date.now()}`, { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error(`Settings unavailable (${response.status})`);
+    const data = (await response.json()) as Partial<SiteSettings>;
+    return data.resumeUrl && isValidResumeUrl(data.resumeUrl) ? { resumeUrl: data.resumeUrl } : BUNDLED_SETTINGS;
+  } catch (error) {
+    console.error("Using bundled site settings", { request_id: crypto.randomUUID(), error });
+    return BUNDLED_SETTINGS;
+  }
 }
 
 export const useSiteSettings = () =>
