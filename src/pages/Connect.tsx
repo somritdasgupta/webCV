@@ -1,4 +1,3 @@
-```tsx
 import { useState } from "react";
 import {
   Check,
@@ -28,11 +27,11 @@ export default function Connect() {
     setIsChecking(true);
 
     try {
-      setResults(
-        await Promise.all(
-          connections.map((item) => runMcpHealthCheck(item.url)),
-        ),
+      const healthChecks = await Promise.all(
+        connections.map((item) => runMcpHealthCheck(item.url)),
       );
+
+      setResults(healthChecks);
     } finally {
       setIsChecking(false);
     }
@@ -50,6 +49,7 @@ export default function Connect() {
         <header className="border-b border-border/40 pb-10 pt-8">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Plug className="h-4 w-4" />
+
             <span className="font-mono text-[11px] font-medium uppercase tracking-[0.18em]">
               MCP connections
             </span>
@@ -79,9 +79,11 @@ export default function Connect() {
 
               <Tabs
                 value={mode}
-                onValueChange={(value) =>
-                  setMode(value === "admin" ? "admin" : "reader")
-                }
+                onValueChange={(value) => {
+                  setMode(
+                    value === "admin" ? "admin" : "reader",
+                  );
+                }}
                 className="mt-4"
               >
                 <TabsList className="grid h-11 w-full max-w-sm grid-cols-2 rounded-xl bg-muted/60 p-1">
@@ -120,7 +122,10 @@ export default function Connect() {
           </div>
 
           <div className="rounded-2xl border border-border/40 bg-card p-5 shadow-sm sm:p-6 lg:p-8">
-            <InstallOptions key={mode} mode={mode} />
+            <InstallOptions
+              key={mode}
+              mode={mode}
+            />
           </div>
         </section>
 
@@ -148,7 +153,7 @@ export default function Connect() {
             </div>
 
             <ol className="mt-8 grid gap-8 md:grid-cols-3">
-              <li className="relative space-y-3">
+              <li className="space-y-3">
                 <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-muted-foreground">
                   01 / REVIEW
                 </span>
@@ -163,7 +168,7 @@ export default function Connect() {
                 </p>
               </li>
 
-              <li className="relative space-y-3 md:border-l md:border-border/40 md:pl-8">
+              <li className="space-y-3 md:border-l md:border-border/40 md:pl-8">
                 <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-muted-foreground">
                   02 / APPROVE
                 </span>
@@ -186,7 +191,7 @@ export default function Connect() {
                 </p>
               </li>
 
-              <li className="relative space-y-3 md:border-l md:border-border/40 md:pl-8">
+              <li className="space-y-3 md:border-l md:border-border/40 md:pl-8">
                 <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-muted-foreground">
                   03 / CONFIRM
                 </span>
@@ -210,7 +215,7 @@ export default function Connect() {
 
         <section aria-labelledby="diagnostics-heading">
           <details className="group overflow-hidden rounded-2xl border border-border/40 bg-card shadow-sm">
-            <summary className="list-none cursor-pointer select-none">
+            <summary className="cursor-pointer list-none select-none">
               <div className="flex items-center justify-between gap-6 px-5 py-5 sm:px-6">
                 <div className="flex min-w-0 items-center gap-4">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/80 font-mono text-sm font-bold text-foreground">
@@ -236,7 +241,7 @@ export default function Connect() {
             </summary>
 
             <div className="border-t border-border/40 px-5 py-6 sm:px-6 lg:px-7">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">
                     Connection status
@@ -254,10 +259,13 @@ export default function Connect() {
                   className="h-9 shrink-0 gap-2 rounded-lg px-4 text-sm font-medium"
                 >
                   <RefreshCw
-                    className={`h-4 w-4 ${
-                      isChecking ? "animate-spin" : ""
-                    }`}
+                    className={
+                      isChecking
+                        ? "h-4 w-4 animate-spin"
+                        : "h-4 w-4"
+                    }
                   />
+
                   {isChecking ? "Checking..." : "Check connections"}
                 </Button>
               </div>
@@ -298,18 +306,18 @@ export default function Connect() {
                         </div>
 
                         <span
-                          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                          className={
                             result.ok
-                              ? "bg-emerald-500/10 text-emerald-500"
-                              : "bg-destructive/10 text-destructive"
-                          }`}
+                              ? "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-500"
+                              : "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-1 text-[11px] font-medium text-destructive"
+                          }
                         >
                           <span
-                            className={`h-1.5 w-1.5 rounded-full ${
+                            className={
                               result.ok
-                                ? "bg-emerald-500"
-                                : "bg-destructive"
-                            }`}
+                                ? "h-1.5 w-1.5 rounded-full bg-emerald-500"
+                                : "h-1.5 w-1.5 rounded-full bg-destructive"
+                            }
                           />
 
                           {result.ok ? "Online" : "Failed"}
@@ -323,8 +331,9 @@ export default function Connect() {
                           </p>
                         ) : (
                           <p className="rounded-lg border border-destructive/10 bg-destructive/5 p-3 font-mono text-xs leading-5 text-muted-foreground">
-                            {result.steps.find((item) => !item.ok)?.detail ||
-                              "Unknown error"}
+                            {result.steps.find(
+                              (item) => !item.ok,
+                            )?.detail || "Unknown error"}
                           </p>
                         )}
                       </div>
@@ -339,4 +348,3 @@ export default function Connect() {
     </div>
   );
 }
-```
