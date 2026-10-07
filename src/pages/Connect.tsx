@@ -10,7 +10,7 @@ import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { runMcpHealthCheck, type McpCheckResult } from "@/lib/mcpClient";
-import { InstallOptions } from "@/features/mcp-setup/components/install-options";
+import InstallOptions from "@/features/mcp-setup/components/install-options";
 import {
   CONNECTIONS,
   type ConnectionMode,
@@ -80,9 +80,7 @@ export default function Connect() {
               <Tabs
                 value={mode}
                 onValueChange={(value) => {
-                  setMode(
-                    value === "admin" ? "admin" : "reader",
-                  );
+                  setMode(value === "admin" ? "admin" : "reader");
                 }}
                 className="mt-4"
               >
@@ -122,10 +120,7 @@ export default function Connect() {
           </div>
 
           <div className="rounded-2xl border border-border/40 bg-card p-5 shadow-sm sm:p-6 lg:p-8">
-            <InstallOptions
-              key={mode}
-              mode={mode}
-            />
+            <InstallOptions key={mode} mode={mode} />
           </div>
         </section>
 
@@ -331,9 +326,8 @@ export default function Connect() {
                           </p>
                         ) : (
                           <p className="rounded-lg border border-destructive/10 bg-destructive/5 p-3 font-mono text-xs leading-5 text-muted-foreground">
-                            {result.steps.find(
-                              (item) => !item.ok,
-                            )?.detail || "Unknown error"}
+                            {result.steps.find((item) => !item.ok)?.detail ||
+                              "Unknown error"}
                           </p>
                         )}
                       </div>

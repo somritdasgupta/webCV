@@ -1,4 +1,3 @@
-```tsx
 import { useState } from "react";
 import { ArrowUpRight, Code2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,11 @@ import {
 const CLIENTS = ["Claude", "ChatGPT", "Cursor", "VS Code"] as const;
 type Client = (typeof CLIENTS)[number];
 
-export function InstallOptions({ mode }: { mode: ConnectionMode }) {
+export default function InstallOptions({
+  mode,
+}: {
+  mode: ConnectionMode;
+}) {
   const [client, setClient] = useState<Client>("Claude");
 
   const connection = CONNECTIONS[mode];
@@ -57,7 +60,7 @@ export function InstallOptions({ mode }: { mode: ConnectionMode }) {
       </div>
 
       <div className="mt-8 flex min-w-0 flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 max-w-md">
+        <div className="min-w-0 max-w-xl">
           <h2 className="text-xl font-semibold text-foreground">
             {isDirectInstall
               ? "Install in " + client
@@ -69,6 +72,7 @@ export function InstallOptions({ mode }: { mode: ConnectionMode }) {
               <li>
                 1. Open Settings → Connectors → Add custom connector.
               </li>
+
               <li>
                 2. Paste the server address and add the connection.
               </li>
@@ -81,6 +85,7 @@ export function InstallOptions({ mode }: { mode: ConnectionMode }) {
                 1. In Settings → Apps → Advanced settings, enable Developer
                 mode.
               </li>
+
               <li>
                 2. Create an app with the server address. Select No
                 authentication.
@@ -117,7 +122,11 @@ export function InstallOptions({ mode }: { mode: ConnectionMode }) {
               </a>
             </Button>
           ) : (
-            <Button asChild variant="ghost" className="gap-2 rounded-lg">
+            <Button
+              asChild
+              variant="ghost"
+              className="gap-2 rounded-lg"
+            >
               <a
                 href={
                   client === "Claude"
@@ -156,4 +165,3 @@ export function InstallOptions({ mode }: { mode: ConnectionMode }) {
     </div>
   );
 }
-```
