@@ -1,3 +1,3 @@
 - Use unobtrusive route fallbacks and local pending states without a global fetch interceptor; removing the global loader must not alter network behavior.
 - Keep the CV URL in shared site settings so the admin editor, legacy redirect, and MCP tools use one source of truth.
-- Keep MCP authoring tools in the existing admin registry and regenerate its published bundle from that registry so client discovery and runtime stay aligned.
+- Keep all MCP setup, client, shared logic, and server tools under `src/features/mcp/`; generate each public/admin registry from one tool file per action so the two servers stay isolated and extensions need no manual registration.

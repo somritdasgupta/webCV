@@ -1,4 +1,4 @@
-- [ ] Remove the global loader and fetch interception entirely.
-- [ ] Put direct resume links beside LinkedIn and verify the editor Save commits the shared setting.
-- [ ] Replace the text-heavy guide with reader/admin setup and supported install actions.
-- [ ] Verify MCP tools, authorization safety, and mobile/tablet/desktop rendering; deploy any changed authoring tools.
+- [ ] Consolidate MCP setup, client, shared logic, public tools, and owner tools under `src/features/mcp/`.
+- [ ] Generate each server's tool registry from its tool files while keeping public reads separate from owner-approved writes.
+- [ ] Add clear success/failure feedback to install, copy, and configuration-download actions.
+- [ ] Document the reusable MCP structure and verify registrations, tests, guide rendering, and current diagnostics.
