@@ -1,7 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { loadPost, readerToken } from "../corpus";
 import { optionalSessionField, slugField } from "../fields";
-import { stripMdx } from "../mdx";
+import { stripMdx } from "../../../shared/mdx";
 import { respond } from "../response";
 import { normalizeSlug } from "../validation";
 

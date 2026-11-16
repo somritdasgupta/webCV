@@ -4,7 +4,7 @@ import { daysBetween, loadPost } from "../corpus";
 import { OperationError } from "../errors";
 import { dateOnlyField, sessionTokenField, slugField } from "../fields";
 import { writeFile } from "../github";
-import { toDateOnly, todayDateOnly } from "../mdx";
+import { toDateOnly, todayDateOnly } from "../../../shared/mdx";
 import { ownerOperation } from "../response";
 import { normalizeSlug } from "../validation";
 

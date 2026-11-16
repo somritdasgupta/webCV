@@ -2,7 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { isPublic, loadCorpus } from "../corpus";
 import { OperationError } from "../errors";
-import { todayDateOnly } from "../mdx";
+import { todayDateOnly } from "../../../shared/mdx";
 import { respond } from "../response";
 
 const COOLDOWN_MS = 60_000;

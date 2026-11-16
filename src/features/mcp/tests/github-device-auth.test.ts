@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { authorizedGitHub, createAuthorization, pollAuthorization } from "@/lib/mcp-admin/github-device-auth";
+import { authorizedGitHub, createAuthorization, pollAuthorization } from "@/features/mcp/servers/admin/github-device-auth";
 
 const githubAuthorization = {
   device_code: "private-device-credential-1234567890",

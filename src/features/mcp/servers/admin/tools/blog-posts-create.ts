@@ -2,7 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { OperationError } from "../errors";
 import { postContentShape, sessionTokenField } from "../fields";
 import { pathForSlug, readFile, writeFile } from "../github";
-import { buildMdx, estimateReadingTime, toDateOnly, todayDateOnly } from "../mdx";
+import { buildMdx, estimateReadingTime, toDateOnly, todayDateOnly } from "../../../shared/mdx";
 import { ownerOperation } from "../response";
 import { assertValid, normalizeSlug, slugCandidates } from "../validation";
 

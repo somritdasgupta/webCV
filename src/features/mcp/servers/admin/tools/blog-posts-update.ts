@@ -14,7 +14,7 @@ import {
   titleField,
 } from "../fields";
 import { pathForSlug, readFile, writeFile } from "../github";
-import { buildMdx, estimateReadingTime, parseFrontmatter, toDateOnly, todayDateOnly } from "../mdx";
+import { buildMdx, estimateReadingTime, parseFrontmatter, toDateOnly, todayDateOnly } from "../../../shared/mdx";
 import { ownerOperation } from "../response";
 import { assertValid, normalizeSlug } from "../validation";
 

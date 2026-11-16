@@ -1,6 +1,6 @@
 import { type PostRecord } from "./corpus";
 import { OperationError } from "./errors";
-import { buildMdx, estimateReadingTime, type Frontmatter } from "./mdx";
+import { buildMdx, estimateReadingTime, type Frontmatter } from "../../shared/mdx";
 
 export const MAX_BATCH = 100;
 

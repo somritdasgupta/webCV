@@ -9,12 +9,12 @@ import {
 import { Seo } from "@/components/Seo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { runMcpHealthCheck, type McpCheckResult } from "@/lib/mcpClient";
-import InstallOptions from "@/features/mcp-setup/components/install-options";
+import { runMcpHealthCheck, type McpCheckResult } from "@/features/mcp/client/client";
+import InstallOptions from "@/features/mcp/setup/components/install-options";
 import {
   CONNECTIONS,
   type ConnectionMode,
-} from "@/features/mcp-setup/services/install-config";
+} from "@/features/mcp/setup/services/install-config";
 
 export default function Connect() {
   const [mode, setMode] = useState<ConnectionMode>("reader");

@@ -1,6 +1,6 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
-import { parseFrontmatter } from "../../mcp-admin/mdx";
+import { parseFrontmatter } from "../../../shared/mdx";
 
 const REPO = "somritdasgupta/webCV";
 const DIR = "content/blog";

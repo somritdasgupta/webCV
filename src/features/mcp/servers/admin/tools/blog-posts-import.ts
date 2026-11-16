@@ -4,7 +4,7 @@ import { assertBatchSize } from "../bulk";
 import { OperationError } from "../errors";
 import { sessionTokenField } from "../fields";
 import { commitFiles, listPostFiles, pathForSlug } from "../github";
-import { buildMdx, estimateReadingTime, parseFrontmatter, toDateOnly, todayDateOnly } from "../mdx";
+import { buildMdx, estimateReadingTime, parseFrontmatter, toDateOnly, todayDateOnly } from "../../../shared/mdx";
 import { ownerOperation } from "../response";
 import { collectIssues, normalizeSlug } from "../validation";
 
@@ -19,6 +19,15 @@ interface Candidate {
 }
 
 const str = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : String(v));
+type JsonRecord = Record<string, unknown>;
+
+const isRecord = (value: unknown): value is JsonRecord =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const asRecord = (value: unknown): JsonRecord => (isRecord(value) ? value : {});
+
+const asRecords = (value: unknown): JsonRecord[] =>
+  Array.isArray(value) ? value.filter(isRecord) : [];
 
 /** Markdown: one document, or several separated by a line containing only `+++`. */
 function fromMarkdown(content: string): Candidate[] {
@@ -38,31 +47,37 @@ function fromMarkdown(content: string): Candidate[] {
 }
 
 function fromGhost(content: string): Candidate[] {
-  const db = JSON.parse(content);
-  const data = (db.db?.[0]?.data ?? db.data ?? db) as Record<string, any[]>;
-  const tagNames = new Map((data.tags ?? []).map((t) => [t.id, t.name]));
-  return (data.posts ?? []).map((p) => ({
-    title: str(p.title),
-    slug: p.slug,
-    description: str(p.custom_excerpt || p.meta_description || p.plaintext?.slice(0, 157)),
-    body: str(p.markdown || p.plaintext || p.html),
-    date: p.published_at ?? p.created_at,
-    tags: (data.posts_tags ?? []).filter((pt) => pt.post_id === p.id).map((pt) => str(tagNames.get(pt.tag_id))).filter(Boolean),
-    draft: p.status !== "published",
+  const root = asRecord(JSON.parse(content));
+  const database = asRecords(root.db);
+  const firstDatabase = asRecord(database[0]);
+  const data = asRecord(firstDatabase.data ?? root.data ?? root);
+  const tagNames = new Map(asRecords(data.tags).map((tag) => [String(tag.id), str(tag.name)]));
+  return asRecords(data.posts).map((post) => ({
+    title: str(post.title),
+    slug: typeof post.slug === "string" ? post.slug : undefined,
+    description: str(post.custom_excerpt || post.meta_description || str(post.plaintext).slice(0, 157)),
+    body: str(post.markdown || post.plaintext || post.html),
+    date: str(post.published_at || post.created_at),
+    tags: asRecords(data.posts_tags)
+      .filter((relation) => String(relation.post_id) === String(post.id))
+      .map((relation) => tagNames.get(String(relation.tag_id)) ?? "")
+      .filter(Boolean),
+    draft: post.status !== "published",
   }));
 }
 
 function fromNotion(content: string): Candidate[] {
-  const rows = JSON.parse(content);
-  const list: any[] = Array.isArray(rows) ? rows : rows.results ?? [rows];
+  const parsed: unknown = JSON.parse(content);
+  const root = asRecord(parsed);
+  const list = Array.isArray(parsed) ? asRecords(parsed) : asRecords(root.results).length ? asRecords(root.results) : [root];
   return list.map((r) => {
     const tags = r.tags ?? r.Tags;
     return {
       title: str(r.title ?? r.Title ?? r.Name ?? r.name),
-      slug: r.slug ?? r.Slug,
+      slug: typeof (r.slug ?? r.Slug) === "string" ? String(r.slug ?? r.Slug) : undefined,
       description: str(r.description ?? r.Description ?? r.summary),
       body: str(r.body ?? r.content ?? r.Content ?? r.markdown),
-      date: r.date ?? r.Date ?? r.created_time,
+      date: str(r.date ?? r.Date ?? r.created_time),
       tags: Array.isArray(tags) ? tags.map(str) : typeof tags === "string" ? tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined,
       draft: r.draft === true || r.Status === "Draft",
     };
@@ -105,12 +120,13 @@ export default defineTool({
           results.push({ status: "failed", title: c.title, slug, reason: "No usable slug or title." });
           continue;
         }
-        const date = c.date ? toDateOnly(c.date) ?? undefined : todayDateOnly();
-        const issue = collectIssues({ ...c, slug, date }, { requireAll: true })[0];
+        const date = c.date ? toDateOnly(c.date) : todayDateOnly();
+        const issue = collectIssues({ ...c, slug, date: date ?? c.date }, { requireAll: true })[0];
         if (issue) { results.push({ status: "failed", title: c.title, slug, reason: `${issue.field}: ${issue.message}` }); continue; }
+        if (!date) { results.push({ status: "failed", title: c.title, slug, reason: "Date is invalid." }); continue; }
         if (taken.has(slug)) { results.push({ status: "failed", title: c.title, slug, reason: "Slug already exists." }); continue; }
         taken.add(slug);
-        changes.push({ path: pathForSlug(slug), content: buildMdx({ title: c.title, description: c.description, date: date!, tags: c.tags?.slice(0, 8), draft: c.draft, readingTime: estimateReadingTime(c.body) }, c.body) });
+        changes.push({ path: pathForSlug(slug), content: buildMdx({ title: c.title, description: c.description, date, tags: c.tags?.slice(0, 8), draft: c.draft, readingTime: estimateReadingTime(c.body) }, c.body) });
         results.push({ status: "success", title: c.title, slug });
       }
       const commit = changes.length ? await commitFiles(owner.token, changes, `content: import ${changes.length} posts from ${format}`) : null;

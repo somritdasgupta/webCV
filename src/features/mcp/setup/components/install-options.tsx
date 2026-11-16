@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ArrowUpRight, Code2, Download } from "lucide-react";
+import { ArrowUpRight, Code2, Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 import {
   CONNECTIONS,
   connectionConfig,
@@ -22,21 +23,33 @@ export default function InstallOptions({
   const connection = CONNECTIONS[mode];
   const isDirectInstall = client === "Cursor" || client === "VS Code";
 
+  const copyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(connection.url);
+      toast.success("Server address copied.");
+    } catch {
+      toast.error("Could not copy the server address. Select and copy it below.");
+    }
+  };
+
   const download = () => {
-    const blob = new Blob([connectionConfig(mode)], {
-      type: "application/json",
-    });
+    try {
+      const blob = new Blob([connectionConfig(mode)], {
+        type: "application/json",
+      });
 
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
 
-    anchor.href = url;
-    anchor.download = connection.name + ".json";
-    anchor.click();
+      anchor.href = url;
+      anchor.download = connection.name + ".json";
+      anchor.click();
 
-    window.setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 1000);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast.success("Configuration file downloaded.");
+    } catch {
+      toast.error("Could not download the configuration file. Try copying the server address.");
+    }
   };
 
   return (
@@ -116,6 +129,7 @@ export default function InstallOptions({
                     ? cursorInstallUrl(mode)
                     : vscodeInstallUrl(mode)
                 }
+                onClick={() => toast.info(`Opening ${client} to review the connection.`)}
               >
                 <Download className="h-4 w-4" />
                 Install in {client}
@@ -135,6 +149,7 @@ export default function InstallOptions({
                 }
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => toast.info(`Opening ${client} settings.`)}
               >
                 Open {client}
                 <ArrowUpRight className="h-4 w-4" />
@@ -151,16 +166,26 @@ export default function InstallOptions({
           {connection.url}
         </code>
 
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={download}
-          aria-label="Download server configuration"
-          title="Download server configuration"
-          className="shrink-0"
-        >
-          <Download className="h-4 w-4" />
-        </Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={copyAddress}
+            aria-label="Copy server address"
+            title="Copy server address"
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={download}
+            aria-label="Download server configuration"
+            title="Download server configuration"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,6 @@
-- [ ] Consolidate MCP setup, client, shared logic, public tools, and owner tools under `src/features/mcp/`.
-- [ ] Generate each server's tool registry from its tool files while keeping public reads separate from owner-approved writes.
-- [ ] Add clear success/failure feedback to install, copy, and configuration-download actions.
-- [ ] Document the reusable MCP structure and verify registrations, tests, guide rendering, and current diagnostics.
+- [x] Consolidate MCP setup, client, shared logic, public tools, and owner tools under `src/features/mcp/`.
+- [x] Generate each server's tool registry from its tool files while keeping public reads separate from owner-approved writes.
+- [x] Add clear success/failure feedback to install, copy, and configuration-download actions.
+- [x] Document the reusable MCP structure and verify registrations, tests, guide rendering, and current diagnostics.
+- [x] Fix stale imports that caused the preview build to fail on `src/lib/mcpClient`.
+- [x] Keep MCP tests within the reusable feature folder.

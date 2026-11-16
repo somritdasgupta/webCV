@@ -1,0 +1,30 @@
+// Generated from the tool files in this folder. Do not edit.
+import tool_0 from "./tools/blog-auth-request";
+import tool_1 from "./tools/blog-auth-verify";
+import tool_2 from "./tools/blog-components-list";
+import tool_3 from "./tools/blog-posts-bulk-update";
+import tool_4 from "./tools/blog-posts-by-tag";
+import tool_5 from "./tools/blog-posts-create";
+import tool_6 from "./tools/blog-posts-delete";
+import tool_7 from "./tools/blog-posts-duplicate";
+import tool_8 from "./tools/blog-posts-export";
+import tool_9 from "./tools/blog-posts-get-draft-count";
+import tool_10 from "./tools/blog-posts-import";
+import tool_11 from "./tools/blog-posts-list";
+import tool_12 from "./tools/blog-posts-preview";
+import tool_13 from "./tools/blog-posts-read";
+import tool_14 from "./tools/blog-posts-related";
+import tool_15 from "./tools/blog-posts-schedule";
+import tool_16 from "./tools/blog-posts-search";
+import tool_17 from "./tools/blog-posts-stats";
+import tool_18 from "./tools/blog-posts-suggest-slug";
+import tool_19 from "./tools/blog-posts-tag-rename";
+import tool_20 from "./tools/blog-posts-update";
+import tool_21 from "./tools/blog-posts-validate-bulk";
+import tool_22 from "./tools/blog-posts-validate";
+import tool_23 from "./tools/blog-posts-word-count";
+import tool_24 from "./tools/mcp-schema-get";
+import tool_25 from "./tools/site-resume-get";
+import tool_26 from "./tools/site-resume-update";
+
+export default [tool_0, tool_1, tool_2, tool_3, tool_4, tool_5, tool_6, tool_7, tool_8, tool_9, tool_10, tool_11, tool_12, tool_13, tool_14, tool_15, tool_16, tool_17, tool_18, tool_19, tool_20, tool_21, tool_22, tool_23, tool_24, tool_25, tool_26];

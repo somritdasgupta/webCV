@@ -4,7 +4,7 @@ import { loadPost } from "../corpus";
 import { OperationError } from "../errors";
 import { sessionTokenField, slugField } from "../fields";
 import { pathForSlug, readFile, writeFile } from "../github";
-import { todayDateOnly } from "../mdx";
+import { todayDateOnly } from "../../../shared/mdx";
 import { ownerOperation } from "../response";
 import { normalizeSlug } from "../validation";
 

@@ -1,6 +1,6 @@
 import { OperationError } from "./errors";
 import { SLUG_PATTERN } from "./fields";
-import { toDateOnly } from "./mdx";
+import { toDateOnly } from "../../shared/mdx";
 
 export interface FieldIssue {
   field: string;

@@ -1,7 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { respond } from "../response";
-import { toDateOnly, todayDateOnly } from "../mdx";
+import { toDateOnly, todayDateOnly } from "../../../shared/mdx";
 import { collectIssues, normalizeSlug, slugCandidates } from "../validation";
 
 /**

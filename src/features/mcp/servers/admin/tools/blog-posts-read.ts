@@ -2,7 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { OperationError } from "../errors";
 import { sessionTokenField, slugField } from "../fields";
 import { pathForSlug, readFile } from "../github";
-import { parseFrontmatter } from "../mdx";
+import { parseFrontmatter } from "../../../shared/mdx";
 import { ownerOperation } from "../response";
 import { normalizeSlug } from "../validation";
 

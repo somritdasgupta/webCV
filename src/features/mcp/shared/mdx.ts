@@ -116,7 +116,7 @@ export function stripMdx(body: string): string {
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/^\s*(import|export)\s.*$/gm, " ")
     .replace(/<[^>]*>/g, " ")
-    .replace(/[#>*_`~\[\]()|-]/g, " ");
+    .replace(/[#>*_`~\x5B\x5D()|-]/g, " ");
 }
 
 export const countWords = (body: string) => stripMdx(body).split(/\s+/).filter(Boolean).length;

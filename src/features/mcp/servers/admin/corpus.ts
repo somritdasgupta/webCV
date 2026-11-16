@@ -1,6 +1,6 @@
 import { OperationError } from "./errors";
 import { listPostFiles, pathForSlug, readFile, readRaw } from "./github";
-import { countWords, estimateReadingTime, parseFrontmatter, stripMdx, todayDateOnly } from "./mdx";
+import { countWords, estimateReadingTime, parseFrontmatter, stripMdx, todayDateOnly } from "../../shared/mdx";
 import { requireOwner } from "./response";
 
 /**

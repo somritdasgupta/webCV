@@ -2,7 +2,7 @@ import { defineTool } from "@lovable.dev/mcp-js";
 import { compile } from "@mdx-js/mdx";
 import remarkGfm from "remark-gfm";
 import { postContentShape } from "../fields";
-import { buildMdx, estimateReadingTime, countWords, toDateOnly, todayDateOnly } from "../mdx";
+import { buildMdx, estimateReadingTime, countWords, toDateOnly, todayDateOnly } from "../../../shared/mdx";
 import { respond } from "../response";
 import { collectIssues, normalizeSlug } from "../validation";
 

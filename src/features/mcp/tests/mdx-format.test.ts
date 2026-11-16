@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMdx, parseFrontmatter, toDateOnly } from "@/lib/mcp-admin/mdx";
+import { buildMdx, parseFrontmatter, toDateOnly } from "@/features/mcp/shared/mdx";
 import { buildMdx as buildEditorMdx } from "@/lib/admin/frontmatter";
 
 describe("post file format", () => {

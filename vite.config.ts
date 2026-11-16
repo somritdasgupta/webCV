@@ -8,6 +8,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypePrettyCode from "rehype-pretty-code";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
+import { mcpRegistryPlugin } from "./src/features/mcp/vite/registry-plugin";
 
 /**
  * Replaces `%SITE_URL%` placeholder in index.html and `public/robots.txt`
@@ -147,11 +148,15 @@ export default defineConfig(({ mode }) => {
     },
     react(),
     siteUrlPlugin(SITE_URL),
+    // Discover MCP tools before the server plugin bundles the reader/admin registries.
+    mcpRegistryPlugin(),
     // Public, read-only MCP server → /functions/v1/mcp
-    mcpPlugin(),
+    mcpPlugin({
+      mcpEntry: "src/features/mcp/servers/reader/index.ts",
+    }),
     // Admin write server with action-driven GitHub Device Flow → /functions/v1/mcp-admin
     mcpPlugin({
-      mcpEntry: "src/lib/mcp-admin/index.ts",
+      mcpEntry: "src/features/mcp/servers/admin/index.ts",
       functionName: "mcp-admin",
     }),
   ],

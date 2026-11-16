@@ -1,7 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { daysBetween, loadCorpus } from "../corpus";
 import { sessionTokenField } from "../fields";
-import { todayDateOnly } from "../mdx";
+import { todayDateOnly } from "../../../shared/mdx";
 import { ownerOperation } from "../response";
 
 export default defineTool({

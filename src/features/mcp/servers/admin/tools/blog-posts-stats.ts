@@ -1,7 +1,7 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { daysBetween, isPublic, loadCorpus, readerToken, tagFrequency, type PostRecord } from "../corpus";
 import { optionalSessionField } from "../fields";
-import { todayDateOnly } from "../mdx";
+import { todayDateOnly } from "../../../shared/mdx";
 import { respond } from "../response";
 
 type Frequency = "daily" | "weekly" | "bi-weekly" | "monthly" | "irregular";
