@@ -189,11 +189,6 @@
   .fluid-h2 { font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem); line-height: 1.1; letter-spacing: -0.015em; }
   .fluid-lead { font-size: clamp(1rem, 0.9rem + 0.4vw, 1.15rem); }
 
-  /* page-enter animation utility */
-  .page-enter {
-    animation: page-enter 0.5s var(--ease-out-expo) both;
-  }
-
   /* subtle text gradient for hero */
   .text-balance {
     text-wrap: balance;
@@ -243,11 +238,6 @@
   /* Opt-out helper */
   .no-scrollbar { scrollbar-width: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
-}
-
-@keyframes page-enter {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fade-in {
