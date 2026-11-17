@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUpRight, Code2, Copy, Download } from "lucide-react";
+import { ArrowUpRight, Check, Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import {
@@ -13,13 +13,13 @@ import {
 const CLIENTS = ["Claude", "ChatGPT", "Cursor", "VS Code"] as const;
 type Client = (typeof CLIENTS)[number];
 
-export default function InstallOptions({
-  mode,
-}: {
-  mode: ConnectionMode;
-}) {
-  const [client, setClient] = useState<Client>("Claude");
+const MANUAL_STEPS: Record<"Claude" | "ChatGPT", string[]> = {
+  Claude: ["Open Settings → Connectors → Add custom connector.", "Paste the server address below and add the connection."],
+  ChatGPT: ["Enable Developer mode under Settings → Apps → Advanced settings.", "Create an app with the server address below and choose No authentication."],
+};
 
+export default function InstallOptions({ mode }: { mode: ConnectionMode }) {
+  const [client, setClient] = useState<Client>("Claude");
   const connection = CONNECTIONS[mode];
   const isDirectInstall = client === "Cursor" || client === "VS Code";
 
@@ -27,131 +27,96 @@ export default function InstallOptions({
     try {
       await navigator.clipboard.writeText(connection.url);
       toast.success("Server address copied.");
-    } catch {
-      toast.error("Could not copy the server address. Select and copy it below.");
+    } catch (error) {
+      console.error("MCP address copy failed", error);
+      toast.error("Could not copy the address. Select and copy it below.");
     }
   };
 
-  const download = () => {
+  const downloadConfig = () => {
     try {
-      const blob = new Blob([connectionConfig(mode)], {
-        type: "application/json",
-      });
-
-      const url = URL.createObjectURL(blob);
+      const file = new Blob([connectionConfig(mode)], { type: "application/json" });
+      const url = URL.createObjectURL(file);
       const anchor = document.createElement("a");
-
       anchor.href = url;
-      anchor.download = connection.name + ".json";
+      anchor.download = `${connection.name}.json`;
       anchor.click();
-
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast.success("Configuration file downloaded.");
-    } catch {
-      toast.error("Could not download the configuration file. Try copying the server address.");
+      toast.success("Configuration downloaded.");
+    } catch (error) {
+      console.error("MCP configuration download failed", error);
+      toast.error("Could not download the configuration. Copy the address instead.");
     }
   };
+
+  const installUrl = client === "Cursor" ? cursorInstallUrl(mode) : vscodeInstallUrl(mode);
 
   return (
     <div className="min-w-0">
-      <div
-        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-        role="group"
-        aria-label="Choose an assistant"
-      >
+      <div className="flex flex-col gap-1">
+        <p className="font-mono text-[11px] uppercase text-muted-foreground">1 / Choose your app</p>
+        <h2 className="text-xl font-medium text-foreground">Where do you use an assistant?</h2>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-label="Choose an assistant">
         {CLIENTS.map((item) => (
           <Button
             key={item}
             variant={item === client ? "secondary" : "outline"}
             aria-pressed={item === client}
             onClick={() => setClient(item)}
-            className="h-12 rounded-lg"
+            className="h-11 min-w-0 justify-between px-3 sm:justify-center sm:px-4"
           >
-            {item}
+            <span className="truncate">{item}</span>
+            {item === client && <Check className="h-4 w-4 shrink-0" />}
           </Button>
         ))}
       </div>
 
-      <div className="mt-8 flex min-w-0 flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 max-w-xl">
-          <h2 className="text-xl font-semibold text-foreground">
-            {isDirectInstall
-              ? "Install in " + client
-              : "Connect with " + client}
-          </h2>
-
-          {client === "Claude" && (
-            <ol className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-              <li>
-                1. Open Settings → Connectors → Add custom connector.
-              </li>
-
-              <li>
-                2. Paste the server address and add the connection.
-              </li>
-            </ol>
-          )}
-
-          {client === "ChatGPT" && (
-            <ol className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-              <li>
-                1. In Settings → Apps → Advanced settings, enable Developer
-                mode.
-              </li>
-
-              <li>
-                2. Create an app with the server address. Select No
-                authentication.
-              </li>
-            </ol>
-          )}
-
-          {isDirectInstall && (
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Review and confirm the server in {client}.
+      <div className="mt-6 grid min-w-0 gap-6 border-t border-border/60 pt-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <div className="min-w-0">
+          <p className="font-mono text-[11px] uppercase text-muted-foreground">2 / Connect</p>
+          <h3 className="mt-2 text-lg font-medium text-foreground">
+            {isDirectInstall ? `Add to ${client}` : `Set up ${client}`}
+          </h3>
+          {isDirectInstall ? (
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Open the install link, then review and confirm the connection in {client}.
             </p>
+          ) : (
+            <ol className="mt-3 space-y-2.5">
+              {MANUAL_STEPS[client].map((instruction, index) => (
+                <li key={instruction} className="flex gap-3 text-sm leading-6 text-muted-foreground">
+                  <span className="font-mono text-xs text-foreground">0{index + 1}</span>
+                  <span className="min-w-0">{instruction}</span>
+                </li>
+              ))}
+            </ol>
           )}
-
           {!isDirectInstall && (
-            <p className="mt-4 text-xs leading-5 text-muted-foreground">
-              {client} requires adding custom servers in Settings. Availability
-              depends on your plan and workspace permissions.
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">
+              Custom server access depends on your plan and workspace settings.
             </p>
           )}
         </div>
 
-        <div className="flex shrink-0 flex-col gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:pt-5">
           {isDirectInstall ? (
-            <Button asChild className="gap-2 rounded-lg">
-              <a
-                href={
-                  client === "Cursor"
-                    ? cursorInstallUrl(mode)
-                    : vscodeInstallUrl(mode)
-                }
-                onClick={() => toast.info(`Opening ${client} to review the connection.`)}
-              >
+            <Button asChild className="w-full gap-2 sm:w-auto">
+              <a href={installUrl} onClick={() => toast.info(`Opening ${client} to review the connection.`)}>
                 <Download className="h-4 w-4" />
                 Install in {client}
               </a>
             </Button>
           ) : (
-            <Button
-              asChild
-              variant="ghost"
-              className="gap-2 rounded-lg"
-            >
+            <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
               <a
-                href={
-                  client === "Claude"
-                    ? "https://claude.ai/settings/connectors"
-                    : "https://chatgpt.com/#settings/Connectors"
-                }
+                href={client === "Claude" ? "https://claude.ai/settings/connectors" : "https://chatgpt.com/#settings/Connectors"}
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => toast.info(`Opening ${client} settings.`)}
               >
-                Open {client}
+                Open {client} settings
                 <ArrowUpRight className="h-4 w-4" />
               </a>
             </Button>
@@ -159,32 +124,19 @@ export default function InstallOptions({
         </div>
       </div>
 
-      <div className="mt-7 flex min-w-0 items-center gap-3 border-y border-border py-4">
-        <Code2 className="h-4 w-4 shrink-0 text-muted-foreground" />
-
-        <code className="min-w-0 flex-1 break-all text-xs leading-6 text-muted-foreground">
-          {connection.url}
-        </code>
-
-        <div className="flex shrink-0 items-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={copyAddress}
-            aria-label="Copy server address"
-            title="Copy server address"
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={download}
-            aria-label="Download server configuration"
-            title="Download server configuration"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
+      <div className="mt-5 min-w-0 border-t border-border/60 pt-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <code className="min-w-0 flex-1 break-all rounded-md bg-muted/70 px-3 py-2.5 font-mono text-xs leading-5 text-muted-foreground">
+            {connection.url}
+          </code>
+          <div className="grid grid-cols-2 gap-2 sm:flex">
+            <Button variant="outline" onClick={copyAddress} className="gap-2 px-3">
+              <Copy className="h-4 w-4" /> Copy address
+            </Button>
+            <Button variant="ghost" onClick={downloadConfig} className="gap-2 px-3">
+              <Download className="h-4 w-4" /> Config file
+            </Button>
+          </div>
         </div>
       </div>
     </div>

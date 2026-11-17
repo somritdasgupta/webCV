@@ -4,3 +4,5 @@
 - [x] Document the reusable MCP structure and verify registrations, tests, guide rendering, and current diagnostics.
 - [x] Fix stale imports that caused the preview build to fail on `src/lib/mcpClient`.
 - [x] Keep MCP tests within the reusable feature folder.
+- [ ] Redesign the MCP connection guide with a clearer install-first layout and responsive reader/owner controls.
+- [ ] Verify the guide at phone, tablet, and desktop widths, including client selection and live diagnostics.
