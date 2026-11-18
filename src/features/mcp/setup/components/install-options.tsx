@@ -54,7 +54,6 @@ export default function InstallOptions({ mode }: { mode: ConnectionMode }) {
   return (
     <div className="min-w-0">
       <div className="flex flex-col gap-1">
-        <p className="font-mono text-[11px] uppercase text-muted-foreground">1 / Choose your app</p>
         <h2 className="text-xl font-medium text-foreground">Where do you use an assistant?</h2>
       </div>
 
@@ -75,7 +74,6 @@ export default function InstallOptions({ mode }: { mode: ConnectionMode }) {
 
       <div className="mt-6 grid min-w-0 gap-6 border-t border-border/60 pt-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <div className="min-w-0">
-          <p className="font-mono text-[11px] uppercase text-muted-foreground">2 / Connect</p>
           <h3 className="mt-2 text-lg font-medium text-foreground">
             {isDirectInstall ? `Add to ${client}` : `Set up ${client}`}
           </h3>
@@ -84,14 +82,13 @@ export default function InstallOptions({ mode }: { mode: ConnectionMode }) {
               Open the install link, then review and confirm the connection in {client}.
             </p>
           ) : (
-            <ol className="mt-3 space-y-2.5">
-              {MANUAL_STEPS[client].map((instruction, index) => (
+            <ul className="mt-3 space-y-2.5">
+              {MANUAL_STEPS[client].map((instruction) => (
                 <li key={instruction} className="flex gap-3 text-sm leading-6 text-muted-foreground">
-                  <span className="font-mono text-xs text-foreground">0{index + 1}</span>
                   <span className="min-w-0">{instruction}</span>
                 </li>
               ))}
-            </ol>
+            </ul>
           )}
           {!isDirectInstall && (
             <p className="mt-3 text-xs leading-5 text-muted-foreground">
