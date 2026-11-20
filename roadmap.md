@@ -4,5 +4,7 @@
 - [x] Document the reusable MCP structure and verify registrations, tests, guide rendering, and current diagnostics.
 - [x] Fix stale imports that caused the preview build to fail on `src/lib/mcpClient`.
 - [x] Keep MCP tests within the reusable feature folder.
-- [ ] Redesign the MCP connection guide with a clearer install-first layout and responsive reader/owner controls.
-- [ ] Verify the guide at phone, tablet, and desktop widths, including client selection and live diagnostics.
+- [ ] Rework MCP reader/owner controls into a compact responsive row and show connection checks as a clear live terminal.
+- [ ] Add an editor-controlled theme palette and solid/gradient option, saved with the site's shared settings.
+- [ ] Refine calendar and component popup visuals, motion, keyboard behavior, and mobile layout.
+- [ ] Verify the MCP guide, theme save flow, calendar, and popups at phone, tablet, and desktop widths.
